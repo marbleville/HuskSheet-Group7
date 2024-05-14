@@ -9,6 +9,16 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: example
 
+  express:
+    image: node
+    container_name: express
+    volumes:
+      - './Server:/Server'
+      - '/Server/node_modules'
+    command: bash -c "npm install --prefix /Server && npm run --prefix /Server"
+    links:
+      - 'db:database'
+
   frontend:
     image: node
     container_name: frontend
@@ -21,3 +31,5 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
     command: bash -c "npm install --prefix /client && npm run dev --prefix /client -- --host"
+    links:
+      - 'express:express'
