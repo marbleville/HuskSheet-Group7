@@ -1,0 +1,22 @@
+# Use root/example as user/password credentials
+version: '3.1'
+
+services:
+
+  db:
+    image: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+
+  frontend:
+    image: node
+    container_name: frontend
+    volumes:
+      - './HuskSheets:/HuskSheets'
+    ports:
+      - 5173:5173
+    stdin_open: true
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    command: npm run dev --prefix /HuskSheets -- --host
