@@ -19,4 +19,4 @@ services:
     stdin_open: true
     environment:
       - CHOKIDAR_USEPOLLING=true
-    command: npm install && npm run dev --prefix /HuskSheets -- --host
+    command: npm run dev --prefix /HuskSheets -- --host
