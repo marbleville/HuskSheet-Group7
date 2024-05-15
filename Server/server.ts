@@ -38,6 +38,7 @@ app.post("/api/v1/updateSubscription", (req, res) => {
 	res.sendStatus(401);
 });
 
+// Start the server
 app.listen(PORT, () => {
 	console.log(`Server is running on port ${PORT}`);
 });
