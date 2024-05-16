@@ -2,6 +2,12 @@
 version: "3.1"
 
 services:
+    db:
+      image: mysql
+      restart: always
+      environment:
+        MYSQL_ROOT_PASSWORD: root
+
     express:
         image: node
         container_name: express
@@ -11,6 +17,8 @@ services:
             - "./server:/server"
             - "/server/node_modules"
         command: bash -c "npm install --prefix /server && npm run dev --prefix /server"
+        links:
+          - "db:db"
 
     frontend:
         image: node
