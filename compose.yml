@@ -3,15 +3,15 @@ version: "3.1"
 
 services:
     db:
-      image: mysql
-      restart: always
-      ports:
-        - '3306:3306'
-      volumes:
-        - "/var/lib/mysql"
-      environment:
-        - MYSQL_DATABASE=husksheets
-        - MYSQL_ROOT_PASSWORD=root
+        image: mysql
+        restart: always
+        ports:
+            - "3306:3306"
+        volumes:
+            - "/var/lib/mysql"
+        environment:
+            - MYSQL_DATABASE=husksheets
+            - MYSQL_ROOT_PASSWORD=root
 
     express:
         image: node
@@ -21,9 +21,10 @@ services:
         volumes:
             - "./server:/server"
             - "/server/node_modules"
+            - "./types:/types"
         command: bash -c "npm install --prefix /server && npm run dev --prefix /server"
         links:
-          - "db:db"
+            - "db:db"
 
     frontend:
         image: node
