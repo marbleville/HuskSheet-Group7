@@ -1,6 +1,11 @@
 import express, { Express, Request, Response, Application } from "express";
+import { authenticate } from "./authenticate";
 const app: Application = express();
 const PORT: Number = 3000;
+
+app.get("/", (req, res) => {
+	res.send("hello world");
+});
 
 app.get("/api/v1/register", (req, res) => {
 	res.sendStatus(401);
@@ -15,7 +20,12 @@ app.post("/api/v1/createSheet", (req, res) => {
 });
 
 app.post("/api/v1/getSheets", (req, res) => {
-	res.sendStatus(401);
+	let auth = req.headers.authorization;
+	let authenticated = authenticate(auth);
+
+	if (authenticated) {
+		res.send("getSheets");
+	}
 });
 
 app.post("/api/v1/deleteSheet", (req, res) => {
