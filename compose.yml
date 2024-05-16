@@ -10,8 +10,6 @@ services:
       - './server:/server'
       - '/server/node_modules'
     command: bash -c "npm install --prefix /server && npm run dev --prefix /server"
-    links:
-      - 'db:database'
 
   frontend:
     image: node
