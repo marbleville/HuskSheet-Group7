@@ -1,5 +1,6 @@
 import express, { Express, Request, Response, Application } from "express";
 import { authenticate } from "./authenticate";
+import { getSheets } from "./getSheets";
 const app: Application = express();
 const PORT: Number = 3000;
 
@@ -24,7 +25,7 @@ app.post("/api/v1/getSheets", (req, res) => {
 	let authenticated = authenticate(auth);
 
 	if (authenticated) {
-		res.send("getSheets");
+		getSheets(req.body);
 	}
 });
 
