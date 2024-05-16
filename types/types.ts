@@ -4,7 +4,6 @@ type Payload = Update;
 type Publisher = String;
 type Update = String;
 
-// redef as recursive type?
 type Column = String;
 
 type Argument = {
