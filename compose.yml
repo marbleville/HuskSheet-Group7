@@ -5,8 +5,13 @@ services:
     db:
       image: mysql
       restart: always
+      ports:
+        - '3306:3306'
+      volumes:
+        - db:/var/lib/mysql
       environment:
-        MYSQL_ROOT_PASSWORD: root
+        - MYSQL_DATABASE=husksheets
+        - MYSQL_ROOT_PASSWORD=root
 
     express:
         image: node
