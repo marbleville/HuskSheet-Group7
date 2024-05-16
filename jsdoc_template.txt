@@ -4,5 +4,5 @@
 * @param {type} name - description
 * @returns {type} - description
 * 
-* @author{github_username}
+* @author: github_username
 */
