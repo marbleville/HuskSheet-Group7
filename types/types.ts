@@ -48,3 +48,20 @@ type Operation =
 	| "&"
 	| "|"
 	| ":";
+
+export type {
+	Sheet,
+	ID,
+	Payload,
+	Publisher,
+	Update,
+	Column,
+	Argument,
+	Result,
+	Ref,
+	Expression,
+	Formula,
+	Term,
+	Fun,
+	Operation,
+};
