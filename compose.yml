@@ -13,9 +13,9 @@ services:
     image: node
     container_name: express
     volumes:
-      - './Server:/Server'
-      - '/Server/node_modules'
-    command: bash -c "npm install --prefix /Server && npm run --prefix /Server"
+      - './server:/server'
+      - '/server/node_modules'
+    command: bash -c "npm install --prefix /server && npm run dev --prefix /server"
     links:
       - 'db:database'
 
