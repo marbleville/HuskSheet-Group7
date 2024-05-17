@@ -1,5 +1,6 @@
 import express, { Request, Response, Application } from "express";
 import { authenticate, assembleResultObject } from "./utils";
+import {register} from "./register";
 import { getSheets } from "./getSheets";
 import { getPublishers } from "./getPublishers";
 import { createSheet } from "./createSheet";
@@ -12,8 +13,23 @@ import { Argument, Result } from "../types/types";
 const app: Application = express();
 const PORT: Number = 3000;
 
-app.get("/api/v1/register", (req: Request, res: Response) => {
-	res.sendStatus(401);
+app.post("/api/v1/register", (req: Request, res: Response) => {
+	let auth: string | undefined = req.headers.authorization;
+	let authenticated: boolean = authenticate(auth);
+
+	if (!authenticated) {
+		res.sendStatus(401);
+	}
+	let result: Result;
+	try{
+		register(req.body);
+		result = assembleResultObject(true, "register", []);
+		res.send(JSON.stringify(result));
+	} catch(error) {
+		const err: Error = error as Error;
+		result = assembleResultObject(false, "register" + err.message, []);
+		res.send(JSON.stringify(result));
+	}
 });
 
 app.get("/api/v1/getPublishers", (req: Request, res: Response) => {
