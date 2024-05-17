@@ -1,8 +1,8 @@
 /**
 * Description
 *
-* @param {type} name - description
-* @returns {type} - description
+* @param name description
+* @returns description
 * 
-* @author: github_username
+* @author github_username
 */

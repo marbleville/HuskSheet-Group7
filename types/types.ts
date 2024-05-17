@@ -1,10 +1,10 @@
-type Sheet = String;
-type ID = String;
+type Sheet = string;
+type ID = string;
 type Payload = Update;
-type Publisher = String;
-type Update = String;
+type Publisher = string;
+type Update = string;
 
-type Column = String;
+type Column = string;
 
 type Argument = {
 	publisher: Publisher;
@@ -15,7 +15,7 @@ type Argument = {
 
 type Result = {
 	success: Boolean;
-	message: String;
+	message: string;
 	value: Array<Argument>;
 };
 
@@ -25,13 +25,13 @@ type Ref = {
 };
 
 // redef as recursive type?
-type Expression = String;
+type Expression = string;
 
 type Formula = {
 	expression: Expression;
 };
 
-type Term = Number | String | Formula;
+type Term = Number | string | Formula;
 
 type Fun = "IF" | "SUM" | "MIN" | "AVG" | "MAX" | "CONCAT" | "DEBUG";
 
