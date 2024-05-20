@@ -1,4 +1,5 @@
-import express, { Request, Response, Application } from "express";
+const express = require("express");
+import { Request, Response, Application } from "express";
 import { authenticate, assembleResultObject } from "./utils";
 import { register } from "./functions/register";
 import { getSheets } from "./functions/getSheets";
