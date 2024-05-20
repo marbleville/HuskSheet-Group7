@@ -1,4 +1,4 @@
-import { Argument, Sheet, Publisher, ID, Payload } from "../types/types";
+import { Argument, Sheet, Publisher, ID, Payload } from "../../../types/types";
 
 /**
  * Returns the updates for the given published sheet occuring after the given

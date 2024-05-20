@@ -1,4 +1,4 @@
-import { Argument, Publisher, Sheet, Payload } from "../types/types";
+import { Argument, Publisher, Sheet, Payload } from "../../../types/types";
 
 /**
  * Updates the Updates table with the given publisher, sheet, and payload for

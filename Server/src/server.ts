@@ -1,15 +1,15 @@
 import express, { Request, Response, Application } from "express";
 import { authenticate, assembleResultObject } from "./utils";
-import {register} from "./register";
-import { getSheets } from "./getSheets";
-import { getPublishers } from "./getPublishers";
-import { createSheet } from "./createSheet";
-import { deleteSheet } from "./deleteSheet";
-import { getUpdatesForPublished } from "./getUpdatesForPublished";
-import { getUpdatesForSubscription } from "./getUpdatesForSubscription";
-import { updatePublished } from "./updatePublished";
-import { updateSubscription } from "./updateSubscription";
-import { Argument, Result } from "../types/types";
+import { register } from "./functions/register";
+import { getSheets } from "./functions/getSheets";
+import { getPublishers } from "./functions/getPublishers";
+import { createSheet } from "./functions/createSheet";
+import { deleteSheet } from "./functions/deleteSheet";
+import { getUpdatesForPublished } from "./functions/getUpdatesForPublished";
+import { getUpdatesForSubscription } from "./functions/getUpdatesForSubscription";
+import { updatePublished } from "./functions/updatePublished";
+import { updateSubscription } from "./functions/updateSubscription";
+import { Argument, Result } from "../../types/types";
 const app: Application = express();
 const PORT: Number = 3000;
 
@@ -21,11 +21,11 @@ app.post("/api/v1/register", (req: Request, res: Response) => {
 		res.sendStatus(401);
 	}
 	let result: Result;
-	try{
+	try {
 		register(req.body);
 		result = assembleResultObject(true, "register", []);
 		res.send(JSON.stringify(result));
-	} catch(error) {
+	} catch (error) {
 		const err: Error = error as Error;
 		result = assembleResultObject(false, "register" + err.message, []);
 		res.send(JSON.stringify(result));

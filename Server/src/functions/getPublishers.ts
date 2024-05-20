@@ -1,4 +1,4 @@
-import { Argument } from "../types/types";
+import { Argument } from "../../../types/types";
 
 /**
  * Returns a list of all registed publishers

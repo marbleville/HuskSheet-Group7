@@ -1,4 +1,4 @@
-import { Argument, Result } from "../types/types";
+import { Argument, Result } from "../../types/types";
 
 /**
  * Authenticates the user based on the authorization header from the request

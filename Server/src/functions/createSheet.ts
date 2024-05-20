@@ -1,4 +1,4 @@
-import { Argument, Publisher, Sheet } from "../types/types";
+import { Argument, Publisher, Sheet } from "../../../types/types";
 
 /**
  * Creates a sheets owned by the publisher given in the argument object with

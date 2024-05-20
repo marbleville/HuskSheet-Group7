@@ -1,4 +1,4 @@
-import { Argument, Publisher, Sheet } from "../types/types";
+import { Argument, Publisher, Sheet } from "../../../types/types";
 
 /**
  * Deletes the sheet from the Sheets table with the given publisher and sheet

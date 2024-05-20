@@ -1,4 +1,4 @@
-import { Argument, Publisher, Payload } from "../types/types";
+import { Argument, Publisher, Payload } from "../../../types/types";
 
 /**
  * Returns the updates for the given subscription occuring after the given

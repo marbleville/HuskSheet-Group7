@@ -1,4 +1,4 @@
-import { Argument, Publisher } from "../types/types";
+import { Argument, Publisher } from "../../../types/types";
 
 /**
  * Returns an array of arguments containing all sheets asscoiated with the
