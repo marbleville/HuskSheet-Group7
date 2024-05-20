@@ -9,9 +9,11 @@ services:
             - "3306:3306"
         volumes:
             - "/var/lib/mysql"
+            - "./db-scripts/setup.sql:/docker-entrypoint-initdb.d/1.sql"
+            - "./db-scripts/dev.sql:/docker-entrypoint-initdb.d/2.sql"
+            - "./db-scripts/testing.sql:/docker-entrypoint-initdb.d/3.sql"
         environment:
-            - MYSQL_DATABASE=husksheets
-            - MYSQL_ROOT_PASSWORD=root
+            - MYSQL_ROOT_PASSWORD=password
 
     express:
         image: node
