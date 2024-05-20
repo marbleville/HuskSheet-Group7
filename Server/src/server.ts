@@ -1,16 +1,18 @@
 const express = require("express");
 import { Request, Response, Application } from "express";
 import { authenticate, assembleResultObject } from "./utils";
-import { register } from "./functions/register";
-import { getSheets } from "./functions/getSheets";
-import { getPublishers } from "./functions/getPublishers";
-import { createSheet } from "./functions/createSheet";
-import { deleteSheet } from "./functions/deleteSheet";
-import { getUpdatesForPublished } from "./functions/getUpdatesForPublished";
-import { getUpdatesForSubscription } from "./functions/getUpdatesForSubscription";
-import { updatePublished } from "./functions/updatePublished";
-import { updateSubscription } from "./functions/updateSubscription";
 import { Argument, Result } from "../../types/types";
+import {
+	register,
+	getSheets,
+	getPublishers,
+	createSheet,
+	deleteSheet,
+	getUpdatesForPublished,
+	getUpdatesForSubscription,
+	updatePublished,
+	updateSubscription,
+} from "./serverFunctions";
 const app: Application = express();
 const PORT: Number = 3000;
 
