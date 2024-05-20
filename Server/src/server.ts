@@ -12,7 +12,7 @@ import {
 	getUpdatesForSubscription,
 	updatePublished,
 	updateSubscription,
-} from "./serverFunctions";
+} from "./serverFunctionsExporter";
 const app: Application = express();
 const PORT: Number = 3000;
 
