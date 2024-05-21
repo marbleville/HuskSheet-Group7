@@ -46,7 +46,7 @@ app.post("/api/v1/register", (req: Request, res: Response) => {
 	}
 });
 
-app.get("/api/v1/getPublishers", (req: Request, res: Response) => {
+app.get("/api/v1/getPublishers", async (req: Request, res: Response) => {
 	let auth: string | undefined = req.headers.authorization;
 	let authenticated: boolean = authenticate(auth);
 
@@ -58,7 +58,7 @@ app.get("/api/v1/getPublishers", (req: Request, res: Response) => {
 	let result: Result;
 
 	try {
-		publishers = getPublishers();
+		publishers = await getPublishers();
 		result = assembleResultObject(true, "getPublishers", publishers);
 		res.send(JSON.stringify(result));
 	} catch (error) {
