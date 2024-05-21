@@ -13,6 +13,7 @@ import {
 	updatePublished,
 	updateSubscription,
 } from "./serverFunctionsExporter";
+
 const app: Application = express();
 const PORT: Number = 3000;
 
