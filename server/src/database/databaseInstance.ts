@@ -13,7 +13,7 @@ import { Connection, QueryError, RowDataPacket, FieldPacket } from "mysql2";
  */
 class DatabaseInstance {
 	private static instance: DatabaseInstance;
-	private static connection: Connection;
+	public static connection: Connection;
 
 	/**
 	 * Creates a connection to the mysql database and sets the connection field
@@ -58,21 +58,34 @@ class DatabaseInstance {
 	 *
 	 * @author marbleville
 	 */
-	public query<T extends RowDataPacket>(query: string): T[] {
+	public static async query<T extends RowDataPacket>(
+		query: string
+	): Promise<T[]> {
 		if (DatabaseInstance.instance == null) {
 			DatabaseInstance.instance = new DatabaseInstance();
 		}
 
-		DatabaseInstance.connection.query(
-			query,
-			(err: QueryError, rows: T, fields: FieldPacket[]) => {
-				if (err) throw err;
+		// await DatabaseInstance.connection.query(
+		// 	query,
+		// 	(err: QueryError, rows: T, fields: FieldPacket[]) => {
+		// 		if (err) throw err;
 
-				return rows;
-			}
-		);
+		// 		return rows;
+		// 	}
+		// );
 
-		throw new Error("Query failed");
+		return new Promise((resolve, reject) => {
+			DatabaseInstance.connection.query(
+				query,
+				(err: QueryError, rows: T[], fields: FieldPacket[]) => {
+					if (err) reject(err);
+
+					resolve(rows);
+				}
+			);
+		});
+
+		//throw new Error("Query failed - Minecraft");
 	}
 }
 

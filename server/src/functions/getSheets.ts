@@ -12,9 +12,7 @@ import { GetSheetRow, GetUserRow } from "../database/db";
  *
  * @author marbleville, hunterbrodie
  */
-function getSheets(argument: Argument): Array<Argument> {
-	let connection: DatabaseInstance = DatabaseInstance.getInstance();
-
+async function getSheets(argument: Argument): Promise<Array<Argument>> {
 	let sheets: Array<Argument> = [];
 	//let publisher: Publisher = argument.publisher;
 
@@ -28,9 +26,18 @@ function getSheets(argument: Argument): Array<Argument> {
 	 * to the sheets array
 	 */
 
-	connection.query<GetSheetRow>(
+	let result = await DatabaseInstance.query<GetSheetRow>(
 		"SELECT sheets.sheetid, sheets.sheetname FROM sheets INNER JOIN publishers ON sheets.owner=publishers.userid WHERE publishers.username='hunter';"
 	);
+
+	result.forEach((sheet) => {
+		sheets.push({
+			publisher: "hunter",
+			id: "",
+			sheet: sheet.sheetname,
+			payload: "",
+		});
+	});
 
 	return sheets;
 }

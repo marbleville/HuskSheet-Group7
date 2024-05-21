@@ -17,11 +17,11 @@ import {
 const app: Application = express();
 const PORT: Number = 3000;
 
-app.get("/", (req: Request, res: Response) => {
+app.get("/", async (req: Request, res: Response) => {
 	let sheets: Array<Argument>;
 	let result: Result;
 
-	sheets = getSheets(req.body);
+	sheets = await getSheets(req.body);
 	result = assembleResultObject(true, "getSheets", sheets);
 	res.send(JSON.stringify(result));
 });
@@ -104,9 +104,9 @@ app.post("/api/v1/getSheets", (req: Request, res: Response) => {
 	let result: Result;
 
 	try {
-		sheets = getSheets(req.body);
-		result = assembleResultObject(true, "getSheets", sheets);
-		res.send(JSON.stringify(result));
+		//sheets = getSheets(req.body);
+		//result = assembleResultObject(true, "getSheets", sheets);
+		//res.send(JSON.stringify(result));
 	} catch (error) {
 		const err: Error = error as Error;
 		result = assembleResultObject(false, "getSheets" + err.message, []);
