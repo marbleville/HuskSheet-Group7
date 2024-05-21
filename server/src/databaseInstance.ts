@@ -58,14 +58,14 @@ class DatabaseInstance {
 	 *
 	 * @author marbleville
 	 */
-	public query(query: string): RowDataPacket[] {
+	public query<T extends RowDataPacket>(query: string): T {
 		if (DatabaseInstance.instance == null) {
 			DatabaseInstance.instance = new DatabaseInstance();
 		}
 
 		DatabaseInstance.connection.query(
 			query,
-			(err: QueryError, rows: RowDataPacket, fields: FieldPacket[]) => {
+			(err: QueryError, rows: T, fields: FieldPacket[]) => {
 				if (err) throw err;
 
 				return rows;
@@ -75,3 +75,5 @@ class DatabaseInstance {
 		throw new Error("Query failed");
 	}
 }
+
+export default DatabaseInstance;
