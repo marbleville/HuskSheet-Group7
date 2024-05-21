@@ -16,6 +16,10 @@ import {
 const app: Application = express();
 const PORT: Number = 3000;
 
+app.post("/", (req: Request, res: Response) => {
+	res.send("Hello World!");
+});
+
 app.post("/api/v1/register", (req: Request, res: Response) => {
 	let auth: string | undefined = req.headers.authorization;
 	let authenticated: boolean = authenticate(auth);
