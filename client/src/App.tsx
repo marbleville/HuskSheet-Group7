@@ -9,7 +9,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/:publisher/:sheet" element={<Sheet />} />
+        <Route path="/:sheet" element={<Sheet />} />
       </Routes>
     </Router>
   );

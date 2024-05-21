@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 
 /**
- * @author Rishav Sarma
+ * @author Rishav Sarma, Kris Amerman
  * @description This is the Login page for our project. It accepts user-inputted username/password
  */
 function Login() {
@@ -10,6 +12,8 @@ function Login() {
 
   const[usernameError, setUsernameError] = useState("");
   const[passwordError, setPasswordError] = useState("");
+
+  const navigate = useNavigate();
 
   const onButtonClick = () => {
     setUsernameError("");
@@ -24,6 +28,12 @@ function Login() {
         setPasswordError("Password Invalid!");
         return; 
     }
+
+    sessionStorage.setItem('username', username)
+    sessionStorage.setItem('password', password)
+
+    // Navigate to the dashboard
+    navigate('/dashboard');
 
   }
 
