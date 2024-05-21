@@ -58,7 +58,7 @@ class DatabaseInstance {
 	 *
 	 * @author marbleville
 	 */
-	public query<T extends RowDataPacket>(query: string): T {
+	public query<T extends RowDataPacket>(query: string): T[] {
 		if (DatabaseInstance.instance == null) {
 			DatabaseInstance.instance = new DatabaseInstance();
 		}
