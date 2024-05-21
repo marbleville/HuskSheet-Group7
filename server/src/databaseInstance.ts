@@ -1,7 +1,6 @@
 import mysql from "mysql2";
 import dbConfig from "./config/db.config";
 import { Connection, QueryError, RowDataPacket, FieldPacket } from "mysql2";
-import { connect } from "http2";
 
 /**
  * This class is a singleton class that creates a connection to the mysql
@@ -59,14 +58,14 @@ class DatabaseInstance {
 	 *
 	 * @author marbleville
 	 */
-	public query(query: string): RowDataPacket[] {
+	public query<T extends RowDataPacket>(query: string): T {
 		if (DatabaseInstance.instance == null) {
 			DatabaseInstance.instance = new DatabaseInstance();
 		}
 
 		DatabaseInstance.connection.query(
 			query,
-			(err: QueryError, rows: RowDataPacket, fields: FieldPacket[]) => {
+			(err: QueryError, rows: T, fields: FieldPacket[]) => {
 				if (err) throw err;
 
 				return rows;
@@ -76,3 +75,5 @@ class DatabaseInstance {
 		throw new Error("Query failed");
 	}
 }
+
+export default DatabaseInstance;
