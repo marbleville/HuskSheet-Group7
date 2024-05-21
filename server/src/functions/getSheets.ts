@@ -1,4 +1,6 @@
 import { Argument, Publisher } from "../../../types/types";
+import DatabaseInstance from "../database/databaseInstance";
+import { GetSheetRow, GetUserRow } from "../database/db";
 
 /**
  * Returns an array of arguments containing all sheets asscoiated with the
@@ -11,6 +13,8 @@ import { Argument, Publisher } from "../../../types/types";
  * @author marbleville, hunterbrodie
  */
 function getSheets(argument: Argument): Array<Argument> {
+	let connection: DatabaseInstance = DatabaseInstance.getInstance();
+
 	let sheets: Array<Argument> = [];
 	let publisher: Publisher = argument.publisher;
 
@@ -23,6 +27,10 @@ function getSheets(argument: Argument): Array<Argument> {
 	 * Push each sheets and the publisher to an argument object and push that
 	 * to the sheets array
 	 */
+
+	connection.query<GetSheetRow>(
+		"SELECT sheets.sheetid, sheets.sheetname FROM sheets INNER JOIN publishers ON sheets.owner=publishers.userid WHERE publishers.username='hunter';"
+	);
 
 	return sheets;
 }
