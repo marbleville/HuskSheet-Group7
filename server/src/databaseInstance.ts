@@ -1,7 +1,6 @@
 import mysql from "mysql2";
 import dbConfig from "./config/db.config";
 import { Connection, QueryError, RowDataPacket, FieldPacket } from "mysql2";
-import { connect } from "http2";
 
 /**
  * This class is a singleton class that creates a connection to the mysql
