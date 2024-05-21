@@ -65,15 +65,6 @@ class DatabaseInstance {
 			DatabaseInstance.instance = new DatabaseInstance();
 		}
 
-		// await DatabaseInstance.connection.query(
-		// 	query,
-		// 	(err: QueryError, rows: T, fields: FieldPacket[]) => {
-		// 		if (err) throw err;
-
-		// 		return rows;
-		// 	}
-		// );
-
 		return new Promise((resolve, reject) => {
 			DatabaseInstance.connection.query(
 				query,
