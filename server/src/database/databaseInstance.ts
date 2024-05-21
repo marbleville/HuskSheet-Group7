@@ -1,5 +1,5 @@
 import mysql from "mysql2";
-import dbConfig from "./config/db.config";
+import dbConfig from "./db.config";
 import { Connection, QueryError, RowDataPacket, FieldPacket } from "mysql2";
 
 /**
