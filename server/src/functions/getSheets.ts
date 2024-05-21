@@ -16,7 +16,7 @@ function getSheets(argument: Argument): Array<Argument> {
 	let connection: DatabaseInstance = DatabaseInstance.getInstance();
 
 	let sheets: Array<Argument> = [];
-	let publisher: Publisher = argument.publisher;
+	//let publisher: Publisher = argument.publisher;
 
 	/**
 	 * argument.publisher is the publisher to gatehr sheets from

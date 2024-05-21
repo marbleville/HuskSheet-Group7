@@ -17,8 +17,13 @@ import {
 const app: Application = express();
 const PORT: Number = 3000;
 
-app.post("/", (req: Request, res: Response) => {
-	res.send("Hello World!");
+app.get("/", (req: Request, res: Response) => {
+	let sheets: Array<Argument>;
+	let result: Result;
+
+	sheets = getSheets(req.body);
+	result = assembleResultObject(true, "getSheets", sheets);
+	res.send(JSON.stringify(result));
 });
 
 app.post("/api/v1/register", (req: Request, res: Response) => {
