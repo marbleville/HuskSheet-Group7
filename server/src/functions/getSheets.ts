@@ -17,7 +17,7 @@ async function getSheets(argument: Argument): Promise<Array<Argument>> {
 	let publisher: Publisher = argument.publisher;
 
 	// Get the database instance
-	let database = DatabaseInstance.getInstance();
+	const database = DatabaseInstance.getInstance();
 
 	// Assemble query string
 	let queryString =
