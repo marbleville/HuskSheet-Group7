@@ -1,5 +1,5 @@
 const express = require("express");
-import cors from 'cors';
+import cors from "cors";
 import { Request, Response, Application } from "express";
 import { authenticate, assembleResultObject } from "./utils";
 import { Argument, Result } from "../../types/types";
@@ -239,10 +239,10 @@ app.post("/api/v1/updateSubscription", (req: Request, res: Response) => {
 	}
 });
 
-const allowedOrigins = ['http://localhost:3000'];
+const allowedOrigins = ["http://localhost:3000"];
 
 const options: cors.CorsOptions = {
-  origin: allowedOrigins
+	origin: allowedOrigins,
 };
 
 app.use(cors(options));

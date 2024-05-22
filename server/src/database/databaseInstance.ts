@@ -13,7 +13,7 @@ import { Connection, QueryError, RowDataPacket, FieldPacket } from "mysql2";
  */
 class DatabaseInstance {
 	private static instance: DatabaseInstance;
-	public static connection: Connection;
+	public connection: Connection;
 
 	/**
 	 * Creates a connection to the mysql database and sets the connection field
@@ -29,7 +29,7 @@ class DatabaseInstance {
 		});
 		connection.connect();
 
-		DatabaseInstance.connection = connection;
+		this.connection = connection;
 	}
 
 	/**
@@ -58,15 +58,11 @@ class DatabaseInstance {
 	 *
 	 * @author marbleville
 	 */
-	public static async query<T extends RowDataPacket>(
-		query: string
-	): Promise<T[]> {
-		if (DatabaseInstance.instance == null) {
-			DatabaseInstance.instance = new DatabaseInstance();
-		}
+	public async query<T extends RowDataPacket>(query: string): Promise<T[]> {
+		let database = DatabaseInstance.getInstance();
 
 		return new Promise((resolve, reject) => {
-			DatabaseInstance.connection.query(
+			database.connection.query(
 				query,
 				(err: QueryError, rows: T[], fields: FieldPacket[]) => {
 					if (err) reject(err);

@@ -14,7 +14,7 @@ import { GetSheetRow, GetUserRow } from "../database/db";
  */
 async function getSheets(argument: Argument): Promise<Array<Argument>> {
 	let sheets: Array<Argument> = [];
-	//let publisher: Publisher = argument.publisher;
+	let publisher: Publisher = argument.publisher;
 
 	/**
 	 * argument.publisher is the publisher to gatehr sheets from
@@ -25,8 +25,9 @@ async function getSheets(argument: Argument): Promise<Array<Argument>> {
 	 * Push each sheets and the publisher to an argument object and push that
 	 * to the sheets array
 	 */
+	let database = DatabaseInstance.getInstance();
 
-	let result = await DatabaseInstance.query<GetSheetRow>(
+	let result = await database.query<GetSheetRow>(
 		"SELECT sheets.sheetid, sheets.sheetname FROM sheets INNER JOIN publishers ON sheets.owner=publishers.userid WHERE publishers.username='hunter';"
 	);
 
