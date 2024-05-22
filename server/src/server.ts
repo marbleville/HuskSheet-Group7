@@ -18,15 +18,6 @@ import {
 const app: Application = express();
 const PORT: Number = 3000;
 
-app.get("/", async (req: Request, res: Response) => {
-	let sheets: Array<Argument>;
-	let result: Result;
-
-	sheets = await getSheets(req.body);
-	result = assembleResultObject(true, "getSheets", sheets);
-	res.send(JSON.stringify(result));
-});
-
 app.post("/api/v1/register", (req: Request, res: Response) => {
 	let auth: string | undefined = req.headers.authorization;
 	let authenticated: boolean = authenticate(auth);
