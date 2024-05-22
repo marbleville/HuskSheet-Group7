@@ -18,7 +18,7 @@ import {
 const app: Application = express();
 const PORT: Number = 3000;
 
-app.post("/api/v1/register", (req: Request, res: Response) => {
+app.post("/api/v1/register", async (req: Request, res: Response) => {
 	let auth: string | undefined = req.headers.authorization;
 	let authenticated: boolean = authenticate(auth);
 
@@ -63,7 +63,7 @@ app.get("/api/v1/getPublishers", async (req: Request, res: Response) => {
 	}
 });
 
-app.post("/api/v1/createSheet", (req: Request, res: Response) => {
+app.post("/api/v1/createSheet", async (req: Request, res: Response) => {
 	let auth: string | undefined = req.headers.authorization;
 	let authenticated: boolean = authenticate(auth);
 
@@ -84,7 +84,7 @@ app.post("/api/v1/createSheet", (req: Request, res: Response) => {
 	}
 });
 
-app.post("/api/v1/getSheets", (req: Request, res: Response) => {
+app.post("/api/v1/getSheets", async (req: Request, res: Response) => {
 	let auth: string | undefined = req.headers.authorization;
 	let authenticated: boolean = authenticate(auth);
 
@@ -96,9 +96,9 @@ app.post("/api/v1/getSheets", (req: Request, res: Response) => {
 	let result: Result;
 
 	try {
-		//sheets = getSheets(req.body);
-		//result = assembleResultObject(true, "getSheets", sheets);
-		//res.send(JSON.stringify(result));
+		sheets = await getSheets(req.body);
+		result = assembleResultObject(true, "getSheets", sheets);
+		res.send(JSON.stringify(result));
 	} catch (error) {
 		const err: Error = error as Error;
 		result = assembleResultObject(false, "getSheets" + err.message, []);
@@ -106,7 +106,7 @@ app.post("/api/v1/getSheets", (req: Request, res: Response) => {
 	}
 });
 
-app.post("/api/v1/deleteSheet", (req: Request, res: Response) => {
+app.post("/api/v1/deleteSheet", async (req: Request, res: Response) => {
 	let auth: string | undefined = req.headers.authorization;
 	let authenticated: boolean = authenticate(auth);
 
@@ -126,63 +126,69 @@ app.post("/api/v1/deleteSheet", (req: Request, res: Response) => {
 	}
 });
 
-app.post("/api/v1/getUpdatesForSubscription", (req: Request, res: Response) => {
-	let auth: string | undefined = req.headers.authorization;
-	let authenticated: boolean = authenticate(auth);
+app.post(
+	"/api/v1/getUpdatesForSubscription",
+	async (req: Request, res: Response) => {
+		let auth: string | undefined = req.headers.authorization;
+		let authenticated: boolean = authenticate(auth);
 
-	if (!authenticated) {
-		res.sendStatus(401);
+		if (!authenticated) {
+			res.sendStatus(401);
+		}
+
+		let updates: Argument;
+		let result: Result;
+
+		try {
+			updates = getUpdatesForSubscription(req.body);
+			result = assembleResultObject(true, "getUpdatesForSubscription", [
+				updates,
+			]);
+			res.send(JSON.stringify(result));
+		} catch (error) {
+			const err: Error = error as Error;
+			result = assembleResultObject(
+				false,
+				"getUpdatesForSubscription" + err.message,
+				[]
+			);
+			res.send(JSON.stringify(result));
+		}
 	}
+);
 
-	let updates: Argument;
-	let result: Result;
+app.post(
+	"/api/v1/getUpdatesForPublished",
+	async (req: Request, res: Response) => {
+		let auth: string | undefined = req.headers.authorization;
+		let authenticated: boolean = authenticate(auth);
 
-	try {
-		updates = getUpdatesForSubscription(req.body);
-		result = assembleResultObject(true, "getUpdatesForSubscription", [
-			updates,
-		]);
-		res.send(JSON.stringify(result));
-	} catch (error) {
-		const err: Error = error as Error;
-		result = assembleResultObject(
-			false,
-			"getUpdatesForSubscription" + err.message,
-			[]
-		);
-		res.send(JSON.stringify(result));
+		if (!authenticated) {
+			res.sendStatus(401);
+		}
+
+		let updates: Argument;
+		let result: Result;
+
+		try {
+			updates = getUpdatesForPublished(req.body);
+			result = assembleResultObject(true, "getUpdatesForPublished", [
+				updates,
+			]);
+			res.send(JSON.stringify(result));
+		} catch (error) {
+			const err: Error = error as Error;
+			result = assembleResultObject(
+				false,
+				"getUpdatesForPublished" + err.message,
+				[]
+			);
+			res.send(JSON.stringify(result));
+		}
 	}
-});
+);
 
-app.post("/api/v1/getUpdatesForPublished", (req: Request, res: Response) => {
-	let auth: string | undefined = req.headers.authorization;
-	let authenticated: boolean = authenticate(auth);
-
-	if (!authenticated) {
-		res.sendStatus(401);
-	}
-
-	let updates: Argument;
-	let result: Result;
-
-	try {
-		updates = getUpdatesForPublished(req.body);
-		result = assembleResultObject(true, "getUpdatesForPublished", [
-			updates,
-		]);
-		res.send(JSON.stringify(result));
-	} catch (error) {
-		const err: Error = error as Error;
-		result = assembleResultObject(
-			false,
-			"getUpdatesForPublished" + err.message,
-			[]
-		);
-		res.send(JSON.stringify(result));
-	}
-});
-
-app.post("/api/v1/updatePublished", (req: Request, res: Response) => {
+app.post("/api/v1/updatePublished", async (req: Request, res: Response) => {
 	let auth: string | undefined = req.headers.authorization;
 	let authenticated: boolean = authenticate(auth);
 
@@ -206,7 +212,7 @@ app.post("/api/v1/updatePublished", (req: Request, res: Response) => {
 	}
 });
 
-app.post("/api/v1/updateSubscription", (req: Request, res: Response) => {
+app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 	let auth: string | undefined = req.headers.authorization;
 	let authenticated: boolean = authenticate(auth);
 
@@ -230,6 +236,7 @@ app.post("/api/v1/updateSubscription", (req: Request, res: Response) => {
 	}
 });
 
+// CORS configuration
 const allowedOrigins = ["http://localhost:3000"];
 
 const options: cors.CorsOptions = {
