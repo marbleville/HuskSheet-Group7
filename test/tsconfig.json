@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+		"target": "es6",
+		"module": "commonjs",
+		"esModuleInterop": true,
+		"allowJs": true,
+		"outDir": "build",
+		"strict": true,
+		"sourceMap": true
+	},
+	"include": ["./**/*.ts"],
+	"exclude": ["node_modules", "../server/**/*.ts", "../types/**/*.ts"]
+}
