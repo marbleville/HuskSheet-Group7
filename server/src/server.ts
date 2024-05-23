@@ -150,7 +150,7 @@ app.post(
 		let result: Result;
 
 		try {
-			updates = getUpdatesForSubscription(req.body);
+			updates = await getUpdatesForSubscription(req.body);
 			result = assembleResultObject(true, "getUpdatesForSubscription", [
 				updates,
 			]);
