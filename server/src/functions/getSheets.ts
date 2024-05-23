@@ -21,8 +21,8 @@ async function getSheets(argument: Argument): Promise<Array<Argument>> {
 
 	// Assemble query string
 	let queryString =
-		`SELECT sheets.sheetid, sheets.sheetname FROM sheets` +
-		`INNER JOIN publishers ON sheets.owner=publishers.userid` +
+		`SELECT sheets.sheetid, sheets.sheetname FROM sheets ` +
+		`INNER JOIN publishers ON sheets.owner=publishers.userid ` +
 		`WHERE publishers.username='${publisher}';`;
 
 	let result = await database.query<GetSheetRow>(queryString);

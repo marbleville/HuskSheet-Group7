@@ -26,6 +26,7 @@ const options: cors.CorsOptions = {
 };
 
 app.use(cors(options));
+app.use(express.json());
 
 app.post("/api/v1/register", async (req: Request, res: Response) => {
 	let auth: string | undefined = req.headers.authorization;
