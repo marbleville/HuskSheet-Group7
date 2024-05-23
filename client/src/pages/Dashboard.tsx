@@ -10,7 +10,9 @@ function Dashboard() {
 
   const fetchData = async () => {
     try {
-      const response = await fetchWithAuth('http://localhost:3000/api/v1/getSheets');
+      const response = await fetchWithAuth('http://localhost:3000/api/v1/getSheets', {
+        method: 'POST',
+      });
       if (response.ok) {
         const data = await response.json();
         console.log(data);

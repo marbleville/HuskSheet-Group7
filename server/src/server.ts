@@ -18,6 +18,15 @@ import {
 const app: Application = express();
 const PORT: Number = 3000;
 
+// CORS configuration
+const allowedOrigins = ["http://localhost:5173"];
+
+const options: cors.CorsOptions = {
+	origin: allowedOrigins,
+};
+
+app.use(cors(options));
+
 app.post("/api/v1/register", async (req: Request, res: Response) => {
 	let auth: string | undefined = req.headers.authorization;
 	let authenticated: boolean = authenticate(auth);
@@ -32,7 +41,7 @@ app.post("/api/v1/register", async (req: Request, res: Response) => {
 		res.send(JSON.stringify(result));
 	} catch (error) {
 		const err: Error = error as Error;
-		result = assembleResultObject(false, "register" + err.message, []);
+		result = assembleResultObject(false, "register " + err.message, []);
 		res.send(JSON.stringify(result));
 	}
 });
@@ -56,7 +65,7 @@ app.get("/api/v1/getPublishers", async (req: Request, res: Response) => {
 		const err: Error = error as Error;
 		result = assembleResultObject(
 			false,
-			"getPublishers:" + err.message,
+			"getPublishers: " + err.message,
 			[]
 		);
 		res.send(JSON.stringify(result));
@@ -79,7 +88,7 @@ app.post("/api/v1/createSheet", async (req: Request, res: Response) => {
 		res.send(JSON.stringify(result));
 	} catch (error) {
 		const err: Error = error as Error;
-		result = assembleResultObject(false, "createSheet" + err.message, []);
+		result = assembleResultObject(false, "createSheet " + err.message, []);
 		res.send(JSON.stringify(result));
 	}
 });
@@ -101,7 +110,7 @@ app.post("/api/v1/getSheets", async (req: Request, res: Response) => {
 		res.send(JSON.stringify(result));
 	} catch (error) {
 		const err: Error = error as Error;
-		result = assembleResultObject(false, "getSheets" + err.message, []);
+		result = assembleResultObject(false, "getSheets " + err.message, []);
 		res.send(JSON.stringify(result));
 	}
 });
@@ -122,7 +131,7 @@ app.post("/api/v1/deleteSheet", async (req: Request, res: Response) => {
 		res.send(JSON.stringify(result));
 	} catch (error) {
 		const err: Error = error as Error;
-		result = assembleResultObject(false, "deleteSheet" + err.message, []);
+		result = assembleResultObject(false, "deleteSheet " + err.message, []);
 	}
 });
 
@@ -149,7 +158,7 @@ app.post(
 			const err: Error = error as Error;
 			result = assembleResultObject(
 				false,
-				"getUpdatesForSubscription" + err.message,
+				"getUpdatesForSubscription " + err.message,
 				[]
 			);
 			res.send(JSON.stringify(result));
@@ -180,7 +189,7 @@ app.post(
 			const err: Error = error as Error;
 			result = assembleResultObject(
 				false,
-				"getUpdatesForPublished" + err.message,
+				"getUpdatesForPublished " + err.message,
 				[]
 			);
 			res.send(JSON.stringify(result));
@@ -206,7 +215,7 @@ app.post("/api/v1/updatePublished", async (req: Request, res: Response) => {
 		const err: Error = error as Error;
 		result = assembleResultObject(
 			false,
-			"updatePublished" + err.message,
+			"updatePublished " + err.message,
 			[]
 		);
 	}
@@ -230,20 +239,11 @@ app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 		const err: Error = error as Error;
 		result = assembleResultObject(
 			false,
-			"updateSubscription" + err.message,
+			"updateSubscription " + err.message,
 			[]
 		);
 	}
 });
-
-// CORS configuration
-const allowedOrigins = ["http://localhost:3000"];
-
-const options: cors.CorsOptions = {
-	origin: allowedOrigins,
-};
-
-app.use(cors(options));
 
 // Start the server
 app.listen(PORT, () => {
