@@ -25,7 +25,6 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}): Pro
         ...options.headers,
         'Content-Type': 'application/json'
       };
-      options.body = JSON.stringify(options.body);
     }
   
     return fetch(url, options);
