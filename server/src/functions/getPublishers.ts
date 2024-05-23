@@ -2,7 +2,7 @@ import { Argument } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
 import { GetSheetRow, GetUserRow } from "../database/db";
 
-/*
+/**
  * @returns An array of arguments containing all registered publishers
  *
  * @author marbleville, rishavsarma5

@@ -71,8 +71,6 @@ class DatabaseInstance {
 				}
 			);
 		});
-
-		//throw new Error("Query failed - Minecraft");
 	}
 }
 

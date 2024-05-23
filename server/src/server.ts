@@ -181,7 +181,7 @@ app.post(
 		let result: Result;
 
 		try {
-			updates = getUpdatesForPublished(req.body);
+			updates = await getUpdatesForPublished(req.body);
 			result = assembleResultObject(true, "getUpdatesForPublished", [
 				updates,
 			]);
