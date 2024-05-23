@@ -29,12 +29,14 @@ async function getSheets(argument: Argument): Promise<Array<Argument>> {
 
 	// Assemble the array of arguments
 	result.forEach((sheet) => {
-		sheets.push({
+		const tempArgument: Argument = {
 			publisher: publisher,
-			id: "",
 			sheet: sheet.sheetname,
+			id: "",
 			payload: "",
-		});
+		};
+
+		sheets.push(tempArgument);
 	});
 
 	return sheets;
