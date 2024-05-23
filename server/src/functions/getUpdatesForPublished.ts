@@ -1,4 +1,6 @@
 import { Argument, Sheet, Publisher, ID, Payload } from "../../../types/types";
+import DatabaseInstance from "../database/databaseInstance";
+import { GetSheetRow } from "../database/db";
 
 /**
  * Returns the updates for the given published sheet occuring after the given
@@ -10,7 +12,7 @@ import { Argument, Sheet, Publisher, ID, Payload } from "../../../types/types";
  * @returns The argument object containing the last update id and payload
  *          containing all changes
  */
-function getUpdatesForPublished(argument: Argument): Argument {
+async function getUpdatesForPublished(argument: Argument): Promise<Argument> {
 	let updates: Argument = { publisher: "", sheet: "", id: "", payload: "" };
 	let publisher: Publisher = argument.publisher;
 	let sheetName: Sheet = argument.sheet;
@@ -25,6 +27,34 @@ function getUpdatesForPublished(argument: Argument): Argument {
 	 * Push each update to a string and then push that to the updates payload
 	 * and set the id to the last id of the updates
 	 */
+
+	const database = DatabaseInstance.getInstance();
+
+	/**
+	 * const queryString =
+		`SELECT updates.* FROM updates INNER JOIN sheets ` +
+		`ON updates.sheet=sheets.sheetid ` +
+		`WHERE sheets.sheetname=${id};`;
+	 */
+
+	const queryString =
+		`SELECT updates.* FROM updates INNER JOIN sheets ` +
+		`ON updates.sheet=sheets.sheetid ` +
+		`WHERE sheets.sheetname=${sheetName};`;
+
+	let result = await database.query<GetSheetRow>(queryString);
+
+	let payload: Payload = "";
+
+	result.forEach((sheet) => {
+		payload += sheet.latest;
+	});
+
+	updates.publisher = publisher;
+	updates.sheet = sheetName;
+	// We do not have support for uopdate IDs yet
+	updates.id = id;
+	updates.payload = payload;
 
 	return updates;
 }
