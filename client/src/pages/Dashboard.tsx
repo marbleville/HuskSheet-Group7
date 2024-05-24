@@ -35,7 +35,7 @@ function Dashboard() {
       if (response.ok) {
         const data = await response.json();
         const value = data.value;
-        setSheets(value); 
+        setSheets(value);
       } else {
         console.error('Failed to fetch');
       }
@@ -54,6 +54,33 @@ function Dashboard() {
     alert("Clicked on sheet: " + sheet.sheet);
   };
 
+  const handleCreateSheet = async () => {
+    const username = sessionStorage.getItem('username');
+    if (!username) {
+      console.error('Username not found in sessionStorage');
+      return;
+    }
+
+    const argument = {
+      publisher: username,
+      sheet: "Untitled Sheet" // "Untitled Sheet" for now
+    };
+
+    try {
+      const response = await fetchWithAuth('http://localhost:3000/api/v1/createSheet', {
+        method: 'POST',
+        body: JSON.stringify(argument)
+      });
+      if (response.ok) {
+        fetchData(); // Refresh sheets after creating a new one
+      } else {
+        console.error('Failed to create sheet');
+      }
+    } catch (error) {
+      console.error('Error creating sheet', error);
+    }
+  };
+
   return (
     <div>
       <h1>Dashboard</h1>
@@ -64,6 +91,7 @@ function Dashboard() {
           </button>
         ))}
       </div>
+      <button onClick={handleCreateSheet}>Create new sheet</button>
     </div>
   );
 }
