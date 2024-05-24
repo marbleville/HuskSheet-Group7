@@ -6,7 +6,7 @@ import { Argument, Publisher, Sheet } from "../../../types/types";
  * @param argument The argument object containing the publisher and sheet to
  * 				   delete
  *
- * @author marbleville
+ * @author marbleville, hunterbrodie
  */
 function deleteSheet(argument: Argument): void {
 	let publisher: Publisher = argument.publisher;
@@ -19,6 +19,15 @@ function deleteSheet(argument: Argument): void {
 	 * Delete the sheet from the Sheets table where the owner is the
 	 * argument.publisher and the name is the argument.sheet
 	 */
+	const database = DatabaseInstance.getInstance();
+
+	// Assemble query string
+	let queryString =
+		`DELETE sheets FROM sheets` +
+    `INNER JOIN publishers ON sheets.owner=publishers.userid` +
+		`WHERE publishers.username='${publisher}' AND sheets.name='${sheetName}';`;
+
+	await database.query<GetSheetRow>(queryString);
 }
 
 export { deleteSheet };

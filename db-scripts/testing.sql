@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS updates (
   owner INT NOT NULL,
   changes TEXT NOT NULL,
   PRIMARY KEY(updateid),
-  FOREIGN KEY (sheet) REFERENCES sheets(sheetid),
+  FOREIGN KEY (sheet) REFERENCES sheets(sheetid) ON DELETE CASCADE,
   FOREIGN KEY (owner) REFERENCES publishers(userid)
 );
 
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS subscribers (
   sheet INT NOT NULL,
   PRIMARY KEY(subid),
   FOREIGN KEY(sub) REFERENCES publishers(userid),
-  FOREIGN KEY(sheet) REFERENCES sheets(sheetid)
+  FOREIGN KEY(sheet) REFERENCES sheets(sheetid) ON DELETE CASCADE
 );
 
 /**
