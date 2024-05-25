@@ -27,7 +27,6 @@ async function authenticate(authHeader: string | undefined): Promise<boolean> {
 	 *
 	 * If either fails, return false, otherwise return true
 	 */
-	console.log("step1");
 	const base64 = authHeader.split(" ")[1];
 	// Decodes to binary
 	const decodedAuthHeader = Buffer.from(base64, "base64").toString("utf-8");
@@ -40,11 +39,9 @@ async function authenticate(authHeader: string | undefined): Promise<boolean> {
 	let result = null;
 	try {
 		result = await database.query(queryString);
-		console.log(result.length);
 	} catch (error) {
 		console.error("An error happened  when authenticating the user", error);
 	}
-	console.log("step2");
 	return result?.length != 0 ? true : false;
 }
 
