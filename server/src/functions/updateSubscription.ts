@@ -10,10 +10,10 @@ import { updatePublished } from "./updatePublished";
  *
  * @author marbleville
  */
-function updateSubscription(argument: Argument): void {
+async function updateSubscription(argument: Argument): Promise<void> {
 	// Call the updatePublished function with the argument object becasue the
 	// logic is the same and checks can be made on the client side more easily
-	updatePublished(argument);
+	await updatePublished(argument);
 }
 
 export { updateSubscription };

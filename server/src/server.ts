@@ -1,7 +1,11 @@
 const express = require("express");
 import cors from "cors";
 import { Request, Response, Application } from "express";
-import { authenticate, assembleResultObject } from "./utils";
+import {
+	authenticate,
+	assembleResultObject,
+	runEndpointFuntion,
+} from "./utils";
 import { Argument, Result } from "../../types/types";
 import {
 	register,
@@ -14,6 +18,7 @@ import {
 	updatePublished,
 	updateSubscription,
 } from "./serverFunctionsExporter";
+import { run } from "node:test";
 
 const app: Application = express();
 const PORT: Number = 3000;
@@ -53,157 +58,37 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 });
 
 app.get("/api/v1/getPublishers", async (req: Request, res: Response) => {
-	if (!(await authenticate(req.headers.authorization))) {
-		res.sendStatus(401);
-	}
-
-	let publishers: Array<Argument>;
-	let result: Result;
-
-	try {
-		publishers = await getPublishers();
-		result = assembleResultObject(true, "getPublishers", publishers);
-		res.send(JSON.stringify(result));
-	} catch (error) {
-		const err: Error = error as Error;
-		result = assembleResultObject(
-			false,
-			"getPublishers: " + err.message,
-			[]
-		);
-		res.send(JSON.stringify(result));
-	}
+	runEndpointFuntion(req, res, getPublishers);
 });
 
 app.post("/api/v1/createSheet", async (req: Request, res: Response) => {
-	if (!(await authenticate(req.headers.authorization))) {
-		res.sendStatus(401);
-	}
-
-	let result: Result;
-
-	try {
-		createSheet(req.body);
-		result = assembleResultObject(true, "createSheet", []);
-		res.send(JSON.stringify(result));
-	} catch (error) {
-		const err: Error = error as Error;
-		result = assembleResultObject(false, "createSheet " + err.message, []);
-		res.send(JSON.stringify(result));
-	}
+	runEndpointFuntion(req, res, createSheet);
 });
 
 app.post("/api/v1/getSheets", async (req: Request, res: Response) => {
-	if (!(await authenticate(req.headers.authorization))) {
-		res.sendStatus(401);
-	}
-
-	let sheets: Array<Argument>;
-	let result: Result;
-
-	try {
-		sheets = await getSheets(req.body);
-		result = assembleResultObject(true, "getSheets", sheets);
-		res.send(JSON.stringify(result));
-	} catch (error) {
-		const err: Error = error as Error;
-		result = assembleResultObject(false, "getSheets " + err.message, []);
-		res.send(JSON.stringify(result));
-	}
+	runEndpointFuntion(req, res, getSheets);
 });
 
 app.post("/api/v1/deleteSheet", async (req: Request, res: Response) => {
-	if (!(await authenticate(req.headers.authorization))) {
-		res.sendStatus(401);
-	}
-
-	let result: Result;
-
-	try {
-		deleteSheet(req.body);
-		result = assembleResultObject(true, "deleteSheet", []);
-		res.send(JSON.stringify(result));
-	} catch (error) {
-		const err: Error = error as Error;
-		result = assembleResultObject(false, "deleteSheet " + err.message, []);
-	}
+	runEndpointFuntion(req, res, deleteSheet);
 });
 
 app.post(
 	"/api/v1/getUpdatesForSubscription",
 	async (req: Request, res: Response) => {
-		if (!(await authenticate(req.headers.authorization))) {
-			res.sendStatus(401);
-		}
-
-		let updates: Argument;
-		let result: Result;
-
-		try {
-			updates = await getUpdatesForSubscription(req.body);
-			result = assembleResultObject(true, "getUpdatesForSubscription", [
-				updates,
-			]);
-			res.send(JSON.stringify(result));
-		} catch (error) {
-			const err: Error = error as Error;
-			result = assembleResultObject(
-				false,
-				"getUpdatesForSubscription " + err.message,
-				[]
-			);
-			res.send(JSON.stringify(result));
-		}
+		runEndpointFuntion(req, res, getUpdatesForSubscription);
 	}
 );
 
 app.post(
 	"/api/v1/getUpdatesForPublished",
 	async (req: Request, res: Response) => {
-		if (!(await authenticate(req.headers.authorization))) {
-			res.sendStatus(401);
-		}
-
-		let updates: Argument;
-		let result: Result;
-
-		try {
-			updates = await getUpdatesForPublished(req.body);
-			result = assembleResultObject(true, "getUpdatesForPublished", [
-				updates,
-			]);
-			res.send(JSON.stringify(result));
-		} catch (error) {
-			const err: Error = error as Error;
-			result = assembleResultObject(
-				false,
-				"getUpdatesForPublished " + err.message,
-				[]
-			);
-			res.send(JSON.stringify(result));
-		}
+		runEndpointFuntion(req, res, getUpdatesForPublished);
 	}
 );
 
 app.post("/api/v1/updatePublished", async (req: Request, res: Response) => {
-	if (!(await authenticate(req.headers.authorization))) {
-		res.sendStatus(401);
-	}
-
-	let result: Result;
-
-	try {
-		updatePublished(req.body);
-		result = assembleResultObject(true, "updatePublished", []);
-		res.send(JSON.stringify(result));
-	} catch (error) {
-		const err: Error = error as Error;
-		result = assembleResultObject(
-			false,
-			"updatePublished " + err.message,
-			[]
-		);
-	}
+	runEndpointFuntion(req, res, updatePublished);
 });
 
 app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {

@@ -7,7 +7,7 @@ import { GetSheetRow, GetUserRow } from "../database/db";
  *
  * @author marbleville, rishavsarma5
  */
-async function getPublishers(): Promise<Array<Argument>> {
+async function getPublishers(argument: Argument): Promise<Array<Argument>> {
 	let publishers: Array<Argument> = [];
 
 	/**
