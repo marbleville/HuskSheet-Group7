@@ -1,4 +1,3 @@
-import { resolve } from "path";
 import { Argument, Result } from "../../types/types";
 import DatabaseInstance from "./database/databaseInstance";
 
@@ -12,40 +11,40 @@ import DatabaseInstance from "./database/databaseInstance";
  * @author marbleville, eduardo-ruiz-garay
  */
 async function authenticate(authHeader: string | undefined): Promise<boolean> {
-  if (!authHeader) {
-    return false;
-  }
+	if (authHeader === undefined) {
+		return false;
+	}
 
-  /**
-   * authHeader is the authorization header from the request with the form of
-   * username:password encoded in base64
-   *
-   * Split the authHeader by the colon and decode to get the username
-   * and password
-   *
-   * Search the Users table for the username and check the password
-   *
-   * If either fails, return false, otherwise return true
-   */
-  console.log("step1");
-  const base64 = authHeader.split(" ")[1];
-  // Decodes to binary
-  const decodedAuthHeader = Buffer.from(base64, "base64").toString("utf-8");
-  const [username, password] = decodedAuthHeader
-    .split(":")
-    .map((str) => str.trimEnd());
-  const database = DatabaseInstance.getInstance();
+	/**
+	 * authHeader is the authorization header from the request with the form of
+	 * username:password encoded in base64
+	 *
+	 * Split the authHeader by the colon and decode to get the username
+	 * and password
+	 *
+	 * Search the Users table for the username and check the password
+	 *
+	 * If either fails, return false, otherwise return true
+	 */
+	console.log("step1");
+	const base64 = authHeader.split(" ")[1];
+	// Decodes to binary
+	const decodedAuthHeader = Buffer.from(base64, "base64").toString("utf-8");
+	const [username, password] = decodedAuthHeader
+		.split(":")
+		.map((str) => str.trimEnd());
+	const database = DatabaseInstance.getInstance();
 
-  let queryString = `SELECT * FROM publishers WHERE username = '${username}' AND pass = '${password}';`;
-  let result = null;
-  try {
-    result = await database.query(queryString);
-    console.log(result.length);
-  } catch (error) {
-    console.error("An error happened  when authenticating the user", error);
-  }
-  console.log("step2");
-  return result?.length != 0 ? true : false;
+	let queryString = `SELECT * FROM publishers WHERE username = '${username}' AND pass = '${password}';`;
+	let result = null;
+	try {
+		result = await database.query(queryString);
+		console.log(result.length);
+	} catch (error) {
+		console.error("An error happened  when authenticating the user", error);
+	}
+	console.log("step2");
+	return result?.length != 0 ? true : false;
 }
 
 /**
@@ -61,15 +60,15 @@ async function authenticate(authHeader: string | undefined): Promise<boolean> {
  * @author marbleville
  */
 function assembleResultObject(
-  success: boolean,
-  message: string,
-  value: Array<Argument>
+	success: boolean,
+	message: string,
+	value: Array<Argument>
 ): Result {
-  return {
-    success: success,
-    message: message,
-    value: value,
-  };
+	return {
+		success: success,
+		message: message,
+		value: value,
+	};
 }
 
 export { authenticate, assembleResultObject };

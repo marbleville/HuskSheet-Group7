@@ -1,6 +1,3 @@
-import { Connection } from "mysql2/typings/mysql/lib/Connection";
-import { ID, Publisher, Argument } from "../../../types/types";
-import mysql from "mysql2";
 import DatabaseInstance from "../database/databaseInstance";
 
 /**
