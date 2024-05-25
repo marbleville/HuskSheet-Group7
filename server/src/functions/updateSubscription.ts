@@ -1,4 +1,5 @@
 import { Argument, Publisher, Sheet, Payload } from "../../../types/types";
+import { updatePublished } from "./updatePublished";
 
 /**
  * Updates the Updates table with the given publisher, sheet, and payload for
@@ -15,10 +16,14 @@ function updateSubscription(argument: Argument): void {
 	let payload: Payload = argument.payload;
 
 	/**
-	 * Check if the publisher is not the same as the client
+	 * Check if the publisher is not the same as the client (client side check)
 	 *
 	 * Add a new row to the Updates table with the publisher, sheet, and payload
 	 */
+
+	// Call the updatePublished function with the argument object becasue the
+	//logic is the same and checks can be made on the client side more easily
+	updatePublished(argument);
 }
 
 export { updateSubscription };
