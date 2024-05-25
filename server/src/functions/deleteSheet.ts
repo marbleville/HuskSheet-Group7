@@ -1,4 +1,6 @@
 import { Argument, Publisher, Sheet } from "../../../types/types";
+import DatabaseInstance from "../database/databaseInstance";
+import { GetSheetRow } from "../database/db";
 
 /**
  * Deletes the sheet from the Sheets table with the given publisher and sheet
@@ -8,7 +10,7 @@ import { Argument, Publisher, Sheet } from "../../../types/types";
  *
  * @author marbleville, hunterbrodie
  */
-function deleteSheet(argument: Argument): void {
+async function deleteSheet(argument: Argument): Promise<void> {
 	let publisher: Publisher = argument.publisher;
 	let sheetName: Sheet = argument.sheet;
 
@@ -24,7 +26,7 @@ function deleteSheet(argument: Argument): void {
 	// Assemble query string
 	let queryString =
 		`DELETE sheets FROM sheets` +
-    `INNER JOIN publishers ON sheets.owner=publishers.userid` +
+		`INNER JOIN publishers ON sheets.owner=publishers.userid` +
 		`WHERE publishers.username='${publisher}' AND sheets.name='${sheetName}';`;
 
 	await database.query<GetSheetRow>(queryString);
