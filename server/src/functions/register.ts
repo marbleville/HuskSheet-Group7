@@ -15,33 +15,23 @@ async function register(argument: Argument): Promise<void> {
    * Added the publisher name as new user. Have to confirm it works with
    * @todo how to setup connection and set password
    */
-  let userid: String = argument.id;
+  console.log("JSON: " + argument.payload);
   let username: String = argument.publisher;
-  // let pass: String = argument.sheet;
+  let pass: String = argument.sheet;
 
   // Get database instance
   const database = DatabaseInstance.getInstance();
-
+  console.log("banana");
   try {
-    // await database.connect();
-    // Assemble query string
     let queryString =
-      `CREATE TABLE IF NOT EXISTS publishers (` +
-      `${userid} INT NOT NULL AUTO_INCREMENT,` +
-      `${username} TEXT NOT NULL,` +
-      //   `${pass} TEXT NOT NULL,` +
-      `PRIMARY KEY (${userid})` +
-      `)`;
+      `INSERT INTO publishers (username, pass)` +
+      `VALUES(${username}, ${pass})`;
 
     await database.query(queryString);
 
-    console.log(
-      `Successfully connected and created a table for user ${username}!`
-    );
+    console.log(`Success ${username} was added!`);
   } catch (error) {
-    console.log(error);
-  } finally {
-    // await database.close();
+    console.error("An error occurred when inserting new user into db", error);
   }
 }
 export { register };
