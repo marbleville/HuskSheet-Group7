@@ -8,7 +8,7 @@ import DatabaseInstance from "../database/databaseInstance";
  *
  * @param argument The argument object containing the publisher and the sheet name
  *
- * @author eduardo-ruiz-garay
+ * @author eduardo-ruiz-garay, rishavsarma5
  */
 async function register(argument: Argument): Promise<void> {
   /**

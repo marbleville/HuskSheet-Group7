@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { fetchWithAuth } from "../utils";
 
 /**
- * @author Rishav Sarma, Kris Amerman, eduardo-ruiz-garay
+ * @author rishavsarma5, krisamerman, eduardo-ruiz-garay
  * @description This is the Login page for our project. It accepts user-inputted username/password
  */
 function Login() {
