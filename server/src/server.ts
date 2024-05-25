@@ -32,17 +32,18 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 	let auth: string | undefined = req.headers.authorization;
 	let authenticated: boolean = await authenticate(auth);
 
+	let result: Result;
+
 	// So if the user is not authenticated, we should pass the auth header to
 	// register to add the new user with username:password
-	// This would stop duplicage usrname and password combos
+	// This would stop duplicate usrname and password combos
 	if (authenticated) {
-		res.sendStatus(401);
+		result = assembleResultObject(false, "User already exists", []);
+		res.send(JSON.stringify(result));
 	}
 
-	console.log("Inside register");
-	let result: Result;
 	try {
-		register(req.body);
+		register(auth);
 		result = assembleResultObject(true, "register", []);
 		res.send(JSON.stringify(result));
 	} catch (error) {
