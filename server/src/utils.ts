@@ -1,5 +1,32 @@
 import { Argument, Result } from "../../types/types";
 import DatabaseInstance from "./database/databaseInstance";
+import { Request, Response } from "express";
+
+async function runEndpointFuntion(
+	req: Request,
+	res: Response,
+	func: (
+		argument: Argument
+	) => Promise<Argument[]> | Promise<Argument> | Promise<void>
+) {
+	if (!(await authenticate(req.headers.authorization))) {
+		res.sendStatus(401);
+	}
+
+	let result: Result;
+
+	try {
+		let argument = JSON.parse(req.body) as Argument;
+		let value: Argument[] | Argument | void = await func(argument);
+
+		result = assembleResultObject(true, "createSheet", value);
+		res.send(JSON.stringify(result));
+	} catch (error) {
+		const err: Error = error as Error;
+		result = assembleResultObject(false, "createSheet " + err.message, []);
+		res.send(JSON.stringify(result));
+	}
+}
 
 /**
  * Authenticates the user based on the authorization header from the request
@@ -26,7 +53,6 @@ async function authenticate(authHeader: string | undefined): Promise<boolean> {
 	 *
 	 * If either fails, return false, otherwise return true
 	 */
-	console.log("step1");
 	const base64 = authHeader.split(" ")[1];
 	// Decodes to binary
 	const decodedAuthHeader = Buffer.from(base64, "base64").toString("utf-8");
@@ -35,15 +61,15 @@ async function authenticate(authHeader: string | undefined): Promise<boolean> {
 		.map((str) => str.trimEnd());
 	const database = DatabaseInstance.getInstance();
 
-	let queryString = `SELECT * FROM publishers WHERE username = '${username}' AND pass = '${password}';`;
+	let queryString = `SELECT * FROM publishers WHERE username = '${username}' 
+	AND pass = '${password}';`;
+
 	let result = null;
 	try {
 		result = await database.query(queryString);
-		console.log(result.length);
 	} catch (error) {
 		console.error("An error happened  when authenticating the user", error);
 	}
-	console.log("step2");
 	return result?.length != 0 ? true : false;
 }
 
@@ -62,13 +88,17 @@ async function authenticate(authHeader: string | undefined): Promise<boolean> {
 function assembleResultObject(
 	success: boolean,
 	message: string,
-	value: Array<Argument>
+	value: Argument[] | Argument | void
 ): Result {
+	if (!(value instanceof Array) && value !== undefined) {
+		value = [value];
+	}
+
 	return {
 		success: success,
 		message: message,
-		value: value,
+		value: value == undefined ? [] : value,
 	};
 }
 
-export { authenticate, assembleResultObject };
+export { authenticate, assembleResultObject, runEndpointFuntion };

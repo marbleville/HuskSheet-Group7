@@ -24,12 +24,11 @@ async function updatePublished(argument: Argument): Promise<void> {
 
 	const database = DatabaseInstance.getInstance();
 
-	const queryString =
-		`INSERT INTO updates (updateid, updatetime, sheet, owner, changes) ` +
-		`VALUES (${id}, ${Date.now()}, ` +
-		`(SELECT sheetid FROM sheets WHERE sheetname = ${sheetName}), ` +
-		`(SELECT userid FROM publishers WHERE username = '${publisher}'), ` +
-		`${payload});`;
+	const queryString = `INSERT INTO updates 
+		(updateid, updatetime, sheet, owner, changes) 
+		VALUES (${id}, ${Date.now()}, (SELECT sheetid FROM sheets 
+		WHERE sheetname = ${sheetName}), (SELECT userid FROM publishers 
+		WHERE username = '${publisher}'), ${payload});`;
 
 	try {
 		await database.query(queryString);

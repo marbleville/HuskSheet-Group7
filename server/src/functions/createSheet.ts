@@ -26,24 +26,27 @@ async function createSheet(argument: Argument): Promise<void> {
 
 	try {
 		// Query to fetch all sheet names that share the same base name
-		let querySameBaseName = `
-            SELECT sheetname FROM sheets 
+		let querySameBaseName = `SELECT sheetname FROM sheets 
             WHERE sheetname LIKE '${sheetName}%'
-            AND owner = (SELECT userid FROM publishers WHERE username = '${publisher}');
-        `;
+            AND owner = 
+			(SELECT userid FROM publishers WHERE username = '${publisher}');`;
 
-		let existingSheetsResult = await database.query<GetSheetRow>(querySameBaseName);
+		let existingSheetsResult = await database.query<GetSheetRow>(
+			querySameBaseName
+		);
 
-		// Filter strictly by "sheetname" or "sheetname (n)" where `n` is a number
-        existingSheetsResult = existingSheetsResult.filter(row => {
-            let regex = new RegExp(`^${sheetName}( \\(\\d+\\))?$`);
-            return regex.test(row.sheetname);
-        });
+		// Filter strictly by "sheetname" or "sheetname (n)" where `n` is a
+		// number
+		existingSheetsResult = existingSheetsResult.filter((row) => {
+			let regex = new RegExp(`^${sheetName}( \\(\\d+\\))?$`);
+			return regex.test(row.sheetname);
+		});
 
 		// Extract and parse the appended numbers
-		let appendedNumbers = existingSheetsResult.map(row => {
+		let appendedNumbers = existingSheetsResult.map((row) => {
 			let appendedPart = row.sheetname.replace(sheetName, "").trim();
 			appendedPart = appendedPart.replace(/^\(/, "").replace(/\)$/, "");
+
 			return parseInt(appendedPart) || 0;
 		});
 
@@ -55,15 +58,13 @@ async function createSheet(argument: Argument): Promise<void> {
 			newSheetName = `${sheetName} (${maxAppended + 1})`;
 		}
 
-		let queryInsertNewSheet = `
-			INSERT INTO sheets (sheetname, owner, latest) 
-			VALUES ('${newSheetName}', 
-			(SELECT userid FROM publishers WHERE username = '${publisher}'), NULL);
-		`;
+		let queryInsertNewSheet = `INSERT INTO sheets (sheetname, owner, latest) 
+								   VALUES ('${newSheetName}', 
+								   (SELECT userid FROM publishers WHERE username 
+								   = '${publisher}'), NULL);`;
 
 		await database.query(queryInsertNewSheet);
 	} catch (error) {
-		console.error("Error creating sheet:", error);
 		throw error;
 	}
 }
