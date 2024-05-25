@@ -19,9 +19,12 @@ async function register(authHeader: string | undefined): Promise<void> {
 		throw new Error("No auth header provided");
 	}
 
-	let usernameAndPasswordArray = authHeader.split(":");
-	let username: String = usernameAndPasswordArray[0];
-	let pass: String = usernameAndPasswordArray[1];
+	const base64 = authHeader.split(" ")[1];
+	// Decodes to binary
+	const decodedAuthHeader = Buffer.from(base64, "base64").toString("utf-8");
+	const [username, pass] = decodedAuthHeader
+		.split(":")
+		.map((str) => str.trimEnd());
 
 	// Get database instance
 	const database = DatabaseInstance.getInstance();
