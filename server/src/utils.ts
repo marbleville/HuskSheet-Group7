@@ -1,5 +1,6 @@
 import { Argument, Result } from "../../types/types";
 import DatabaseInstance from "./database/databaseInstance";
+import { Request, Response } from "express";
 
 /**
  * Authenticates the user based on the authorization header from the request

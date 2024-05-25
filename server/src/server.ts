@@ -30,14 +30,13 @@ app.use(express.json());
 
 app.get("/api/v1/register", async (req: Request, res: Response) => {
 	let auth: string | undefined = req.headers.authorization;
-	let authenticated: boolean = await authenticate(auth);
 
 	let result: Result;
 
 	// So if the user is not authenticated, we should pass the auth header to
 	// register to add the new user with username:password
 	// This would stop duplicate usrname and password combos
-	if (authenticated) {
+	if (await authenticate(auth)) {
 		result = assembleResultObject(false, "User already exists", []);
 		res.send(JSON.stringify(result));
 	}
@@ -54,10 +53,7 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 });
 
 app.get("/api/v1/getPublishers", async (req: Request, res: Response) => {
-	let auth: string | undefined = req.headers.authorization;
-	let authenticated: boolean = await authenticate(auth);
-
-	if (!authenticated) {
+	if (!(await authenticate(req.headers.authorization))) {
 		res.sendStatus(401);
 	}
 
@@ -80,10 +76,7 @@ app.get("/api/v1/getPublishers", async (req: Request, res: Response) => {
 });
 
 app.post("/api/v1/createSheet", async (req: Request, res: Response) => {
-	let auth: string | undefined = req.headers.authorization;
-	let authenticated: boolean = await authenticate(auth);
-
-	if (!authenticated) {
+	if (!(await authenticate(req.headers.authorization))) {
 		res.sendStatus(401);
 	}
 
@@ -101,10 +94,7 @@ app.post("/api/v1/createSheet", async (req: Request, res: Response) => {
 });
 
 app.post("/api/v1/getSheets", async (req: Request, res: Response) => {
-	let auth: string | undefined = req.headers.authorization;
-	let authenticated: boolean = await authenticate(auth);
-
-	if (!authenticated) {
+	if (!(await authenticate(req.headers.authorization))) {
 		res.sendStatus(401);
 	}
 
@@ -123,10 +113,7 @@ app.post("/api/v1/getSheets", async (req: Request, res: Response) => {
 });
 
 app.post("/api/v1/deleteSheet", async (req: Request, res: Response) => {
-	let auth: string | undefined = req.headers.authorization;
-	let authenticated: boolean = await authenticate(auth);
-
-	if (!authenticated) {
+	if (!(await authenticate(req.headers.authorization))) {
 		res.sendStatus(401);
 	}
 
@@ -145,10 +132,7 @@ app.post("/api/v1/deleteSheet", async (req: Request, res: Response) => {
 app.post(
 	"/api/v1/getUpdatesForSubscription",
 	async (req: Request, res: Response) => {
-		let auth: string | undefined = req.headers.authorization;
-		let authenticated: boolean = await authenticate(auth);
-
-		if (!authenticated) {
+		if (!(await authenticate(req.headers.authorization))) {
 			res.sendStatus(401);
 		}
 
@@ -176,10 +160,7 @@ app.post(
 app.post(
 	"/api/v1/getUpdatesForPublished",
 	async (req: Request, res: Response) => {
-		let auth: string | undefined = req.headers.authorization;
-		let authenticated: boolean = await authenticate(auth);
-
-		if (!authenticated) {
+		if (!(await authenticate(req.headers.authorization))) {
 			res.sendStatus(401);
 		}
 
@@ -205,10 +186,7 @@ app.post(
 );
 
 app.post("/api/v1/updatePublished", async (req: Request, res: Response) => {
-	let auth: string | undefined = req.headers.authorization;
-	let authenticated: boolean = await authenticate(auth);
-
-	if (!authenticated) {
+	if (!(await authenticate(req.headers.authorization))) {
 		res.sendStatus(401);
 	}
 
@@ -229,10 +207,7 @@ app.post("/api/v1/updatePublished", async (req: Request, res: Response) => {
 });
 
 app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
-	let auth: string | undefined = req.headers.authorization;
-	let authenticated: boolean = await authenticate(auth);
-
-	if (!authenticated) {
+	if (!(await authenticate(req.headers.authorization))) {
 		res.sendStatus(401);
 	}
 
