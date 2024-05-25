@@ -11,18 +11,8 @@ import { updatePublished } from "./updatePublished";
  * @author marbleville
  */
 function updateSubscription(argument: Argument): void {
-	let publisher: Publisher = argument.publisher;
-	let sheetName: Sheet = argument.sheet;
-	let payload: Payload = argument.payload;
-
-	/**
-	 * Check if the publisher is not the same as the client (client side check)
-	 *
-	 * Add a new row to the Updates table with the publisher, sheet, and payload
-	 */
-
 	// Call the updatePublished function with the argument object becasue the
-	//logic is the same and checks can be made on the client side more easily
+	// logic is the same and checks can be made on the client side more easily
 	updatePublished(argument);
 }
 

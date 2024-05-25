@@ -32,10 +32,9 @@ async function getUpdatesForPublished(argument: Argument): Promise<Argument> {
 
 	// So the query need to grab updates after the given ID and then offer a way
 	// to retrieve the last id for the updates
-	const queryString =
-		`SELECT updates.* FROM updates INNER JOIN sheets ` +
-		`ON updates.sheet=sheets.sheetid ` +
-		`WHERE sheets.sheetname=${sheetName};`;
+	const queryString = `SELECT updates.* FROM updates INNER JOIN sheets 
+		ON updates.sheet=sheets.sheetid 
+		WHERE sheets.sheetname=${sheetName};`;
 
 	let result = await database.query<GetSheetRow>(queryString);
 

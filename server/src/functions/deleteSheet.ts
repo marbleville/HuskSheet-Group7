@@ -24,10 +24,10 @@ async function deleteSheet(argument: Argument): Promise<void> {
 	const database = DatabaseInstance.getInstance();
 
 	// Assemble query string
-	let queryString =
-		`DELETE sheets FROM sheets` +
-		`INNER JOIN publishers ON sheets.owner=publishers.userid` +
-		`WHERE publishers.username='${publisher}' AND sheets.name='${sheetName}';`;
+	let queryString = `DELETE sheets FROM sheets
+		INNER JOIN publishers ON sheets.owner=publishers.userid
+		WHERE publishers.username='${publisher}' 
+		AND sheets.name='${sheetName}';`;
 
 	await database.query<GetSheetRow>(queryString);
 }

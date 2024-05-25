@@ -29,9 +29,8 @@ async function register(authHeader: string | undefined): Promise<void> {
 	// Get database instance
 	const database = DatabaseInstance.getInstance();
 	try {
-		let queryString =
-			`INSERT INTO publishers (username, pass)` +
-			`VALUES(${username}, ${pass})`;
+		let queryString = `INSERT INTO publishers (username, pass) 
+			VALUES(${username}, ${pass})`;
 
 		await database.query(queryString);
 	} catch (error) {
