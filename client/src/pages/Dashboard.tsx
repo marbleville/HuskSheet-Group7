@@ -23,25 +23,13 @@ function Dashboard() {
       return;
     }
 
-    const argument = {
-      publisher: username
-    };
+    const argument = { publisher: username };
 
-    try {
-      const response = await fetchWithAuth('http://localhost:3000/api/v1/getSheets', {
-        method: 'POST',
-        body: JSON.stringify(argument)
-      });
-      if (response.ok) {
-        const data = await response.json();
-        const value = data.value;
-        setSheets(value);
-      } else {
-        console.error('Failed to fetch');
-      }
-    } catch (error) {
-      console.error('Error fetching', error);
-    }
+    fetchWithAuth(
+      'http://localhost:3000/api/v1/getSheets',
+      { method: 'POST', body: JSON.stringify(argument) },
+      (data) => setSheets(data.value)
+    );
   };
 
   useEffect(() => {
@@ -66,19 +54,11 @@ function Dashboard() {
       sheet: "Untitled Sheet" // "Untitled Sheet" for now
     };
 
-    try {
-      const response = await fetchWithAuth('http://localhost:3000/api/v1/createSheet', {
-        method: 'POST',
-        body: JSON.stringify(argument)
-      });
-      if (response.ok) {
-        fetchData(); // Refresh sheets after creating a new one
-      } else {
-        console.error('Failed to create sheet');
-      }
-    } catch (error) {
-      console.error('Error creating sheet', error);
-    }
+    fetchWithAuth(
+      'http://localhost:3000/api/v1/createSheet',
+      { method: 'POST', body: JSON.stringify(argument) },
+      () => fetchData() // Refresh sheets after creating a new one
+    );
   };
 
   return (

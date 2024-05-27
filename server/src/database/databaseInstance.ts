@@ -72,7 +72,7 @@ class DatabaseInstance {
 			);
 		});
 
-		this.connection.end();
+		// eliminated connection.end() – TODO: find alternative spot to end connection
 
 		return queryPromise as Promise<T[]>;
 	}
