@@ -5,12 +5,14 @@
 
 export const fetchWithAuth = async (
   url: string,
-  options: RequestInit = {}
-): Promise<Response> => {
+  options: RequestInit = {},
+  onSuccess?: (data: any) => void,
+  onFailure?: (error: any) => void
+): Promise<void> => {
   // Retrieve username and password from sessionStorage
   const username = sessionStorage.getItem("username");
   const password = sessionStorage.getItem("password");
-  console.log("inside fetch with auth");
+  
   // If username and password exist, set Authorization header
   if (username && password) {
     options.headers = {
@@ -18,8 +20,6 @@ export const fetchWithAuth = async (
       Authorization: `Basic ${btoa(`${username}:${password}`)}`,
     };
   }
-
-  console.log("past setting auth header");
 
   // If method is POST and body is provided, stringify body and set appropriate headers
   if (options.method === "POST" && options.body) {
@@ -29,5 +29,31 @@ export const fetchWithAuth = async (
     };
   }
 
-  return await fetch(url, options);
+  try {
+    const response = await fetch(url, options);
+    if (response.ok) {
+      const data = await response.json();
+      console.log(data)
+      if (data.success) {
+        if (onSuccess) {
+          onSuccess(data);
+        }
+      } else {
+        console.error(`Internal server error: ${data.message}`);
+        if (onFailure) {
+          onFailure(data);
+        }
+      }
+    } else {
+      console.error('Error fetching: `response.ok` came back False.');
+      if (onFailure) {
+        onFailure(null);
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching', error);
+    if (onFailure) {
+      onFailure(error);
+    }
+  }
 };

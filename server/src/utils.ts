@@ -16,14 +16,15 @@ async function runEndpointFuntion(
 	let result: Result;
 
 	try {
-		let argument = JSON.parse(req.body) as Argument;
+		let argument = req.body as Argument;
 		let value: Argument[] | Argument | void = await func(argument);
 
-		result = assembleResultObject(true, "createSheet", value);
+		result = assembleResultObject(true, `${func.name} `, value);
 		res.send(JSON.stringify(result));
 	} catch (error) {
 		const err: Error = error as Error;
-		result = assembleResultObject(false, "createSheet " + err.message, []);
+		console.error(error)
+		result = assembleResultObject(false, `${func.name} ` + err.message, []);
 		res.send(JSON.stringify(result));
 	}
 }
