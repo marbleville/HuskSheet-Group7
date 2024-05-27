@@ -9,11 +9,13 @@ async function runEndpointFuntion(
 		argument: Argument
 	) => Promise<Argument[]> | Promise<Argument> | Promise<void>
 ) {
-	if (!(await authenticate(req.headers.authorization))) {
-		res.sendStatus(401);
-	}
-
 	let result: Result;
+
+	if (!(await authenticate(req.headers.authorization))) {
+		result = assembleResultObject(false, `${func.name} Unauthorized`, []);
+		res.send(JSON.stringify(result));
+		return;
+	}
 
 	try {
 		let argument = req.body as Argument;
