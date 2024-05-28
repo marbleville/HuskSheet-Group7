@@ -13,24 +13,13 @@ import { Connection, QueryError, RowDataPacket, FieldPacket } from "mysql2";
  */
 class DatabaseInstance {
 	private static instance: DatabaseInstance;
-	public connection: Connection;
 
 	/**
 	 * Creates a connection to the mysql database and sets the connection field
 	 *
 	 * @author marbleville
 	 */
-	public constructor() {
-		const connection = mysql.createConnection({
-			host: dbConfig.HOST,
-			user: dbConfig.USER,
-			password: dbConfig.PASSWORD,
-			database: dbConfig.DB,
-		});
-		connection.connect();
-
-		this.connection = connection;
-	}
+	public constructor() {}
 
 	/**
 	 * Returns the instance of the ConnectionInstance class
@@ -48,6 +37,18 @@ class DatabaseInstance {
 		return DatabaseInstance.instance;
 	}
 
+	private static getConnection(): Connection {
+		const connection = mysql.createConnection({
+			host: dbConfig.HOST,
+			user: dbConfig.USER,
+			password: dbConfig.PASSWORD,
+			database: dbConfig.DB,
+		});
+		connection.connect();
+
+		return connection;
+	}
+
 	/**
 	 * Performs a query on the mysql database
 	 *
@@ -59,10 +60,10 @@ class DatabaseInstance {
 	 * @author marbleville
 	 */
 	public async query<T extends RowDataPacket>(query: string): Promise<T[]> {
-		let database = DatabaseInstance.getInstance();
+		let connection = DatabaseInstance.getConnection();
 
 		let queryPromise = new Promise((resolve, reject) => {
-			database.connection.query(
+			connection.query(
 				query,
 				(err: QueryError, rows: T[], fields: FieldPacket[]) => {
 					if (err) reject(err);
@@ -72,7 +73,7 @@ class DatabaseInstance {
 			);
 		});
 
-		// eliminated connection.end() – TODO: find alternative spot to end connection
+		connection.end();
 
 		return queryPromise as Promise<T[]>;
 	}
