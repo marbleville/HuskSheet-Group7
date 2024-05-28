@@ -1,0 +1,55 @@
+.loginPage {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* This will center the form vertically */
+    background-color: #a9d18e; /* Light green background color */
+  }
+  
+  .loginContainer {
+    max-width: 400px; /* Adjust the width of the form container */
+    width: 100%;
+    padding: 20px;
+    background-color: #fff; /* White background color for the form container */
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+  }
+  
+  .inputContainer {
+    margin-bottom: 20px;
+  }
+  
+  .inputContainer input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+  }
+  
+  .inputContainer input:focus {
+    border-color: #48bb78; /* Green border color when focused */
+  }
+  
+  .errorLabel {
+    color: #ff0000; /* Red color for error messages */
+  }
+  
+  .loginButton,
+  .registerButton {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #48bb78; /* Green button background color */
+    color: #fff; /* White text color */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .loginButton:hover,
+  .registerButton:hover {
+    background-color: #38a169; /* Darker green color on hover */
+  }
+  

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchWithAuth } from "../utils";
+import "../styles/Login.css";
 
 /**
  * @author rishavsarma5, krisamerman, eduardo-ruiz-garay
@@ -72,7 +73,7 @@ function Login() {
   };
 
   return (
-    <>
+    <div className="loginPage">
       <h1>Welcome to HuskSheets!</h1>
       <br />
       <h2>Please enter your username and password below.</h2>
@@ -105,7 +106,7 @@ function Login() {
         type="button"
         value="Register"
       />
-    </>
+    </div>
   );
 }
 

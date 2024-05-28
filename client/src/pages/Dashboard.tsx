@@ -16,6 +16,14 @@ interface SheetResponse {
 function Dashboard() {
   const [sheets, setSheets] = useState<SheetResponse[]>([]);
 
+  
+
+  const setUsername = () => {
+    return sessionStorage.getItem('username');
+  };
+
+  const publisherName: string | null = setUsername();
+
   const fetchData = async () => {
     const username = sessionStorage.getItem('username');
     if (!username) {
@@ -30,6 +38,7 @@ function Dashboard() {
       { method: 'POST', body: JSON.stringify(argument) },
       (data) => setSheets(data.value)
     );
+
   };
 
   useEffect(() => {
@@ -61,9 +70,11 @@ function Dashboard() {
     );
   };
 
+  
+
   return (
     <div>
-      <h1>Dashboard</h1>
+      <h1>Dashboard, Welcome {publisherName}</h1>
       <div>
         {sheets.map((sheet, index) => (
           <button key={index} onClick={() => handleSheetClick(sheet)}>
