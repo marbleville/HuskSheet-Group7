@@ -50,14 +50,14 @@ describe("getSheets", () => {
 		expect(result).toEqual([
 			{
 				publisher: `${argument.publisher}`,
-				sheet: "Sheet 1",
-				id: "",
+				sheet: `${mockResult1.sheetname}`,
+				id: `${mockResult1.sheetid}`,
 				payload: "",
 			},
 			{
 				publisher: `${argument.publisher}`,
-				sheet: "Sheet 2",
-				id: "",
+				sheet: `${mockResult2.sheetname}`,
+				id: `${mockResult2.sheetid}`,
 				payload: "",
 			},
 		]);
