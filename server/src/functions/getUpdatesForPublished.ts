@@ -46,7 +46,7 @@ async function getUpdatesForPublished(argument: Argument): Promise<Argument> {
 
 	updates.publisher = publisher;
 	updates.sheet = sheetName;
-	// We do not have support for uopdate IDs yet
+	// We do not have support for update IDs yet
 	updates.id = id;
 	updates.payload = payload;
 
