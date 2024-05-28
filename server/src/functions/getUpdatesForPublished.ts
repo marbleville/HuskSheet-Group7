@@ -1,6 +1,6 @@
 import { Argument, Sheet, Publisher, ID, Payload } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
-import { GetSheetRow } from "../database/db";
+import { GetUpdateRow } from "../database/db";
 
 /**
  * Returns the updates for the given published sheet occuring after the given
@@ -34,20 +34,21 @@ async function getUpdatesForPublished(argument: Argument): Promise<Argument> {
 	// to retrieve the last id for the updates
 	const queryString = `SELECT updates.* FROM updates INNER JOIN sheets 
 		ON updates.sheet=sheets.sheetid 
-		WHERE sheets.sheetname=${sheetName};`;
+		WHERE sheets.sheetname=${sheetName} AND updates.updateid>${parseInt(id)};`;
 
-	let result = await database.query<GetSheetRow>(queryString);
+	let result = await database.query<GetUpdateRow>(queryString);
 
 	let payload: Payload = "";
 
-	result.forEach((sheet) => {
-		payload += sheet.latest;
+	result.forEach((update) => {
+		payload += update.changes;
 	});
 
 	updates.publisher = publisher;
 	updates.sheet = sheetName;
 	// We do not have support for update IDs yet
-	updates.id = id;
+	updates.id =
+		result.length > 0 ? result[result.length - 1].updateid.toString() : id;
 	updates.payload = payload;
 
 	return updates;

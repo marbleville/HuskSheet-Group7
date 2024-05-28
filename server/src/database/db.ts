@@ -20,4 +20,14 @@ interface GetUserRow extends RowDataPacket {
 	username: string;
 }
 
-export { GetSheetRow, GetUserRow };
+/**
+ * Extends the RowDataPacket from the mysql2 library to have the correct typing for the getUpdates query.
+ *
+ * @author marbleville
+ */
+interface GetUpdateRow extends RowDataPacket {
+	updateid: number;
+	changes: string;
+}
+
+export { GetSheetRow, GetUserRow, GetUpdateRow };
