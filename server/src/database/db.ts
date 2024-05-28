@@ -28,7 +28,6 @@ interface GetUserRow extends RowDataPacket {
 interface GetUpdateRow extends RowDataPacket {
 	updateid: number;
 	changes: string;
-	updatetime: string;
 }
 
 export { GetSheetRow, GetUserRow, GetUpdateRow };

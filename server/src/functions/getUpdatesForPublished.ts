@@ -34,9 +34,7 @@ async function getUpdatesForPublished(argument: Argument): Promise<Argument> {
 	// to retrieve the last id for the updates
 	const queryString = `SELECT updates.* FROM updates INNER JOIN sheets 
 		ON updates.sheet=sheets.sheetid 
-		WHERE sheets.sheetname=${sheetName} AND updates.updateid>${parseInt(
-		argument.id
-	)};`;
+		WHERE sheets.sheetname=${sheetName} AND updates.updateid>${parseInt(id)};`;
 
 	let result = await database.query<GetUpdateRow>(queryString);
 
@@ -49,7 +47,8 @@ async function getUpdatesForPublished(argument: Argument): Promise<Argument> {
 	updates.publisher = publisher;
 	updates.sheet = sheetName;
 	// We do not have support for update IDs yet
-	updates.id = result[result.length - 1].updateid.toString();
+	updates.id =
+		result.length > 0 ? result[result.length - 1].updateid.toString() : id;
 	updates.payload = payload;
 
 	return updates;
