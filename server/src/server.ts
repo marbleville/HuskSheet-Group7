@@ -58,58 +58,41 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 });
 
 app.get("/api/v1/getPublishers", async (req: Request, res: Response) => {
-	runEndpointFuntion(req, res, getPublishers);
+	await runEndpointFuntion(req, res, getPublishers);
 });
 
 app.post("/api/v1/createSheet", async (req: Request, res: Response) => {
-	runEndpointFuntion(req, res, createSheet);
+	await runEndpointFuntion(req, res, createSheet);
 });
 
 app.post("/api/v1/getSheets", async (req: Request, res: Response) => {
-	runEndpointFuntion(req, res, getSheets);
+	await runEndpointFuntion(req, res, getSheets);
 });
 
 app.post("/api/v1/deleteSheet", async (req: Request, res: Response) => {
-	runEndpointFuntion(req, res, deleteSheet);
+	await runEndpointFuntion(req, res, deleteSheet);
 });
 
 app.post(
 	"/api/v1/getUpdatesForSubscription",
 	async (req: Request, res: Response) => {
-		runEndpointFuntion(req, res, getUpdatesForSubscription);
+		await runEndpointFuntion(req, res, getUpdatesForSubscription);
 	}
 );
 
 app.post(
 	"/api/v1/getUpdatesForPublished",
 	async (req: Request, res: Response) => {
-		runEndpointFuntion(req, res, getUpdatesForPublished);
+		await runEndpointFuntion(req, res, getUpdatesForPublished);
 	}
 );
 
 app.post("/api/v1/updatePublished", async (req: Request, res: Response) => {
-	runEndpointFuntion(req, res, updatePublished);
+	await runEndpointFuntion(req, res, updatePublished);
 });
 
 app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
-	if (!(await authenticate(req.headers.authorization))) {
-		res.sendStatus(401);
-	}
-
-	let result: Result;
-
-	try {
-		updateSubscription(req.body);
-		result = assembleResultObject(true, "updateSubscription", []);
-		res.send(JSON.stringify(result));
-	} catch (error) {
-		const err: Error = error as Error;
-		result = assembleResultObject(
-			false,
-			"updateSubscription " + err.message,
-			[]
-		);
-	}
+	await runEndpointFuntion(req, res, updateSubscription);
 });
 
 // Start the server

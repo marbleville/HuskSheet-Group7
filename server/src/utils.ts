@@ -2,13 +2,22 @@ import { Argument, Result } from "../../types/types";
 import DatabaseInstance from "./database/databaseInstance";
 import { Request, Response } from "express";
 
+/**
+ * Runs the given endpoint function with the given request and response objects
+ *
+ * @param req Request object from the client
+ * @param res Response object to send to the client
+ * @param func Function to run with the given request
+ *
+ * @author marbleville
+ */
 async function runEndpointFuntion(
 	req: Request,
 	res: Response,
 	func: (
 		argument: Argument
 	) => Promise<Argument[]> | Promise<Argument> | Promise<void>
-) {
+): Promise<void> {
 	let result: Result;
 
 	if (!(await authenticate(req.headers.authorization))) {
@@ -25,7 +34,7 @@ async function runEndpointFuntion(
 		res.send(JSON.stringify(result));
 	} catch (error) {
 		const err: Error = error as Error;
-		console.error(error)
+		console.error(error);
 		result = assembleResultObject(false, `${func.name} ` + err.message, []);
 		res.send(JSON.stringify(result));
 	}
