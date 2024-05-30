@@ -45,8 +45,8 @@ describe("getSheets", () => {
 			`SELECT sheets.sheetid, sheets.sheetname FROM sheets 
 		INNER JOIN publishers ON sheets.owner=publishers.userid 
 		WHERE publishers.username='${argument.publisher}';`
-		);
-	});
+    );
+  });
 
 	it("should return an empty array if the publisher has no sheets", async () => {
 		const mockQuery = mockDB(mockResultArr);
@@ -59,6 +59,6 @@ describe("getSheets", () => {
 			`SELECT sheets.sheetid, sheets.sheetname FROM sheets 
 		INNER JOIN publishers ON sheets.owner=publishers.userid 
 		WHERE publishers.username='${argument.publisher}';`
-		);
-	});
+    );
+  });
 });
