@@ -6,6 +6,7 @@ import {
 	mockDB,
 	getMockSheetQueryResults,
 } from "../../utils";
+import DatabaseQueries from "../../../types/queries";
 
 describe("getSheets", () => {
 	const argument: Argument = assembleTestArgumentObject(
@@ -42,11 +43,9 @@ describe("getSheets", () => {
 		});
 
 		expect(mockQuery).toHaveBeenCalledWith(
-			`SELECT sheets.sheetid, sheets.sheetname FROM sheets 
-		INNER JOIN publishers ON sheets.owner=publishers.userid 
-		WHERE publishers.username='${argument.publisher}';`
-    );
-  });
+			DatabaseQueries.getSheets(argument.publisher)
+		);
+	});
 
 	it("should return an empty array if the publisher has no sheets", async () => {
 		const mockQuery = mockDB(mockResultArr);
@@ -56,9 +55,7 @@ describe("getSheets", () => {
 		expect(result).toEqual([]);
 
 		expect(mockQuery).toHaveBeenCalledWith(
-			`SELECT sheets.sheetid, sheets.sheetname FROM sheets 
-		INNER JOIN publishers ON sheets.owner=publishers.userid 
-		WHERE publishers.username='${argument.publisher}';`
-    );
-  });
+			DatabaseQueries.getSheets(argument.publisher)
+		);
+	});
 });

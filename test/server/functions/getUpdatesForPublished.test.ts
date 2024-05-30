@@ -6,6 +6,7 @@ import {
 	mockDB,
 	getMockUpdateQueryResults,
 } from "../../utils";
+import DatabaseQueries from "../../../types/queries";
 
 describe("getUpdatesForPublished", () => {
 	const argument: Argument = assembleTestArgumentObject(
@@ -52,9 +53,7 @@ describe("getUpdatesForPublished", () => {
 
 		// Assert the database query function was called with the correct query string
 		expect(mockQuery).toHaveBeenCalledWith(
-			`SELECT updates.* FROM updates INNER JOIN sheets 
-		ON updates.sheet=sheets.sheetid 
-		WHERE sheets.sheetname=${argument.sheet} AND updates.updateid>${argument.id};`
+			DatabaseQueries.getUpdatesForPublished(argument.sheet)
 		);
 	});
 
@@ -69,9 +68,7 @@ describe("getUpdatesForPublished", () => {
 
 		// Assert the database query function was called with the correct query string
 		expect(mockQuery).toHaveBeenCalledWith(
-			`SELECT updates.* FROM updates INNER JOIN sheets 
-		ON updates.sheet=sheets.sheetid 
-		WHERE sheets.sheetname=${argument.sheet} AND updates.updateid>${argument.id};`
+			DatabaseQueries.getUpdatesForPublished(argument.sheet)
 		);
 	});
 });

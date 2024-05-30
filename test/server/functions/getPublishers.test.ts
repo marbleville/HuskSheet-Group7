@@ -1,6 +1,7 @@
 import { getPublishers } from "../../../server/src/functions/getPublishers";
 import { GetUserRow } from "../../../server/src/database/db";
 import { mockDB, getMockRowQueryResults } from "../../utils";
+import DatabaseQueries from "../../../types/queries";
 
 describe("getPublishers", () => {
 	let mockResultArr: GetUserRow[] = [];
@@ -28,9 +29,7 @@ describe("getPublishers", () => {
 			expect(publisher.payload).toEqual("");
 		});
 
-		expect(mockQuery).toHaveBeenCalledWith(
-			"SELECT username FROM publishers"
-		);
+		expect(mockQuery).toHaveBeenCalledWith(DatabaseQueries.getPublishers());
 	});
 
 	it("should return an empty array if no publishers exist", async () => {
@@ -40,8 +39,6 @@ describe("getPublishers", () => {
 
 		expect(result).toEqual([]);
 
-		expect(mockQuery).toHaveBeenCalledWith(
-			"SELECT username FROM publishers"
-		);
+		expect(mockQuery).toHaveBeenCalledWith(DatabaseQueries.getPublishers());
 	});
 });
