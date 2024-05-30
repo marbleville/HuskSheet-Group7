@@ -34,7 +34,7 @@ async function runEndpointFuntion(
 		res.send(JSON.stringify(result));
 	} catch (error) {
 		const err: Error = error as Error;
-		console.error(error);
+		console.error(err);
 		result = assembleResultObject(false, `${func.name} ` + err.message, []);
 		res.send(JSON.stringify(result));
 	}
