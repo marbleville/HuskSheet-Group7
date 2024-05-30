@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS updates (
   sheet INT NOT NULL,
   owner INT NOT NULL,
   changes TEXT NOT NULL,
+  accepted BOOLEAN,
   PRIMARY KEY(updateid),
   FOREIGN KEY (sheet) REFERENCES sheets(sheetid) ON DELETE CASCADE,
   FOREIGN KEY (owner) REFERENCES publishers(userid)

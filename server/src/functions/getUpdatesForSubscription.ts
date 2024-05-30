@@ -1,5 +1,6 @@
-import { Argument, Publisher, Payload } from "../../../types/types";
-import { getUpdatesForPublished } from "./getUpdatesForPublished";
+import { Argument, Sheet, ID } from "../../../types/types";
+import { getUpdatesHelper } from "../utils";
+import DatabaseQueries from "../../../types/queries";
 
 /**
  * Returns the updates for the given subscription occuring after the given
@@ -16,12 +17,15 @@ import { getUpdatesForPublished } from "./getUpdatesForPublished";
 async function getUpdatesForSubscription(
 	argument: Argument
 ): Promise<Argument> {
-	// Checking if client is not the publisher can be done on client side,
-	// in which case this function will be exaclty the same as
-	// getUpdatesForPublished
-	let updates: Argument = await getUpdatesForPublished(argument);
+	let sheetName: Sheet = argument.sheet;
+	let id: ID = argument.id;
 
-	return updates;
+	const queryString = DatabaseQueries.getUpdatesForSubscription(
+		sheetName,
+		id
+	);
+
+	return getUpdatesHelper(argument, queryString);
 }
 
 export { getUpdatesForSubscription };

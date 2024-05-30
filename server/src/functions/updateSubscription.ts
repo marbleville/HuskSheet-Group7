@@ -13,6 +13,8 @@ import { updatePublished } from "./updatePublished";
 async function updateSubscription(argument: Argument): Promise<void> {
 	// Call the updatePublished function with the argument object becasue the
 	// logic is the same and checks can be made on the client side more easily
+
+	// This function should stoe the updates but not updates the lates accepted version of the sheet
 	await updatePublished(argument);
 }
 

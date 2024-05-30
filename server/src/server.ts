@@ -7,7 +7,7 @@ import {
 	runEndpointFuntion,
 	parseAuthHeader,
 } from "./utils";
-import { Argument, Result } from "../../types/types";
+import { Result } from "../../types/types";
 import {
 	register,
 	getSheets,
@@ -19,7 +19,6 @@ import {
 	updatePublished,
 	updateSubscription,
 } from "./serverFunctionsExporter";
-import { run } from "node:test";
 
 import DatabaseInstance from "./database/databaseInstance";
 

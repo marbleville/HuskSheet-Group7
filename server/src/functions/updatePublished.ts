@@ -1,5 +1,6 @@
 import { Argument, Publisher, Sheet, Payload } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
+import DatabaseQueries from "../../../types/queries";
 
 /**
  * Updates the Updates table with the given publisher, sheet, and payload for
@@ -24,14 +25,17 @@ async function updatePublished(argument: Argument): Promise<void> {
 
 	const database = DatabaseInstance.getInstance();
 
-	const queryString = `INSERT INTO updates 
-		(updateid, updatetime, sheet, owner, changes) 
-		VALUES (${id}, ${Date.now()}, (SELECT sheetid FROM sheets 
-		WHERE sheetname = ${sheetName}), (SELECT userid FROM publishers 
-		WHERE username = '${publisher}'), ${payload});`;
+	const queryString = DatabaseQueries.updatePublished(
+		parseInt(id),
+		sheetName,
+		publisher,
+		payload
+	);
 
 	try {
 		await database.query(queryString);
+
+		// now we need to update the latest accepted version of the sheet
 	} catch (error) {
 		throw error;
 	}
