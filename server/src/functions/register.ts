@@ -1,35 +1,23 @@
-import { RegisterArgument } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
 import DatabaseQueries from "../../../types/queries";
 
 /**
- * Creates a publisher with the client name
- *
- * @param argument The argument object containing the publisher and the sheet name
- *
- * @author eduardo-ruiz-garay, rishavsarma5
+ *  Creates a publisher in the DB with the given username and password.
+ *  @param username client username.
+ *  @param password client password.
+ *  @author kris-amerman, eduardo-ruiz-garay, rishavsarma5
  */
-async function register(registerArgument: RegisterArgument): Promise<void> {
-  /**
-   *
-   */
-
-  const userid = registerArgument.id;
-  const username = registerArgument.username;
-  const password = registerArgument.password;
-
-  if (!username || !password || !userid) {
-    throw new Error("Username, password, and userid must be provided");
-  }
-
-  // Get database instance
+async function register(username: string, password: string): Promise<void> {
   const database = DatabaseInstance.getInstance();
+  let queryString = `
+      INSERT INTO publishers (username, pass)
+      VALUES ('${username}', '${password}');
+  `;
+  
   try {
-    let queryString =  DatabaseQueries.register(userid, username, password);
-
-    await database.query(queryString);
-  } catch (error) {
-    throw new Error(`Failed to add ${username} to the database`);
-  }
+		await database.query(queryString);
+	} catch (error) {
+		console.error("An error happened when creating a new publisher", error);
+	}
 }
 export { register };

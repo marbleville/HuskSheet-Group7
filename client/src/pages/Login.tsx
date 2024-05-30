@@ -54,15 +54,9 @@ function Login() {
     sessionStorage.setItem("username", username);
     sessionStorage.setItem("password", password);
 
-    const argument = {
-      username: username,
-      password: password,
-    };
-
     try {
       await fetchWithAuth("http://localhost:3000/api/v1/register", {
         method: "GET",
-        body: JSON.stringify(argument),
       });
     } catch (error) {
       console.error("Error registering new user", error);
