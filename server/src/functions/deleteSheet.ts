@@ -1,5 +1,6 @@
 import { Argument, Publisher, Sheet } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
+import DatabaseQueries from "../../../types/queries";
 import { GetSheetRow } from "../database/db";
 
 /**
@@ -24,10 +25,7 @@ async function deleteSheet(argument: Argument): Promise<void> {
 	const database = DatabaseInstance.getInstance();
 
 	// Assemble query string
-	let queryString = `DELETE sheets FROM sheets
-		INNER JOIN publishers ON sheets.owner=publishers.userid
-		WHERE publishers.username='${publisher}' 
-		AND sheets.name='${sheetName}';`;
+	let queryString = DatabaseQueries.deleteSheet(sheetName, publisher);
 
 	await database.query<GetSheetRow>(queryString);
 }

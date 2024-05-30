@@ -25,7 +25,7 @@ services:
             - "/server/node_modules"
             - "./types:/types"
             - './test:/test'
-        command: bash -c "npm install --prefix /test && npm run test --prefix /test && npm install --prefix /server && npm run dev --prefix /server"
+        command: bash -c "npm install --prefix /server && npm run dev --prefix /server"
         links:
             - "db:db"
 
