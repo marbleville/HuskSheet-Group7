@@ -1,5 +1,5 @@
 import { Argument, Sheet, ID, Payload } from "../types/types";
-import { GetUserRow } from "../server/src/database/db";
+import { GetUserRow, GetUpdateRow } from "../server/src/database/db";
 import { RowDataPacket } from "mysql2";
 import DatabaseInstance from "../server/src/database/databaseInstance";
 
@@ -46,6 +46,26 @@ function getMockRowQueryResults(username: string): GetUserRow {
 }
 
 /**
+ * Returns a "GetUserRow" object with the given username. Thjis object is not
+ * the complete type and doe not provide full safety.
+ *
+ * @param username the username to be used in the mock row query results
+ *
+ * @returns a "GetUserRow" object with the given username
+ *
+ * @author marbleville
+ */
+function getMockUpdateQueryResults(
+	updateid: number,
+	changes: string
+): GetUpdateRow {
+	return {
+		updateid,
+		changes,
+	} as GetUpdateRow;
+}
+
+/**
  * Mocks the database query function and returns the mocked function.
  *
  * @param mockResult the mock result to be returned by the database query
@@ -66,4 +86,9 @@ function mockDB<T extends RowDataPacket>(mockResult: T[]): jest.Mock {
 	return mockQuery;
 }
 
-export { assembleTestArgumentObject, mockDB, getMockRowQueryResults };
+export {
+	assembleTestArgumentObject,
+	mockDB,
+	getMockRowQueryResults,
+	getMockUpdateQueryResults,
+};

@@ -2,7 +2,11 @@ import { getUpdatesForPublished } from "../../../server/src/functions/getUpdates
 import { Argument } from "../../../types/types";
 import { GetUpdateRow } from "../../../server/src/database/db";
 import DatabaseInstance from "../../../server/src/database/databaseInstance";
-import { assembleTestArgumentObject } from "../../utils";
+import {
+	assembleTestArgumentObject,
+	mockDB,
+	getMockUpdateQueryResults,
+} from "../../utils";
 
 describe("getUpdatesForPublished", () => {
 	const argument: Argument = assembleTestArgumentObject(
@@ -11,9 +15,11 @@ describe("getUpdatesForPublished", () => {
 		"0",
 		""
 	);
+	let mockResultArr: GetUpdateRow[] = [];
 
 	afterEach(() => {
 		jest.clearAllMocks();
+		mockResultArr = [];
 	});
 
 	it("should return an an argument object containing the updates occuring after the argument ID", async () => {
@@ -24,20 +30,15 @@ describe("getUpdatesForPublished", () => {
 		} as GetUpdateRow;
 
 		// Mock the database query result
-		const mockResultArr: GetUpdateRow[] = [mockResult1];
+		const mockResultArr: GetUpdateRow[] = [
+			getMockUpdateQueryResults(
+				1,
+				"$A1 1\n$a2 'help'\n$B1 -1.01\n$C4 ''\n$c1 = SUM($A1:$B1)"
+			),
+		];
 
 		// Mock the database query function
-		const mockQuery = jest.fn().mockResolvedValue(mockResultArr);
-
-		// Mock the database instance
-		const mockDatabaseInstance: DatabaseInstance = {
-			query: mockQuery,
-		};
-
-		// Mock the DatabaseInstance.getInstance() method
-		jest.spyOn(DatabaseInstance, "getInstance").mockReturnValue(
-			mockDatabaseInstance
-		);
+		const mockQuery = mockDB(mockResultArr);
 
 		// Call the getSheets function
 		const result = await getUpdatesForPublished(argument);
@@ -59,26 +60,12 @@ describe("getUpdatesForPublished", () => {
 	});
 
 	it("should return an argument object with and empy payload section", async () => {
-		// Mock the database query result
 		const mockResultArr: GetUpdateRow[] = [];
 
-		// Mock the database query function
-		const mockQuery = jest.fn().mockResolvedValue(mockResultArr);
+		const mockQuery = mockDB(mockResultArr);
 
-		// Mock the database instance
-		const mockDatabaseInstance: DatabaseInstance = {
-			query: mockQuery,
-		};
-
-		// Mock the DatabaseInstance.getInstance() method
-		jest.spyOn(DatabaseInstance, "getInstance").mockReturnValue(
-			mockDatabaseInstance
-		);
-
-		// Call the getSheets function
 		const result = await getUpdatesForPublished(argument);
 
-		// Assert the result
 		expect(result).toEqual(argument);
 
 		// Assert the database query function was called with the correct query string
