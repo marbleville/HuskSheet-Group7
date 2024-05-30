@@ -64,26 +64,26 @@ async function runEndpointFuntion(
     argument: Argument
   ) => Promise<Argument[]> | Promise<Argument> | Promise<void>
 ): Promise<void> {
-  let result: Result;
+	let result: Result;
 
-  if (!(await authenticate(req.headers.authorization))) {
-    result = assembleResultObject(false, `${func.name} Unauthorized`, []);
-    res.send(JSON.stringify(result));
-    return;
-  }
+	if (!(await authenticate(req.headers.authorization))) {
+		result = assembleResultObject(false, `${func.name} Unauthorized`, []);
+		res.send(JSON.stringify(result));
+		return;
+	}
 
-  try {
-    let argument = req.body as Argument;
-    let value: Argument[] | Argument | void = await func(argument);
+	try {
+		let argument = req.body as Argument;
+		let value: Argument[] | Argument | void = await func(argument);
 
-    result = assembleResultObject(true, `${func.name} `, value);
-    res.send(JSON.stringify(result));
-  } catch (error) {
-    const err: Error = error as Error;
-    console.error(error);
-    result = assembleResultObject(false, `${func.name} ` + err.message, []);
-    res.send(JSON.stringify(result));
-  }
+		result = assembleResultObject(true, `${func.name} `, value);
+		res.send(JSON.stringify(result));
+	} catch (error) {
+		const err: Error = error as Error;
+		console.error(err);
+		result = assembleResultObject(false, `${func.name} ` + err.message, []);
+		res.send(JSON.stringify(result));
+	}
 }
 
 /**

@@ -7,7 +7,7 @@ import {
   runEndpointFuntion,
   //   runEndpointRegister,
 } from "./utils";
-import { Argument, Result } from "../../types/types";
+import { Result } from "../../types/types";
 import {
   register,
   getSheets,
@@ -19,7 +19,6 @@ import {
   updatePublished,
   updateSubscription,
 } from "./serverFunctionsExporter";
-import { run } from "node:test";
 
 const app: Application = express();
 const PORT: Number = 3000;
@@ -33,6 +32,7 @@ const options: cors.CorsOptions = {
 
 app.use(cors(options));
 app.use(express.json());
+
 
 // app.get("/api/v1/register", async (req: Request, res: Response) => {
 //   runEndpointRegister(req, res, register);

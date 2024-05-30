@@ -32,6 +32,8 @@ async function updatePublished(argument: Argument): Promise<void> {
 
 	try {
 		await database.query(queryString);
+
+		// now we need to update the latest accepted version of the sheet
 	} catch (error) {
 		throw error;
 	}
