@@ -2,6 +2,8 @@ import { Argument, Sheet, Publisher, ID, Payload } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
 import DatabaseQueries from "../../../types/queries";
 import { GetUpdateRow } from "../database/db";
+import { getUpdatesHelper } from "../utils";
+import { get } from "http";
 
 /**
  * Returns the updates for the given published sheet occuring after the given
@@ -14,42 +16,11 @@ import { GetUpdateRow } from "../database/db";
  *          containing all changes
  */
 async function getUpdatesForPublished(argument: Argument): Promise<Argument> {
-	let updates: Argument = { publisher: "", sheet: "", id: "", payload: "" };
-	let publisher: Publisher = argument.publisher;
 	let sheetName: Sheet = argument.sheet;
-	let id: ID = argument.id;
 
-	/**
-	 * argument.publisher is the publisher of the sheet to get updates for
-	 *
-	 * Grab all updates from the Updates table where the publisher is the same
-	 * as the argument.publisher and the update is newer than the last update
-	 *
-	 * Push each update to a string and then push that to the updates payload
-	 * and set the id to the last id of the updates
-	 */
-
-	const database = DatabaseInstance.getInstance();
-
-	// So the query need to grab updates after the given ID and then offer a way
-	// to retrieve the last id for the updates
 	const queryString = DatabaseQueries.getUpdatesForPublished(sheetName);
 
-	let result = await database.query<GetUpdateRow>(queryString);
-
-	let payload: Payload = "";
-
-	result.forEach((update) => {
-		payload += update.changes + "\n";
-	});
-
-	updates.publisher = publisher;
-	updates.sheet = sheetName;
-	updates.id =
-		result.length > 0 ? result[result.length - 1].updateid.toString() : id;
-	updates.payload = payload;
-
-	return updates;
+	return getUpdatesHelper(argument, queryString);
 }
 
 export { getUpdatesForPublished };
