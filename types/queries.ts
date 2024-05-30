@@ -153,4 +153,10 @@ export default class DatabaseQueries {
 	  AND owner = (SELECT userid FROM publishers 
 	  WHERE username = '${publisher}');`;
 	}
+
+	static getAllOwnerUpdates(): string {
+		return `SELECT updates.sheetid, updates.payload FROM updates 
+		INNER JOIN sheets ON updates.sheet=sheets.sheetid WHERE 
+		sheet.owner=updates.owner;`;
+	}
 }

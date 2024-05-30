@@ -1,15 +1,42 @@
-import { Ref, Term, ID, Payload, Column } from "../../../types/types";
+import { Ref, Term, ID, Payload } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
 import DatabaseQueries from "../../../types/queries";
+import { GetAllUpdates, GetSheetID } from "../database/db";
 
 export default class HashStore {
 	private static sheets: Array<Map<Ref, Term>>;
 
-	constructor() {
-		// Initialize the sheets array
+	constructor() {}
+
+	public static async initHash(): Promise<void> {
+		if (HashStore.sheets != null) {
+			return;
+		}
+
+		HashStore.sheets = new Array<Map<Ref, Term>>();
+
+		let allOwnerUpdates =
+			await DatabaseInstance.getInstance().query<GetAllUpdates>(
+				DatabaseQueries.getAllOwnerUpdates()
+			);
+
+		allOwnerUpdates.forEach((update) => {
+			let sheetID = update.sheet;
+			let payload = update.payload;
+
+			let payloadArr = payload.split("\n");
+
+			payloadArr.forEach((update) => {
+				let [ref, value] = update.split(" ");
+
+				let refObj = this.getRefFromString(ref);
+
+				HashStore.sheets[sheetID].set(refObj, value);
+			});
+		});
 	}
 
-	public static getSheetPayload(sheetID: ID): Payload {
+	public static getSheetPayload(sheetID: number): Payload {
 		let sheetMap = this.sheets[sheetID];
 
 		let payload = "";
@@ -26,9 +53,11 @@ export default class HashStore {
 		publisher: string,
 		payload: Payload
 	): Promise<void> {
-		let sheetID = await DatabaseInstance.getInstance().query(
+		let sheetIDArr = await DatabaseInstance.getInstance().query<GetSheetID>(
 			DatabaseQueries.getSheetID(sheetName, publisher)
-		)[0];
+		);
+
+		let sheetID = sheetIDArr[0].sheetid;
 
 		let sheetMap = this.sheets[sheetID];
 
@@ -37,19 +66,25 @@ export default class HashStore {
 		for (let update of updates) {
 			let [ref, value] = update.split(" ");
 
-			let refWiothout$ = ref.substring(1);
-
-			let pattern1 = /[0-9]/g;
-			let pattern2 = /[a-zA-Z]/g;
-			let column = refWiothout$.match(pattern2);
-			let row = refWiothout$.match(pattern1);
-
-			let refObj: Ref = {
-				column: column ? column.join("") : "",
-				row: row ? parseInt(row.join("")) : -1,
-			};
+			let refObj = this.getRefFromString(ref);
 
 			sheetMap.set(refObj, value);
 		}
+	}
+
+	private static getRefFromString(ref: string): Ref {
+		let refWiothout$ = ref.substring(1);
+
+		let pattern1 = /[0-9]/g;
+		let pattern2 = /[a-zA-Z]/g;
+		let column = refWiothout$.match(pattern2);
+		let row = refWiothout$.match(pattern1);
+
+		let refObj: Ref = {
+			column: column ? column.join("") : "",
+			row: row ? parseInt(row.join("")) : -1,
+		};
+
+		return refObj;
 	}
 }
