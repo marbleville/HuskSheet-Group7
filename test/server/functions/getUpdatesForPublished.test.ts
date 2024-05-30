@@ -2,14 +2,15 @@ import { getUpdatesForPublished } from "../../../server/src/functions/getUpdates
 import { Argument } from "../../../types/types";
 import { GetUpdateRow } from "../../../server/src/database/db";
 import DatabaseInstance from "../../../server/src/database/databaseInstance";
+import { assembleTestArgumentObject } from "../../utils";
 
 describe("getUpdatesForPublished", () => {
-	const argument: Argument = {
-		publisher: "examplePublisher",
-		sheet: "sheet1",
-		id: "0",
-		payload: "",
-	};
+	const argument: Argument = assembleTestArgumentObject(
+		"examplePublisher",
+		"sheet1",
+		"0",
+		""
+	);
 
 	afterEach(() => {
 		jest.clearAllMocks();

@@ -19,6 +19,8 @@ async function getUpdatesForSubscription(
 	// Checking if client is not the publisher can be done on client side,
 	// in which case this function will be exaclty the same as
 	// getUpdatesForPublished
+
+	// Should only return the current accepted version of the hseep in the sheets table
 	let updates: Argument = await getUpdatesForPublished(argument);
 
 	return updates;
