@@ -25,7 +25,11 @@ services:
             - "/server/node_modules"
             - "./types:/types"
             - './test:/test'
+<<<<<<< HEAD
         command: bash -c "npm install --prefix /server && npm run dev --prefix /server"
+=======
+        command: bash -c "(npm install --prefix /test && npm run test --prefix /test) || (npm install --prefix /server && npm run dev --prefix /server)"
+>>>>>>> origin/main
         links:
             - "db:db"
 

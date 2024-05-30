@@ -6,13 +6,15 @@
 export const fetchWithAuth = async (
   url: string,
   options: RequestInit = {},
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSuccess?: (data: any) => void,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onFailure?: (error: any) => void
 ): Promise<void> => {
   // Retrieve username and password from sessionStorage
   const username = sessionStorage.getItem("username");
   const password = sessionStorage.getItem("password");
-  
+
   // If username and password exist, set Authorization header
   if (username && password) {
     options.headers = {
@@ -33,7 +35,7 @@ export const fetchWithAuth = async (
     const response = await fetch(url, options);
     if (response.ok) {
       const data = await response.json();
-      console.log(data)
+      console.log(data);
       if (data.success) {
         if (onSuccess) {
           onSuccess(data);
@@ -45,13 +47,13 @@ export const fetchWithAuth = async (
         }
       }
     } else {
-      console.error('Error fetching: `response.ok` came back False.');
+      console.error("Error fetching: `response.ok` came back False.");
       if (onFailure) {
         onFailure(null);
       }
     }
   } catch (error) {
-    console.error('Error fetching', error);
+    console.error("Error fetching", error);
     if (onFailure) {
       onFailure(error);
     }
