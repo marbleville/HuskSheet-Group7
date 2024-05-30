@@ -1,3 +1,4 @@
+import { RegisterArgument } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
 
 /**
@@ -7,34 +8,28 @@ import DatabaseInstance from "../database/databaseInstance";
  *
  * @author eduardo-ruiz-garay, rishavsarma5
  */
-async function register(authHeader: string | undefined): Promise<void> {
-	/**
-	 * Added the publisher name as new user. Have to confirm it works with
-	 * @todo how to setup connection and set password
-	 *
-	 * I think that we shoud pass the auth header into register, and not an
-	 * argument object, as register does not take in any args
-	 */
-	if (authHeader === undefined) {
-		throw new Error("No auth header provided");
-	}
+async function register(registerArgument: RegisterArgument): Promise<void> {
+  /**
+   *
+   */
 
-	const base64 = authHeader.split(" ")[1];
-	// Decodes to binary
-	const decodedAuthHeader = Buffer.from(base64, "base64").toString("utf-8");
-	const [username, pass] = decodedAuthHeader
-		.split(":")
-		.map((str) => str.trimEnd());
+  const userid = registerArgument.id;
+  const username = registerArgument.username;
+  const password = registerArgument.password;
 
-	// Get database instance
-	const database = DatabaseInstance.getInstance();
-	try {
-		let queryString = `INSERT INTO publishers (username, pass) 
-			VALUES(${username}, ${pass})`;
+  if (!username || !password || !userid) {
+    throw new Error("Username, password, and userid must be provided");
+  }
 
-		await database.query(queryString);
-	} catch (error) {
-		throw new Error(`Failed to add ${username} to the database`);
-	}
+  // Get database instance
+  const database = DatabaseInstance.getInstance();
+  try {
+    let queryString = `INSERT INTO publishers (userid, username, pass) 
+			VALUES(${userid}, ${username}, ${password})`;
+
+    await database.query(queryString);
+  } catch (error) {
+    throw new Error(`Failed to add ${username} to the database`);
+  }
 }
 export { register };

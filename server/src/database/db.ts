@@ -1,14 +1,18 @@
 import { RowDataPacket } from "mysql2";
 
 /**
+ * Should i add here a register
+ */
+
+/**
  * Extends the RowDataPacket from the mysql2 library to have the correct typing for the getSheets query.
  *
  * @author hunterbrodie
  */
 interface GetSheetRow extends RowDataPacket {
-	sheetid: number;
-	sheetname: string;
-	latest?: string;
+  sheetid: number;
+  sheetname: string;
+  latest?: string;
 }
 
 /**
@@ -17,7 +21,7 @@ interface GetSheetRow extends RowDataPacket {
  * @author hunterbrodie
  */
 interface GetUserRow extends RowDataPacket {
-	username: string;
+  username: string;
 }
 
 /**
@@ -26,8 +30,8 @@ interface GetUserRow extends RowDataPacket {
  * @author marbleville
  */
 interface GetUpdateRow extends RowDataPacket {
-	updateid: number;
-	changes: string;
+  updateid: number;
+  changes: string;
 }
 
 export { GetSheetRow, GetUserRow, GetUpdateRow };
