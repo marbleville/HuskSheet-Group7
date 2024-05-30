@@ -25,7 +25,12 @@ async function updatePublished(argument: Argument): Promise<void> {
 
 	const database = DatabaseInstance.getInstance();
 
-	const queryString = DatabaseQueries(id, sheetName, publisher, payload);
+	const queryString = DatabaseQueries.updatePublished(
+		parseInt(id),
+		sheetName,
+		publisher,
+		payload
+	);
 
 	try {
 		await database.query(queryString);
