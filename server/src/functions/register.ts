@@ -25,8 +25,7 @@ async function register(registerArgument: RegisterArgument): Promise<void> {
   // Get database instance
   const database = DatabaseInstance.getInstance();
   try {
-    let queryString = `INSERT INTO publishers (userid, username, pass) 
-			VALUES(${userid}, ${username}, ${password})`;
+    let queryString =  DatabaseQueries.register(userid, username, password);
 
     await database.query(queryString);
   } catch (error) {
