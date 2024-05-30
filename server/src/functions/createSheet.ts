@@ -1,5 +1,6 @@
 import { Argument, Publisher, Sheet } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
+import DatabaseQueries from "../../../types/queries";
 import { GetSheetRow } from "../database/db";
 
 /**
@@ -26,10 +27,7 @@ async function createSheet(argument: Argument): Promise<void> {
 
 	try {
 		// Query to fetch all sheet names that share the same base name
-		let querySameBaseName = `SELECT sheetname FROM sheets 
-            WHERE sheetname LIKE '${sheetName}%'
-            AND owner = 
-			(SELECT userid FROM publishers WHERE username = '${publisher}');`;
+		let querySameBaseName = DatabaseQueries.createSheetNewName(sheetName, publisher);
 
 		let existingSheetsResult = await database.query<GetSheetRow>(
 			querySameBaseName
@@ -58,10 +56,7 @@ async function createSheet(argument: Argument): Promise<void> {
 			newSheetName = `${sheetName} (${maxAppended + 1})`;
 		}
 
-		let queryInsertNewSheet = `INSERT INTO sheets (sheetname, owner, latest) 
-								   VALUES ('${newSheetName}', 
-								   (SELECT userid FROM publishers WHERE username 
-								   = '${publisher}'), NULL);`;
+		let queryInsertNewSheet = DatabaseQueries.createSheet(newSheetName, publisher);
 
 		await database.query(queryInsertNewSheet);
 	} catch (error) {
