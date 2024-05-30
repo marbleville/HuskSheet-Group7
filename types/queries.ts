@@ -93,10 +93,28 @@ export default class DatabaseQueries {
    * @author hunterbrodie
    */
   static updatePublished(id: number, sheetName: string, publisher: string, payload: string) {
-	return `INSERT INTO updates 
-		(updateid, updatetime, sheet, owner, changes, accepted) 
-		VALUES (${id}, ${Date.now()}, (SELECT sheetid FROM sheets 
-		WHERE sheetname = ${sheetName}), (SELECT userid FROM publishers 
-		WHERE username = '${publisher}'), ${payload}, TRUE);`;
+    return updateHelper(id, sheetName, publisher, payload, "TRUE");
+  }
+
+  /**
+   * Returns the query needed for updateSubscription.
+   *
+   * @author hunterbrodie
+   */
+  static updateSubscription(id: number, sheetName: string, publisher: string, payload: string) {
+    return updateHelper(id, sheetName, publisher, payload, "NULL");
+  }
+
+  /**
+   * Helper method for the update functions.
+   *
+   * @author hunterbrodie
+   */
+  static updateHelper(id: number, sheetName: string, publisher: string, payload: string, accepted: boolean) {
+    return `INSERT INTO updates 
+      (updateid, updatetime, sheet, owner, changes, accepted) 
+      VALUES (${id}, ${Date.now()}, (SELECT sheetid FROM sheets 
+      WHERE sheetname = ${sheetName}), (SELECT userid FROM publishers 
+      WHERE username = '${publisher}'), ${payload}, ${accepted});`;
   }
 }
