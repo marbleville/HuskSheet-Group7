@@ -146,4 +146,11 @@ export default class DatabaseQueries {
       WHERE sheetname = ${sheetName}), (SELECT userid FROM publishers 
       WHERE username = '${publisher}'), ${payload}, ${accepted});`;
 	}
+
+	static getSheetID(sheetName: string, publisher: string): string {
+		return `SELECT sheetid FROM sheets 
+	  WHERE sheetname = ${sheetName} 
+	  AND owner = (SELECT userid FROM publishers 
+	  WHERE username = '${publisher}');`;
+	}
 }
