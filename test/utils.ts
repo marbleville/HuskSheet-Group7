@@ -1,5 +1,9 @@
 import { Argument, Sheet, ID, Payload } from "../types/types";
-import { GetUserRow, GetUpdateRow } from "../server/src/database/db";
+import {
+	GetUserRow,
+	GetUpdateRow,
+	GetSheetRow,
+} from "../server/src/database/db";
 import { RowDataPacket } from "mysql2";
 import DatabaseInstance from "../server/src/database/databaseInstance";
 
@@ -30,7 +34,7 @@ function assembleTestArgumentObject(
 }
 
 /**
- * Returns a "GetUserRow" object with the given username. Thjis object is not
+ * Returns a "GetUserRow" object with the given username. This object is not
  * the complete type and doe not provide full safety.
  *
  * @param username the username to be used in the mock row query results
@@ -46,12 +50,13 @@ function getMockRowQueryResults(username: string): GetUserRow {
 }
 
 /**
- * Returns a "GetUserRow" object with the given username. Thjis object is not
+ * Returns a "GetUpdateRow" object with the given values. This object is not
  * the complete type and doe not provide full safety.
  *
- * @param username the username to be used in the mock row query results
+ * @param updateid the id to be used in the mock update query results
+ * @param changes the changes to be used in the mock update query results
  *
- * @returns a "GetUserRow" object with the given username
+ * @returns a "GetUpdateRow" object with the given username
  *
  * @author marbleville
  */
@@ -63,6 +68,29 @@ function getMockUpdateQueryResults(
 		updateid,
 		changes,
 	} as GetUpdateRow;
+}
+
+/**
+ * Returns a "GetSheetRow" object with the given values. This object is not
+ * the complete type and doe not provide full safety.
+ *
+ * @param updateid the id to be used in the mock update query results
+ * @param changes the changes to be used in the mock update query results
+ *
+ * @returns a "GetUpdateRow" object with the given username
+ *
+ * @author marbleville
+ */
+function getMockSheetQueryResults(
+	sheetid: number,
+	sheetname: string,
+	latest: string = ""
+): GetSheetRow {
+	return {
+		sheetid,
+		sheetname,
+		latest,
+	} as GetSheetRow;
 }
 
 /**
@@ -91,4 +119,5 @@ export {
 	mockDB,
 	getMockRowQueryResults,
 	getMockUpdateQueryResults,
+	getMockSheetQueryResults,
 };

@@ -1,7 +1,6 @@
 import { getUpdatesForPublished } from "../../../server/src/functions/getUpdatesForPublished";
 import { Argument } from "../../../types/types";
 import { GetUpdateRow } from "../../../server/src/database/db";
-import DatabaseInstance from "../../../server/src/database/databaseInstance";
 import {
 	assembleTestArgumentObject,
 	mockDB,
