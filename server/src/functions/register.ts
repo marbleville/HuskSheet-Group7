@@ -18,16 +18,9 @@ async function register(registerArgument: RegisterArgument): Promise<void> {
   const username = registerArgument.username;
   const password = registerArgument.password;
 
-<<<<<<< HEAD
-	// Get database instance
-	const database = DatabaseInstance.getInstance();
-	try {
-		let queryString = DatabaseQueries.register(username, pass);
-=======
   if (!username || !password || !userid) {
     throw new Error("Username, password, and userid must be provided");
   }
->>>>>>> origin/main
 
   // Get database instance
   const database = DatabaseInstance.getInstance();
