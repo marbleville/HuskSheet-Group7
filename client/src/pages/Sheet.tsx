@@ -39,6 +39,9 @@ const Sheet: React.FC = () => {
   };
 
   const onPublishButtonClick = async () => {
+
+    // need to add getting all current updates from cells and sending that as well
+    
     try {
       await fetchWithAuth("http://localhost:3000/api/v1/updatePublished", {
         method: "GET",
