@@ -33,19 +33,18 @@ async function getUpdatesForPublished(argument: Argument): Promise<Argument> {
 
 	// So the query need to grab updates after the given ID and then offer a way
 	// to retrieve the last id for the updates
-	const queryString = DatabaseQueries.getUpdatesForPublished(sheetName, id);
+	const queryString = DatabaseQueries.getUpdatesForPublished(sheetName);
 
 	let result = await database.query<GetUpdateRow>(queryString);
 
 	let payload: Payload = "";
 
 	result.forEach((update) => {
-		payload += update.changes;
+		payload += update.changes + "\n";
 	});
 
 	updates.publisher = publisher;
 	updates.sheet = sheetName;
-	// We do not have support for update IDs yet
 	updates.id =
 		result.length > 0 ? result[result.length - 1].updateid.toString() : id;
 	updates.payload = payload;
