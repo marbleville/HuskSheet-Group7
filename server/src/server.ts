@@ -6,7 +6,7 @@ import {
 	assembleResultObject,
 	runEndpointFuntion,
 } from "./utils";
-import { Argument, Result } from "../../types/types";
+import { Result } from "../../types/types";
 import {
 	register,
 	getSheets,
@@ -18,7 +18,6 @@ import {
 	updatePublished,
 	updateSubscription,
 } from "./serverFunctionsExporter";
-import { run } from "node:test";
 
 const app: Application = express();
 const PORT: Number = 3000;
@@ -52,6 +51,7 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 		res.send(JSON.stringify(result));
 	} catch (error) {
 		const err: Error = error as Error;
+		console.error(err);
 		result = assembleResultObject(false, "register " + err.message, []);
 		res.send(JSON.stringify(result));
 	}
