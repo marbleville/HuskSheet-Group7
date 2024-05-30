@@ -1,6 +1,10 @@
 import {
   Result,
   Argument,
+  Publisher,
+  Sheet,
+  ID,
+  Payload
 } from "../../types/types";
 import DatabaseInstance from "./database/databaseInstance";
 import { Request, Response } from "express";
@@ -176,5 +180,6 @@ export {
   authenticate,
   assembleResultObject,
   runEndpointFuntion,
-  parseAuthHeader
+  parseAuthHeader,
+  getUpdatesHelper
 };

@@ -7,7 +7,7 @@ import {
 	runEndpointFuntion,
 	parseAuthHeader,
 } from "./utils";
-import { Result } from "../../types/types";
+import { Result, Argument } from "../../types/types";
 import {
 	register,
 	getSheets,
