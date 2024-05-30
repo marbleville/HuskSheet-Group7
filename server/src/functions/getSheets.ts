@@ -1,5 +1,6 @@
 import { Argument, Publisher } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
+import DatabaseQueries from "../../../types/queries";
 import { GetSheetRow } from "../database/db";
 
 /**
@@ -20,9 +21,7 @@ async function getSheets(argument: Argument): Promise<Array<Argument>> {
 	const database = DatabaseInstance.getInstance();
 
 	// Assemble query string
-	let queryString = `SELECT sheets.sheetid, sheets.sheetname FROM sheets 
-		INNER JOIN publishers ON sheets.owner=publishers.userid 
-		WHERE publishers.username='${publisher}';`;
+	let queryString = DatabaseQueries.getSheets(publisher);
 
 	let result = await database.query<GetSheetRow>(queryString);
 
