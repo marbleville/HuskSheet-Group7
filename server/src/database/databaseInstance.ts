@@ -11,7 +11,7 @@ import { Connection, QueryError, RowDataPacket, FieldPacket } from "mysql2";
  *
  * @author marbleville
  */
-class DatabaseInstance {
+export default class DatabaseInstance {
 	private static instance: DatabaseInstance;
 
 	/**
@@ -78,5 +78,3 @@ class DatabaseInstance {
 		return queryPromise as Promise<T[]>;
 	}
 }
-
-export default DatabaseInstance;
