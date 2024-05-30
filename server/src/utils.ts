@@ -1,52 +1,9 @@
-import { time, timeStamp } from "console";
 import {
-  RegisterArgument,
   Result,
   Argument,
-  RegisterResult,
 } from "../../types/types";
 import DatabaseInstance from "./database/databaseInstance";
 import { Request, Response } from "express";
-
-/**
- *
- *
- * @author eduardo-ruiz-garay
- */
-// async function runEndpointRegister(
-//   req: Request,
-//   res: Response,
-//   func: (
-//     registerArgument: RegisterArgument
-//   ) => Promise<RegisterArgument>[] | Promise<RegisterArgument> | Promise<void>
-// ): Promise<void> {
-//   let result: RegisterResult;
-
-//   if (!(await authenticate(req.headers.authorization))) {
-//     result = assembleRegisterResultObj(
-//       false,
-//       `${func.name} Unauthorized`,
-//       [],
-//       0
-//     );
-//     res.send(JSON.stringify(result));
-//     return;
-//   }
-
-//   try {
-//     let registerArgument = req.body as RegisterArgument;
-//     const value: RegisterArgument[] | RegisterArgument | void = await func(registerArgument);
-
-//     const time: Date.now();
-//     result = assembleRegisterResultObj(true, "null", value, time);
-//     res.send(JSON.stringify(result));
-//   } catch (error) {
-//     const err: Error = error as Error;
-//     console.error(error);
-//     result = assembleRegisterResultObj(false, `${func.name} ` + err.message, [], time);
-//     res.send(JSON.stringify(result));
-//   }
-// }
 
 /**
  * Runs the given endpoint function with the given request and response objects
@@ -67,7 +24,7 @@ async function runEndpointFuntion(
   let result: Result;
 
   if (!(await authenticate(req.headers.authorization))) {
-    result = assembleResultObject(false, `${func.name} Unauthorized`, []);
+    result = assembleResultObject(false, `${func.name}: Unauthorized`, []);
     res.send(JSON.stringify(result));
     return;
   }
@@ -87,7 +44,26 @@ async function runEndpointFuntion(
 }
 
 /**
- * Authenticates the user based on the authorization header from the request
+ * Parses the Authorization header and returns [username, password].
+ *
+ * @param authHeader the Authorization header from the request with the form of
+*   username:password encoded in base64
+ *
+ * @returns [username, password] string array
+ *
+ * @author kris-amerman
+ */
+function parseAuthHeader(authHeader: string): string[] {
+  const base64 = authHeader.split(" ")[1];
+  // Decodes to binary
+  const decodedAuthHeader = Buffer.from(base64, "base64").toString("utf-8");
+  return decodedAuthHeader
+    .split(":")
+    .map((str) => str.trimEnd());
+}
+
+/**
+ * Checks for a username:password match in the database.
  *
  * @param authHeader The authorization header from the request
  *
@@ -111,12 +87,7 @@ async function authenticate(authHeader: string | undefined): Promise<boolean> {
    *
    * If either fails, return false, otherwise return true
    */
-  const base64 = authHeader.split(" ")[1];
-  // Decodes to binary
-  const decodedAuthHeader = Buffer.from(base64, "base64").toString("utf-8");
-  const [username, password] = decodedAuthHeader
-    .split(":")
-    .map((str) => str.trimEnd());
+  const [username, password] = parseAuthHeader(authHeader);
   const database = DatabaseInstance.getInstance();
 
   let queryString = `SELECT * FROM publishers WHERE username = '${username}' 
@@ -126,7 +97,7 @@ async function authenticate(authHeader: string | undefined): Promise<boolean> {
   try {
     result = await database.query(queryString);
   } catch (error) {
-    console.error("An error happened  when authenticating the user", error);
+    console.error("An error happened when authenticating the user", error);
   }
   return result?.length != 0 ? true : false;
 }
@@ -159,27 +130,9 @@ function assembleResultObject(
   };
 }
 
-function assembleRegisterResultObj(
-  success: boolean,
-  message: string,
-  value: RegisterArgument[] | RegisterArgument | void,
-  time: Number
-): RegisterResult {
-  if (!(value instanceof Array) && value !== undefined) {
-    value = [value];
-  }
-  return {
-    success: success,
-    message: message,
-    value: value == undefined ? [] : value,
-    time: time,
-  };
-}
-
 export {
   authenticate,
   assembleResultObject,
   runEndpointFuntion,
-  assembleRegisterResultObj,
-  // runEndpointRegister,
+  parseAuthHeader
 };
