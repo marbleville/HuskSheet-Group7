@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import Cell from './Cell';
-import { fetchWithAuth } from '../utils';
+import React, { useState } from "react";
+import { useParams } from "react-router-dom";
+import Cell from "./Cell";
+import { fetchWithAuth } from "../utils";
 
 interface SheetDataMap {
   [ref: string]: string;
@@ -17,7 +17,7 @@ const initializeSheet = (rowSize: number, colSize: number): SheetDataMap => {
     for (let j = 0; j < colSize; j++) {
       const columnValue = String.fromCharCode(65 + j);
       const ref = `$${columnValue}${i}`;
-      initialData[ref] = '';
+      initialData[ref] = "";
     }
   }
 
@@ -25,7 +25,10 @@ const initializeSheet = (rowSize: number, colSize: number): SheetDataMap => {
 };
 
 const Sheet: React.FC = () => {
-  const { publisher, sheet } = useParams<{ publisher: string; sheet: string }>();
+  const { publisher, sheet } = useParams<{
+    publisher: string;
+    sheet: string;
+  }>();
 
   let sheetData: SheetDataMap = {};
 
@@ -35,13 +38,12 @@ const Sheet: React.FC = () => {
   });
 
   const handleChange = (value: string, cellId: string) => {
-    setCellValue(prevData => ({ ...prevData, [cellId]: value }));
+    setCellValue((prevData) => ({ ...prevData, [cellId]: value }));
   };
 
   const onPublishButtonClick = async () => {
-
     // need to add getting all current updates from cells and sending that as well
-    
+
     try {
       await fetchWithAuth("http://localhost:3000/api/v1/updatePublished", {
         method: "GET",
@@ -56,7 +58,9 @@ const Sheet: React.FC = () => {
 
     headers.push(<th key="header-empty"></th>);
     for (let col = 0; col < initialSheetColumnSize; col++) {
-      headers.push(<th key={`header-${col}`}>{String.fromCharCode(65 + col)}</th>);
+      headers.push(
+        <th key={`header-${col}`}>{String.fromCharCode(65 + col)}</th>
+      );
     }
 
     return <tr>{headers}</tr>;
@@ -79,7 +83,7 @@ const Sheet: React.FC = () => {
             initialValue={cellValue[cellId]}
             onUpdate={handleChange}
           />
-        )
+        );
       }
       rows.push(<tr key={`row-${row}`}>{cellsPerRow}</tr>);
     }
@@ -93,14 +97,10 @@ const Sheet: React.FC = () => {
       <p>Username: {publisher}</p>
       <p>Sheet Name: {sheet}</p>
       <table className="sheet">
-        <thead>
-          {renderSheetHeader()}
-        </thead>
-        <tbody>
-          {renderSheetRows()}
-        </tbody>
+        <thead>{renderSheetHeader()}</thead>
+        <tbody>{renderSheetRows()}</tbody>
       </table>
-      <br/>
+      <br />
       <button
         onClick={onPublishButtonClick}
         key="publish-button"
@@ -108,4 +108,6 @@ const Sheet: React.FC = () => {
       />
     </div>
   );
-}
+};
+
+export default Sheet;

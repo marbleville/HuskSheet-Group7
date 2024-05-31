@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 interface CellProps {
   cellId: string;
@@ -17,7 +17,7 @@ const Cell: React.FC<CellProps> = ({ cellId, initialValue, onUpdate }) => {
 
   const applyUpdate = (update: string) => {
     setValue(update);
-  }
+  };
 
   const getCurrentUpdate = (): string => {
     return `${cellId} ${value}`;
@@ -25,11 +25,7 @@ const Cell: React.FC<CellProps> = ({ cellId, initialValue, onUpdate }) => {
 
   return (
     <td key={cellId}>
-      <input
-        type="text"
-        value={value}
-        onChange={handleChange}
-      />
+      <input type="text" value={value} onChange={handleChange} />
     </td>
   );
 };

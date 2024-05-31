@@ -1,10 +1,10 @@
 // import { register } from "../../../server/src/functions/register";
-// import { RegisterArgument } from "../../../types/types";
 // import DatabaseInstance from "../../../server/src/database/databaseInstance";
 // import { GetUserRow } from "../../../server/src/database/db";
+// import { Argument } from "../../../types/types";
 
 // describe("register", () => {
-//   const registerArgument: RegisterArgument = {
+//   const registerArgument: Argument = {
 //     id: "6",
 //     username: "alice",
 //     password: "123",
@@ -19,14 +19,14 @@
 //     const mockResult1 = {
 //       id: "4",
 //       username: "alice",
-//       password: "123"
+//       password: "123",
 //     } as RegisterArgument;
 
 //     const mockResult2 = {
-//         id: "5",
-//         username: "ruben",
-//         password: "123"
-//       } as RegisterArgument;
+//       id: "5",
+//       username: "ruben",
+//       password: "123",
+//     } as RegisterArgument;
 
 //     // Mock the database query result
 //     const mockResultArr: GetUserRow[] = [mockResult1, mockResult2];
