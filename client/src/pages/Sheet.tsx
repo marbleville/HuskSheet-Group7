@@ -30,6 +30,9 @@ const Sheet: React.FC = () => {
     sheet: string;
   }>();
 
+  // const location = useLocation();
+  // const data = location.state;
+
   let sheetData: SheetDataMap = {};
 
   const [cellValue, setCellValue] = useState(() => {
@@ -53,14 +56,25 @@ const Sheet: React.FC = () => {
     }
   };
 
+  /**
+   * Displays the headers of the columns correctly with the A then to AA by using mod 26
+   *
+   * @returns the new headers for the columns
+   */
   const renderSheetHeader = () => {
     const headers = [];
-
     headers.push(<th key="header-empty"></th>);
-    for (let col = 0; col < initialSheetColumnSize; col++) {
-      headers.push(
-        <th key={`header-${col}`}>{String.fromCharCode(65 + col)}</th>
-      );
+
+    const col = initialSheetColumnSize;
+    for (let i = 1; i <= col; i++) {
+      let currentCol = i;
+      let letters = "";
+      while (currentCol > 0) {
+        const remainder = (currentCol - 1) % 26;
+        letters = String.fromCharCode(65 + remainder) + letters;
+        currentCol = Math.floor((currentCol - 1) / 26);
+      }
+      headers.push(<th key={`header-${letters}`}>{letters}</th>);
     }
 
     return <tr>{headers}</tr>;
@@ -93,8 +107,7 @@ const Sheet: React.FC = () => {
 
   return (
     <div>
-      <h1>Sheet Page</h1>
-      <p>Username: {publisher}</p>
+      <p>Publisher: {publisher}</p>
       <p>Sheet Name: {sheet}</p>
       <table className="sheet">
         <thead>{renderSheetHeader()}</thead>
