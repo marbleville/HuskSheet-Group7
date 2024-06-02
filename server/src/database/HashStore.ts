@@ -36,7 +36,9 @@ export default class HashStore {
 		});
 	}
 
-	public static getSheetPayload(sheetID: number): Payload {
+	public static async getSheetPayload(publisher: string, sheetName: string): Promise<Payload> {
+		let sheetID = await getSheetID(publisher, sheetName);
+
 		let sheetMap = this.sheets[sheetID];
 
 		let payload = "";
@@ -53,11 +55,7 @@ export default class HashStore {
 		publisher: string,
 		payload: Payload
 	): Promise<void> {
-		let sheetIDArr = await DatabaseInstance.getInstance().query<GetSheetID>(
-			DatabaseQueries.getSheetID(sheetName, publisher)
-		);
-
-		let sheetID = sheetIDArr[0].sheetid;
+		let sheetID = await getSheetID(publisher, sheetName);
 
 		let sheetMap = this.sheets[sheetID];
 
@@ -71,6 +69,14 @@ export default class HashStore {
 			sheetMap.set(refObj, value);
 		}
 	}
+
+  private static async getSheetID(publisher: string, sheetName: string): Promise<number> {
+		let sheetIDArr = await DatabaseInstance.getInstance().query<GetSheetID>(
+			DatabaseQueries.getSheetID(sheetName, publisher)
+		);
+
+		return sheetIDArr[0].sheetid;
+  }
 
 	private static getRefFromString(ref: string): Ref {
 		let refWiothout$ = ref.substring(1);

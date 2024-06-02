@@ -18,7 +18,7 @@ async function getUpdatesForSubscription(
 	argument: Argument
 ): Promise<Argument> {
 	let sheetName: Sheet = argument.sheet;
-	let id: ID = argument.id;
+	let id: ID = parseInt(argument.id);
 
 	const queryString = DatabaseQueries.getUpdatesForSubscription(
 		sheetName,

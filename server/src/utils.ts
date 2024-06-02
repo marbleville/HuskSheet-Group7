@@ -10,6 +10,7 @@ import {
 	Payload,
 } from "../../types/types";
 import DatabaseInstance from "./database/databaseInstance";
+import HashStore from "../database/HashStore"
 import { Request, Response } from "express";
 import { GetUpdateRow } from "./database/db";
 
@@ -24,7 +25,7 @@ import { GetUpdateRow } from "./database/db";
  * @returns The argument object containing the last update id and payload
  * containing all changes
  *
- * @author marbleville
+ * @author marbleville, huntebrodie
  */
 async function getUpdatesHelper(
 	argument: Argument,
@@ -34,6 +35,11 @@ async function getUpdatesHelper(
 	let publisher: Publisher = argument.publisher;
 	let sheetName: Sheet = argument.sheet;
 	let id: ID = argument.id;
+
+  if (id == 0) {
+    HashStore.initHash();
+    return await HashStore.getSheetPayload(publisher, sheetName);
+  }
 
 	const database = DatabaseInstance.getInstance();
 
