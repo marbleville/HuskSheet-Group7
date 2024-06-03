@@ -1,13 +1,10 @@
-import { time, timeStamp } from "console";
 import {
-	RegisterArgument,
-	Result,
-	Argument,
-	RegisterResult,
-	Publisher,
-	Sheet,
-	ID,
-	Payload,
+  Result,
+  Argument,
+  Publisher,
+  Sheet,
+  ID,
+  Payload,
 } from "../../types/types";
 import DatabaseInstance from "./database/databaseInstance";
 import HashStore from "../database/HashStore"
@@ -28,13 +25,13 @@ import { GetUpdateRow } from "./database/db";
  * @author marbleville, huntebrodie
  */
 async function getUpdatesHelper(
-	argument: Argument,
-	query: string
+  argument: Argument,
+  query: string
 ): Promise<Argument> {
-	let updates: Argument = { publisher: "", sheet: "", id: "", payload: "" };
-	let publisher: Publisher = argument.publisher;
-	let sheetName: Sheet = argument.sheet;
-	let id: ID = argument.id;
+  let updates: Argument = { publisher: "", sheet: "", id: "", payload: "" };
+  let publisher: Publisher = argument.publisher;
+  let sheetName: Sheet = argument.sheet;
+  let id: ID = argument.id;
 
   if (id == 0) {
     HashStore.initHash();
@@ -43,62 +40,22 @@ async function getUpdatesHelper(
 
 	const database = DatabaseInstance.getInstance();
 
-	let result = await database.query<GetUpdateRow>(query);
+  let result = await database.query<GetUpdateRow>(query);
 
-	let payload: Payload = "";
+  let payload: Payload = "";
 
-	result.forEach((update) => {
-		payload += update.changes + "\n";
-	});
+  result.forEach((update) => {
+    payload += update.changes + "\n";
+  });
 
-	updates.publisher = publisher;
-	updates.sheet = sheetName;
-	updates.id =
-		result.length > 0 ? result[result.length - 1].updateid.toString() : id;
-	updates.payload = payload;
+  updates.publisher = publisher;
+  updates.sheet = sheetName;
+  updates.id =
+    result.length > 0 ? result[result.length - 1].updateid.toString() : id;
+  updates.payload = payload;
 
-	return updates;
+  return updates;
 }
-
-/**
- *
- *
- * @author eduardo-ruiz-garay
- */
-// async function runEndpointRegister(
-//   req: Request,
-//   res: Response,
-//   func: (
-//     registerArgument: RegisterArgument
-//   ) => Promise<RegisterArgument>[] | Promise<RegisterArgument> | Promise<void>
-// ): Promise<void> {
-//   let result: RegisterResult;
-
-//   if (!(await authenticate(req.headers.authorization))) {
-//     result = assembleRegisterResultObj(
-//       false,
-//       `${func.name} Unauthorized`,
-//       [],
-//       0
-//     );
-//     res.send(JSON.stringify(result));
-//     return;
-//   }
-
-//   try {
-//     let registerArgument = req.body as RegisterArgument;
-//     const value: RegisterArgument[] | RegisterArgument | void = await func(registerArgument);
-
-//     const time: Date.now();
-//     result = assembleRegisterResultObj(true, "null", value, time);
-//     res.send(JSON.stringify(result));
-//   } catch (error) {
-//     const err: Error = error as Error;
-//     console.error(error);
-//     result = assembleRegisterResultObj(false, `${func.name} ` + err.message, [], time);
-//     res.send(JSON.stringify(result));
-//   }
-// }
 
 /**
  * Runs the given endpoint function with the given request and response objects
@@ -110,36 +67,53 @@ async function getUpdatesHelper(
  * @author marbleville
  */
 async function runEndpointFuntion(
-	req: Request,
-	res: Response,
-	func: (
-		argument: Argument
-	) => Promise<Argument[]> | Promise<Argument> | Promise<void>
+  req: Request,
+  res: Response,
+  func: (
+    argument: Argument
+  ) => Promise<Argument[]> | Promise<Argument> | Promise<void>
 ): Promise<void> {
-	let result: Result;
+  let result: Result;
 
-	if (!(await authenticate(req.headers.authorization))) {
-		result = assembleResultObject(false, `${func.name} Unauthorized`, []);
-		res.send(JSON.stringify(result));
-		return;
-	}
+  if (!(await authenticate(req.headers.authorization))) {
+    result = assembleResultObject(false, `${func.name}: Unauthorized`, []);
+    res.send(JSON.stringify(result));
+    return;
+  }
 
-	try {
-		let argument = req.body as Argument;
-		let value: Argument[] | Argument | void = await func(argument);
+  try {
+    let argument = req.body as Argument;
+    let value: Argument[] | Argument | void = await func(argument);
 
-		result = assembleResultObject(true, `${func.name} `, value);
-		res.send(JSON.stringify(result));
-	} catch (error) {
-		const err: Error = error as Error;
-		console.error(err);
-		result = assembleResultObject(false, `${func.name} ` + err.message, []);
-		res.send(JSON.stringify(result));
-	}
+    result = assembleResultObject(true, `${func.name}: `, value);
+    res.send(JSON.stringify(result));
+  } catch (error) {
+    const err: Error = error as Error;
+    console.error(err);
+    result = assembleResultObject(false, `${func.name}: ` + err.message, []);
+    res.send(JSON.stringify(result));
+  }
 }
 
 /**
- * Authenticates the user based on the authorization header from the request
+ * Parses the Authorization header and returns [username, password].
+ *
+ * @param authHeader the Authorization header from the request with the form of
+ *   username:password encoded in base64
+ *
+ * @returns [username, password] string array
+ *
+ * @author kris-amerman, eduardo-ruiz-garay
+ */
+function parseAuthHeader(authHeader: string): string[] {
+  const base64 = authHeader.split(" ")[1];
+  // Decodes to binary
+  const decodedAuthHeader = Buffer.from(base64, "base64").toString("utf-8");
+  return decodedAuthHeader.split(":").map((str) => str.trimEnd());
+}
+
+/**
+ * Checks for a username:password match in the database.
  *
  * @param authHeader The authorization header from the request
  *
@@ -148,39 +122,34 @@ async function runEndpointFuntion(
  * @author marbleville, eduardo-ruiz-garay
  */
 async function authenticate(authHeader: string | undefined): Promise<boolean> {
-	if (authHeader === undefined) {
-		return false;
-	}
+  if (authHeader === undefined) {
+    return false;
+  }
 
-	/**
-	 * authHeader is the authorization header from the request with the form of
-	 * username:password encoded in base64
-	 *
-	 * Split the authHeader by the colon and decode to get the username
-	 * and password
-	 *
-	 * Search the Users table for the username and check the password
-	 *
-	 * If either fails, return false, otherwise return true
-	 */
-	const base64 = authHeader.split(" ")[1];
-	// Decodes to binary
-	const decodedAuthHeader = Buffer.from(base64, "base64").toString("utf-8");
-	const [username, password] = decodedAuthHeader
-		.split(":")
-		.map((str) => str.trimEnd());
-	const database = DatabaseInstance.getInstance();
+  /**
+   * authHeader is the authorization header from the request with the form of
+   * username:password encoded in base64
+   *
+   * Split the authHeader by the colon and decode to get the username
+   * and password
+   *
+   * Search the Users table for the username and check the password
+   *
+   * If either fails, return false, otherwise return true
+   */
+  const [username, password] = parseAuthHeader(authHeader);
+  const database = DatabaseInstance.getInstance();
 
-	let queryString = `SELECT * FROM publishers WHERE username = '${username}' 
+  let queryString = `SELECT * FROM publishers WHERE username = '${username}' 
 	AND pass = '${password}';`;
 
-	let result = null;
-	try {
-		result = await database.query(queryString);
-	} catch (error) {
-		console.error("An error happened  when authenticating the user", error);
-	}
-	return result?.length != 0 ? true : false;
+  let result = null;
+  try {
+    result = await database.query(queryString);
+  } catch (error) {
+    console.error("An error happened when authenticating the user", error);
+  }
+  return result?.length != 0 ? true : false;
 }
 
 /**
@@ -196,43 +165,25 @@ async function authenticate(authHeader: string | undefined): Promise<boolean> {
  * @author marbleville
  */
 function assembleResultObject(
-	success: boolean,
-	message: string,
-	value: Argument[] | Argument | void
+  success: boolean,
+  message: string,
+  value: Argument[] | Argument | void
 ): Result {
-	if (!(value instanceof Array) && value !== undefined) {
-		value = [value];
-	}
+  if (!(value instanceof Array) && value !== undefined) {
+    value = [value];
+  }
 
-	return {
-		success: success,
-		message: message,
-		value: value == undefined ? [] : value,
-	};
-}
-
-function assembleRegisterResultObj(
-	success: boolean,
-	message: string,
-	value: RegisterArgument[] | RegisterArgument | void,
-	time: Number
-): RegisterResult {
-	if (!(value instanceof Array) && value !== undefined) {
-		value = [value];
-	}
-	return {
-		success: success,
-		message: message,
-		value: value == undefined ? [] : value,
-		time: time,
-	};
+  return {
+    success: success,
+    message: message,
+    value: value == undefined ? [] : value,
+  };
 }
 
 export {
-	authenticate,
-	assembleResultObject,
-	runEndpointFuntion,
-	assembleRegisterResultObj,
-	// runEndpointRegister,
-	getUpdatesHelper,
+  authenticate,
+  assembleResultObject,
+  runEndpointFuntion,
+  parseAuthHeader,
+  getUpdatesHelper,
 };

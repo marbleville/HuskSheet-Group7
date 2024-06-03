@@ -1,0 +1,38 @@
+.dashboard-container {
+    padding: 20px;
+}
+
+.sheet-buttons-container {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.sheet-button {
+    margin-right: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #5ec78f;
+    border-radius: 5px;
+    background-color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.sheet-button:hover {
+    background-color: #f0f0f0;
+}
+
+.create-sheet-button {
+    padding: 10px 20px;
+    background-color: #38a169;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.create-sheet-button:hover {
+    background-color: #2b7b50;
+}

@@ -2,12 +2,12 @@ const express = require("express");
 import cors from "cors";
 import { Request, Response, Application } from "express";
 import {
-	authenticate,
-	assembleResultObject,
-	runEndpointFuntion,
-	//   runEndpointRegister,
+  authenticate,
+  assembleResultObject,
+  runEndpointFuntion,
+  parseAuthHeader,
 } from "./utils";
-import { Result } from "../../types/types";
+import { Result, Argument } from "../../types/types";
 import {
 	register,
 	getSheets,
@@ -20,6 +20,8 @@ import {
 	updateSubscription,
 } from "./serverFunctionsExporter";
 import HashStore from "./database/HashStore";
+
+import DatabaseInstance from "./database/databaseInstance";
 
 const app: Application = express();
 const PORT: Number = 3000;
@@ -34,9 +36,71 @@ const options: cors.CorsOptions = {
 app.use(cors(options));
 app.use(express.json());
 
-// app.get("/api/v1/register", async (req: Request, res: Response) => {
-//   runEndpointRegister(req, res, register);
-// });
+// register should be to register a publisher not add a user
+app.get("/api/v1/register", async (req: Request, res: Response) => {
+  let result: {
+    success: Boolean;
+    message: string | null;
+    value: Array<Argument>;
+    time: number;
+  };
+
+  const database = DatabaseInstance.getInstance();
+  const authHeader = req.headers.authorization;
+
+  // Invalid Authorization header provided
+  if (authHeader === undefined) {
+    result = {
+      success: false,
+      message: "Unauthorized",
+      value: [],
+      time: Date.now(),
+    };
+    res.send(JSON.stringify(result));
+    return;
+  }
+
+  const [username, password] = parseAuthHeader(authHeader);
+
+  let queryString = `SELECT * FROM publishers WHERE username = '${username}';`;
+  let queryResult = null;
+  let userExists = false;
+  let isAuthenticated = false;
+
+  // Check if a user exists (could be in separate function)
+  try {
+    queryResult = await database.query(queryString);
+  } catch (error) {
+    console.error("An error happened in register", error);
+  }
+  userExists = queryResult?.length != 0 ? true : false;
+
+  console.log("check if user exists");
+
+  // If user does NOT exist, create user
+  if (!userExists) {
+    await register(username, password);
+    console.log("create user");
+  }
+
+  isAuthenticated = await authenticate(authHeader);
+  let success = false;
+
+  console.log("call authenticate");
+
+  // If user exists and password matches, set success to true, otherwise leave false
+  if (isAuthenticated) {
+    success = true;
+  }
+
+  result = {
+    success: success,
+    message: null,
+    value: [],
+    time: Date.now(),
+  };
+  res.send(JSON.stringify(result));
+});
 
 app.get("/api/v1/getPublishers", async (req: Request, res: Response) => {
 	runEndpointFuntion(req, res, getPublishers);

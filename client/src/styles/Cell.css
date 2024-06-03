@@ -1,0 +1,14 @@
+.cell {
+    border: 1px solid #d2d6dc;
+    padding: 0;
+  }
+  
+  .cell-input {
+    width: 100%;
+    padding: 8px;
+    border: none;
+    outline: none;
+    box-sizing: border-box;
+  }
+  
+

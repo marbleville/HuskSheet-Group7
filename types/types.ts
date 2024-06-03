@@ -3,16 +3,8 @@ type ID = string;
 type Payload = Update;
 type Publisher = string;
 type Update = string;
-type username = string;
-type password = string;
 
 type Column = string;
-
-type RegisterArgument = {
-  id: ID;
-  username: username;
-  password: password;
-};
 
 type Argument = {
   publisher: Publisher;
@@ -25,13 +17,6 @@ type Result = {
   success: Boolean;
   message: string;
   value: Array<Argument>;
-};
-
-type RegisterResult = {
-  success: Boolean;
-  message: string;
-  value: Array<RegisterArgument>;
-  time: Number;
 };
 
 type Ref = {
@@ -78,6 +63,4 @@ export type {
   Term,
   Fun,
   Operation,
-  RegisterArgument,
-  RegisterResult,
 };

@@ -1,13 +1,13 @@
-import { RegisterArgument } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
 import DatabaseQueries from "../../../types/queries";
 
 /**
- * Creates a publisher with the client name
+ *  Creates a publisher in the DB with the given username and password.
+ *  @param username client username.
+ *  @param password client password.
+ *  @author kris-amerman, eduardo-ruiz-garay, rishavsarma5
  *
- * @param argument The argument object containing the publisher and the sheet name
- *
- * @author eduardo-ruiz-garay, rishavsarma5
+ * @TODO change to be create new user
  */
 async function register(registerArgument: RegisterArgument): Promise<void> {
 	/**
