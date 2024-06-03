@@ -1,4 +1,4 @@
-import { Ref, Term, ID, Payload } from "../../../types/types";
+import { Ref, Term, Payload } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
 import DatabaseQueries from "../../../types/queries";
 import { GetAllUpdates, GetSheetID } from "../database/db";
