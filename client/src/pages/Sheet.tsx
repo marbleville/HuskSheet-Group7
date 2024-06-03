@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import Cell from "./Cell";
 import { fetchWithAuth } from "../utils";
+import "../styles/Sheet.css";
 
 interface SheetDataMap {
   [ref: string]: string;
@@ -63,18 +64,22 @@ const Sheet: React.FC = () => {
    */
   const renderSheetHeader = () => {
     const headers = [];
-    headers.push(<th key="header-empty"></th>);
+    headers.push(<th key="header-empty" className="header"></th>);
 
     const col = initialSheetColumnSize;
-    for (let i = 1; i <= col; i++) {
+    for (let i = 0; i < col; i++) {
       let currentCol = i;
       let letters = "";
-      while (currentCol > 0) {
-        const remainder = (currentCol - 1) % 26;
+      while (currentCol >= 0) {
+        const remainder = currentCol % 26;
         letters = String.fromCharCode(65 + remainder) + letters;
-        currentCol = Math.floor((currentCol - 1) / 26);
+        currentCol = Math.floor(currentCol / 26) - 1;
       }
-      headers.push(<th key={`header-${letters}`}>{letters}</th>);
+      headers.push(
+        <th key={`header-${letters}`} className="header">
+          {letters}
+        </th>
+      );
     }
 
     return <tr>{headers}</tr>;
@@ -85,9 +90,14 @@ const Sheet: React.FC = () => {
 
     for (let row = 1; row <= initialSheetRowSize; row++) {
       const cellsPerRow = [];
-      cellsPerRow.push(<td key={`row-header-${row}`}>{row}</td>);
+      cellsPerRow.push(
+        <td key={`row-header-${row}`} className="row-header">
+          {row}
+        </td>
+      );
 
-      for (let col = 1; col <= initialSheetColumnSize; col++) {
+      for (let col = 0; col < initialSheetColumnSize; col++) {
+        // Start from 0
         const columnLetter = String.fromCharCode(65 + col);
         const cellId = `$${columnLetter}${row}`;
         cellsPerRow.push(
@@ -99,26 +109,35 @@ const Sheet: React.FC = () => {
           />
         );
       }
-      rows.push(<tr key={`row-${row}`}>{cellsPerRow}</tr>);
+      rows.push(
+        <tr key={`row-${row}`} className="row">
+          {cellsPerRow}
+        </tr>
+      );
     }
 
     return rows;
   };
 
   return (
-    <div>
-      <p>Publisher: {publisher}</p>
-      <p>Sheet Name: {sheet}</p>
-      <table className="sheet">
-        <thead>{renderSheetHeader()}</thead>
-        <tbody>{renderSheetRows()}</tbody>
-      </table>
-      <br />
-      <button
-        onClick={onPublishButtonClick}
-        key="publish-button"
-        value="Publish"
-      />
+    <div className="sheet-container">
+      <div className="info-section">
+        <div className="publisher-info">Publisher: {publisher}</div>
+        <div className="sheet-name">Sheet Name: {sheet}</div>
+        <button
+          onClick={onPublishButtonClick}
+          className="publish-button"
+          key="publish-button"
+        >
+          Publish
+        </button>
+      </div>
+      <div className="sheet-wrapper">
+        <table className="sheet">
+          <thead>{renderSheetHeader()}</thead>
+          <tbody>{renderSheetRows()}</tbody>
+        </table>
+      </div>
     </div>
   );
 };

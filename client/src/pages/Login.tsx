@@ -4,8 +4,9 @@ import { fetchWithAuth } from "../utils";
 import "../styles/Login.css";
 
 /**
- * @author rishavsarma5, krisamerman, eduardo-ruiz-garay
  * @description This is the Login page for our project. It accepts user-inputted username/password
+ * 
+ * @author rishavsarma5, krisamerman, eduardo-ruiz-garay
  */
 function Login() {
   const [username, setUsername] = useState("");

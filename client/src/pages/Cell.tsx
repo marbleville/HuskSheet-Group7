@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "../styles/Cell.css";
 
 interface CellProps {
   cellId: string;
@@ -24,8 +25,13 @@ const Cell: React.FC<CellProps> = ({ cellId, initialValue, onUpdate }) => {
   };
 
   return (
-    <td key={cellId}>
-      <input type="text" value={value} onChange={handleChange} />
+    <td key={cellId} className="cell">
+      <input
+        type="text"
+        value={value}
+        onChange={handleChange}
+        className="cell-input"
+      />
     </td>
   );
 };

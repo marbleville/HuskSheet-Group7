@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
 import { fetchWithAuth } from "../utils";
 import { useNavigate } from "react-router-dom";
-
-/**
- * @author kris-amerman
- * @description The dashboard page. Displays all sheets for the current user. Provides options to create, edit, and delete sheets.
- */
+import "../styles/Dashboard.css";
 
 interface SheetResponse {
   publisher: string;
@@ -14,6 +10,11 @@ interface SheetResponse {
   payload: string;
 }
 
+/**
+ * @description The dashboard page. Displays all sheets for the current user. Provides options to create, edit, and delete sheets.
+ * 
+ * @author kris-amerman, rishavsarma5
+ */
 function Dashboard() {
   const [sheets, setSheets] = useState<SheetResponse[]>([]);
 
@@ -42,10 +43,9 @@ function Dashboard() {
   // Create a new sheet with the on click and load any data that is on the sheet
   const handleSheetClick = (sheet: SheetResponse) => {
     // Placeholder handler for clicking on a sheet name
-
-    console.log("Clicked on sheet:", sheet.sheet);
-    alert("Clicked on sheet: " + sheet.sheet);
-
+    
+    //console.log("Clicked on sheet:", sheet.sheet);
+    //alert("Clicked on sheet: " + sheet.sheet);
     navigate(`/${sheet.sheet}`, { state: sheet });
   };
 
@@ -69,15 +69,21 @@ function Dashboard() {
   };
 
   return (
-    <div>
-      <div>
+    <div className="dashboard-container">
+      <div className="sheet-buttons-container">
         {sheets.map((sheet, index) => (
-          <button key={index} onClick={() => handleSheetClick(sheet)}>
+          <button
+            key={index}
+            onClick={() => handleSheetClick(sheet)}
+            className="sheet-button"
+          >
             {sheet.sheet}
           </button>
         ))}
       </div>
-      <button onClick={handleCreateSheet}>Create new sheet</button>
+      <button onClick={handleCreateSheet} className="create-sheet-button">
+        Create new sheet
+      </button>
     </div>
   );
 }
