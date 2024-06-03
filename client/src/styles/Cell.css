@@ -10,5 +10,14 @@
     outline: none;
     box-sizing: border-box;
   }
+
+  .cell-input:focus {
+    outline: 2px solid #2b7b50;
+  }
+  
+  .cell-input::selection {
+    background-color: #2b7b50;
+    color: white;
+  }
   
 

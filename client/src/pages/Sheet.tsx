@@ -16,13 +16,27 @@ const initializeSheet = (rowSize: number, colSize: number): SheetDataMap => {
 
   for (let i = 1; i <= rowSize; i++) {
     for (let j = 0; j < colSize; j++) {
-      const columnValue = String.fromCharCode(65 + j);
+      const columnValue: string = getHeaderLetter(j);
       const ref = `$${columnValue}${i}`;
       initialData[ref] = "";
     }
   }
-
+  
+  // Log the initialized data for debugging
+  console.log(initialData);
   return initialData;
+};
+
+const getHeaderLetter = (curr: number): string => {
+  let currentCol = curr;
+  let letters = "";
+  while (currentCol >= 0) {
+    const remainder = currentCol % 26;
+    letters = String.fromCharCode(65 + remainder) + letters;
+    currentCol = Math.floor(currentCol / 26) - 1;
+  }
+
+  return letters;
 };
 
 const Sheet: React.FC = () => {
@@ -31,6 +45,7 @@ const Sheet: React.FC = () => {
     sheet: string;
   }>();
 
+  // these two lines receive data from dashboard
   // const location = useLocation();
   // const data = location.state;
 
@@ -68,13 +83,7 @@ const Sheet: React.FC = () => {
 
     const col = initialSheetColumnSize;
     for (let i = 0; i < col; i++) {
-      let currentCol = i;
-      let letters = "";
-      while (currentCol >= 0) {
-        const remainder = currentCol % 26;
-        letters = String.fromCharCode(65 + remainder) + letters;
-        currentCol = Math.floor(currentCol / 26) - 1;
-      }
+      const letters: string = getHeaderLetter(i);
       headers.push(
         <th key={`header-${letters}`} className="header">
           {letters}
@@ -97,8 +106,7 @@ const Sheet: React.FC = () => {
       );
 
       for (let col = 0; col < initialSheetColumnSize; col++) {
-        // Start from 0
-        const columnLetter = String.fromCharCode(65 + col);
+        const columnLetter: string = getHeaderLetter(col);
         const cellId = `$${columnLetter}${row}`;
         cellsPerRow.push(
           <Cell
