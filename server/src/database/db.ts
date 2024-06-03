@@ -10,9 +10,9 @@ import { RowDataPacket } from "mysql2";
  * @author hunterbrodie
  */
 interface GetSheetRow extends RowDataPacket {
-  sheetid: number;
-  sheetname: string;
-  latest?: string;
+	sheetid: number;
+	sheetname: string;
+	latest?: string;
 }
 
 /**
@@ -21,7 +21,7 @@ interface GetSheetRow extends RowDataPacket {
  * @author hunterbrodie
  */
 interface GetUserRow extends RowDataPacket {
-  username: string;
+	username: string;
 }
 
 /**
@@ -30,8 +30,17 @@ interface GetUserRow extends RowDataPacket {
  * @author marbleville
  */
 interface GetUpdateRow extends RowDataPacket {
-  updateid: number;
-  changes: string;
+	updateid: number;
+	changes: string;
 }
 
-export { GetSheetRow, GetUserRow, GetUpdateRow };
+interface GetAllUpdates extends RowDataPacket {
+	payload: string;
+	sheet: number;
+}
+
+interface GetSheetID extends RowDataPacket {
+	sheetid: number;
+}
+
+export { GetSheetRow, GetUserRow, GetUpdateRow, GetAllUpdates, GetSheetID };

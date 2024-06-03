@@ -60,10 +60,11 @@ export default class DatabaseQueries {
 	 *
 	 * @author hunterbrodie
 	 */
-	static getUpdatesForPublished(sheetName: string): string {
-		return `SELECT updates.* FROM updates INNER JOIN sheets 
-      ON updates.sheet=sheets.sheetid 
-      WHERE sheets.sheetname=${sheetName} AND updates.accepted IS NULL;`;
+	static getUpdatesForPublished(publisher: string, sheetName: string, id: number): string {
+		return `SELECT updates.* FROM updates
+      INNER JOIN sheets ON updates.sheet=sheets.sheetid 
+      INNER JOIN publishers ON sheets.owner=publishers.userid
+      WHERE publishers.username=${publisher} AND sheets.sheetname=${sheetName} AND updates.updateid>${id};`;
 	}
 
 	/**
@@ -71,12 +72,12 @@ export default class DatabaseQueries {
 	 *
 	 * @author hunterbrodie
 	 */
-	static getUpdatesForSubscription(sheetName: string, id: string): string {
-		return `SELECT updates.* FROM updates INNER JOIN sheets 
-      ON updates.sheet=sheets.sheetid 
-      WHERE sheets.sheetname=${sheetName} AND updates.updateid>${parseInt(
-			id
-		)} AND updates.accepted IS TRUE;`;
+	static getUpdatesForSubscription(publisher: string, sheetName: string, id: number): string {
+		return `SELECT updates.* FROM updates
+      INNER JOIN sheets ON updates.sheet=sheets.sheetid 
+      INNER JOIN publishers ON sheets.owner=publishers.userid
+      WHERE publishers.username=${publisher} AND sheets.sheetname=${sheetName}
+      AND updates.updateid>${id} AND updates.owner=${publisher};`;
 	}
 
 	/**
@@ -145,5 +146,18 @@ export default class DatabaseQueries {
       VALUES (${id}, ${Date.now()}, (SELECT sheetid FROM sheets 
       WHERE sheetname = ${sheetName}), (SELECT userid FROM publishers 
       WHERE username = '${publisher}'), ${payload}, ${accepted});`;
+	}
+
+	static getSheetID(sheetName: string, publisher: string): string {
+		return `SELECT sheetid FROM sheets 
+	  WHERE sheetname = ${sheetName} 
+	  AND owner = (SELECT userid FROM publishers 
+	  WHERE username = '${publisher}');`;
+	}
+
+	static getAllOwnerUpdates(): string {
+		return `SELECT updates.sheetid, updates.payload FROM updates 
+		INNER JOIN sheets ON updates.sheet=sheets.sheetid WHERE 
+		sheet.owner=updates.owner;`;
 	}
 }

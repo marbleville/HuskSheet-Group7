@@ -9,17 +9,27 @@ import DatabaseQueries from "../../../types/queries";
  *
  * @TODO change to be create new user
  */
-async function register(username: string, password: string): Promise<void> {
-  const database = DatabaseInstance.getInstance();
-  let queryString = `
-      INSERT INTO publishers (username, pass)
-      VALUES ('${username}', '${password}');
-  `;
+async function register(registerArgument: RegisterArgument): Promise<void> {
+	/**
+	 *
+	 */
 
-  try {
-    await database.query(queryString);
-  } catch (error) {
-    console.error("An error happened when creating a new publisher", error);
-  }
+	const userid = registerArgument.id;
+	const username = registerArgument.username;
+	const password = registerArgument.password;
+
+	if (!username || !password || !userid) {
+		throw new Error("Username, password, and userid must be provided");
+	}
+
+	// Get database instance
+	const database = DatabaseInstance.getInstance();
+	try {
+		let queryString = DatabaseQueries.register(username, password);
+
+		await database.query(queryString);
+	} catch (error) {
+		throw new Error(`Failed to add ${username} to the database`);
+	}
 }
 export { register };

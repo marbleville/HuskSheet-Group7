@@ -1,6 +1,7 @@
 import { Argument, Publisher, Sheet, Payload } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
 import DatabaseQueries from "../../../types/queries";
+import HashStore from "../database/HashStore"
 
 /**
  * Updates the Updates table with the given publisher, sheet, and payload for
@@ -34,6 +35,8 @@ async function updatePublished(argument: Argument): Promise<void> {
 
 	try {
 		await database.query(queryString);
+    HashStore.initHash();
+    HashStore.updateSheetPayload(sheetName, publisher, payload);
 
 		// now we need to update the latest accepted version of the sheet
 	} catch (error) {
