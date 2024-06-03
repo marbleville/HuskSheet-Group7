@@ -17,10 +17,14 @@ import { get } from "http";
  */
 async function getUpdatesForPublished(argument: Argument): Promise<Argument> {
 	let sheetName: Sheet = argument.sheet;
-  let publisher: Publisher = argument.publisher;
-  let id: ID = parseInt(argument.id);
+	let publisher: Publisher = argument.publisher;
+	let id: number = parseInt(argument.id);
 
-	const queryString = DatabaseQueries.getUpdatesForPublished(publisher, sheetName, id);
+	const queryString = DatabaseQueries.getUpdatesForPublished(
+		publisher,
+		sheetName,
+		id
+	);
 
 	return getUpdatesHelper(argument, queryString);
 }

@@ -1,4 +1,4 @@
-import { Argument, Sheet, ID } from "../../../types/types";
+import { Argument, Sheet, Publisher } from "../../../types/types";
 import { getUpdatesHelper } from "../utils";
 import DatabaseQueries from "../../../types/queries";
 
@@ -18,9 +18,11 @@ async function getUpdatesForSubscription(
 	argument: Argument
 ): Promise<Argument> {
 	let sheetName: Sheet = argument.sheet;
-	let id: ID = parseInt(argument.id);
+	let publisher: Publisher = argument.publisher;
+	let id: number = parseInt(argument.id);
 
 	const queryString = DatabaseQueries.getUpdatesForSubscription(
+		publisher,
 		sheetName,
 		id
 	);
