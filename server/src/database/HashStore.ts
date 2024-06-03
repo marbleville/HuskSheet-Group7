@@ -29,7 +29,7 @@ export default class HashStore {
 			payloadArr.forEach((update) => {
 				let [ref, value] = update.split(" ");
 
-				let refObj = this.getRefFromString(ref);
+				let refObj = HashStore.getRefFromString(ref);
 
 				HashStore.sheets[sheetID].set(refObj, value);
 			});
@@ -42,7 +42,7 @@ export default class HashStore {
 	): Promise<Payload> {
 		let sheetID = await HashStore.getSheetID(publisher, sheetName);
 
-		let sheetMap = this.sheets[sheetID];
+		let sheetMap = HashStore.sheets[sheetID];
 
 		let payload = "";
 
@@ -60,14 +60,14 @@ export default class HashStore {
 	): Promise<void> {
 		let sheetID = await HashStore.getSheetID(publisher, sheetName);
 
-		let sheetMap = this.sheets[sheetID];
+		let sheetMap = HashStore.sheets[sheetID];
 
 		let updates = payload.split("\n");
 
 		for (let update of updates) {
 			let [ref, value] = update.split(" ");
 
-			let refObj = this.getRefFromString(ref);
+			let refObj = HashStore.getRefFromString(ref);
 
 			sheetMap.set(refObj, value);
 		}
