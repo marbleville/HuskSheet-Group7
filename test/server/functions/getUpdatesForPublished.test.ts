@@ -32,8 +32,8 @@ describe("getUpdatesForPublished", () => {
 		// Mock the database query result
 		mockResultArr = [
 			getMockUpdateQueryResults(
-				1,
-				"$A1 1\n$a2 'help'\n$B1 -1.01\n$C4 ''\n$c1 = SUM($A1:$B1)"
+				mockResult1.updateid,
+				mockResult1.changes
 			),
 		];
 

@@ -1,9 +1,6 @@
-import { Argument, Sheet, Publisher, ID, Payload } from "../../../types/types";
-import DatabaseInstance from "../database/databaseInstance";
+import { Argument, Sheet, Publisher } from "../../../types/types";
 import DatabaseQueries from "../../../types/queries";
-import { GetUpdateRow } from "../database/db";
 import { getUpdatesHelper } from "../utils";
-import { get } from "http";
 
 /**
  * Returns the updates for the given published sheet occuring after the given
