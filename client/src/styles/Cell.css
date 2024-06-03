@@ -1,6 +1,7 @@
 .cell {
     border: 1px solid #d2d6dc;
     padding: 0;
+    position: relative;
   }
   
   .cell-input {

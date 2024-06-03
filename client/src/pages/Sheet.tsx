@@ -21,9 +21,7 @@ const initializeSheet = (rowSize: number, colSize: number): SheetDataMap => {
       initialData[ref] = "";
     }
   }
-  
-  // Log the initialized data for debugging
-  console.log(initialData);
+
   return initialData;
 };
 

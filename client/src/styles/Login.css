@@ -30,12 +30,14 @@
 .inputContainer {
   margin-bottom: 20px;
   width: 100%;
+  display: flex;
+  justify-content: center; 
 }
 
 .inputContainer input {
-  width: 100%;
+  width: calc(100% - 20px); 
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid #5ec78f;
   border-radius: 5px;
   outline: none;
 }
