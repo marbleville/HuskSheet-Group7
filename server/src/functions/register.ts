@@ -10,26 +10,26 @@ import DatabaseQueries from "../../../types/queries";
  * @author eduardo-ruiz-garay, rishavsarma5
  */
 async function register(registerArgument: RegisterArgument): Promise<void> {
-  /**
-   *
-   */
+	/**
+	 *
+	 */
 
-  const userid = registerArgument.id;
-  const username = registerArgument.username;
-  const password = registerArgument.password;
+	const userid = registerArgument.id;
+	const username = registerArgument.username;
+	const password = registerArgument.password;
 
-  if (!username || !password || !userid) {
-    throw new Error("Username, password, and userid must be provided");
-  }
+	if (!username || !password || !userid) {
+		throw new Error("Username, password, and userid must be provided");
+	}
 
-  // Get database instance
-  const database = DatabaseInstance.getInstance();
-  try {
-    let queryString =  DatabaseQueries.register(userid, username, password);
+	// Get database instance
+	const database = DatabaseInstance.getInstance();
+	try {
+		let queryString = DatabaseQueries.register(username, password);
 
-    await database.query(queryString);
-  } catch (error) {
-    throw new Error(`Failed to add ${username} to the database`);
-  }
+		await database.query(queryString);
+	} catch (error) {
+		throw new Error(`Failed to add ${username} to the database`);
+	}
 }
 export { register };
