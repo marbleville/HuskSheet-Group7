@@ -7,7 +7,7 @@ import {
 	Payload,
 } from "../../types/types";
 import DatabaseInstance from "./database/databaseInstance";
-import HashStore from "../database/HashStore";
+import HashStore from "./database/HashStore";
 import { Request, Response } from "express";
 import { GetUpdateRow } from "./database/db";
 
@@ -28,14 +28,22 @@ async function getUpdatesHelper(
 	argument: Argument,
 	query: string
 ): Promise<Argument> {
-	let updates: Argument = { publisher: "", sheet: "", id: "", payload: "" };
+	let updates: Argument = {
+		publisher: argument.publisher,
+		sheet: argument.sheet,
+		id: "",
+		payload: "",
+	};
 	let publisher: Publisher = argument.publisher;
 	let sheetName: Sheet = argument.sheet;
 	let id: ID = argument.id;
 
 	if (parseInt(id) == 0) {
 		HashStore.initHash();
-		return await HashStore.getSheetPayload(publisher, sheetName);
+		let payload = await HashStore.getSheetPayload(publisher, sheetName);
+		updates.payload = payload;
+		updates.id = "0"; // TODO: change to the last update id
+		return updates;
 	}
 
 	const database = DatabaseInstance.getInstance();
