@@ -1,0 +1,22 @@
+.header-container {
+    display: flex;
+    justify-content: space-between; 
+    padding: 1rem; 
+    align-items: center;
+}
+
+.husksheets {
+    font-size: 30px;
+    font-weight: bold;
+    color: #5b5b5d;
+}
+
+.logout-button {
+    padding: 0.5rem 1rem;
+    height: auto;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #38a169;
+}
