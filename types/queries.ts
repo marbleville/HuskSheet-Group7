@@ -157,15 +157,14 @@ export default class DatabaseQueries {
 	}
 
 	static getSheetID(sheetName: string, publisher: string): string {
-		return `SELECT sheetid FROM sheets 
-	  WHERE sheetname = ${sheetName} 
-	  AND owner = (SELECT userid FROM publishers 
-	  WHERE username = '${publisher}');`;
+		return `SELECT sheets.sheetid FROM sheets 
+		INNER JOIN publishers ON sheets.owner=publishers.userid
+		WHERE sheets.sheetname="${sheetName}" AND publishers.username="${publisher}";`;
 	}
 
 	static getAllOwnerUpdates(): string {
-		return `SELECT updates.sheetid, updates.payload, updates.updateid FROM updates 
+		return `SELECT updates.sheet, updates.changes, updates.updateid FROM updates 
 		INNER JOIN sheets ON updates.sheet=sheets.sheetid WHERE 
-		sheet.owner=updates.owner;`;
+		sheets.owner=updates.owner;`;
 	}
 }
