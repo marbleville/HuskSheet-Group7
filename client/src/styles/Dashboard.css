@@ -7,6 +7,7 @@
 .dashboard-container {
     width: 75%;
     padding: 20px;
+    margin-top: 50px; 
 }
 
 .sheet-buttons-container {
@@ -74,7 +75,6 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
     background-color: #38a169;
     float: right;
 }
@@ -82,6 +82,7 @@
 .publisher-header {
     user-select: none;
     width: fit-content;
+    color: #5b5b5d;
 }
 
 .publisher-header:hover {
@@ -94,3 +95,9 @@
     font-size: 0.8em;
     margin-right: 5px;
   }
+
+.wrapper {
+    display: flex;
+    min-height: 100vh;
+    justify-content: center;
+}

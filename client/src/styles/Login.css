@@ -4,6 +4,15 @@
  * @author rishavsarma5
  */
 
+.login-container {
+  width: 100%;
+  padding-top: 2rem;
+  display: flex;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+}
+
 .loginPage {
   display: flex;
   flex-direction: column;
