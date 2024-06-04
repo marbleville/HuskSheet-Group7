@@ -49,7 +49,7 @@ function Login() {
 
     try {
       await fetchWithAuth(
-        "http://localhost:3000/api/v1/register", 
+        "http://localhost:3000/api/v1/register",
         { method: "GET" },
         (data) => handleRegisterSuccess(data),
         (data) => handleRegisterFailure(data)
@@ -60,33 +60,35 @@ function Login() {
   };
 
   return (
-    <div className="loginPage">
-      <h1>Welcome to HuskSheets!</h1>
-      <br />
-      <h2>Please enter your username and password below.</h2>
-      <div className="inputContainer">
+    <div className="login-container">
+      <div className="loginPage">
+        <h1>Welcome to HuskSheets!</h1>
+        <br />
+        <h2>Please enter your username and password below.</h2>
+        <div className="inputContainer">
+          <input
+            value={username}
+            placeholder="Enter your username here"
+            onChange={(un) => setUsername(un.target.value)}
+          />
+          <label className="errorLabel">{usernameError}</label>
+        </div>
+        <br />
+        <div className="inputContainer">
+          <input
+            value={password}
+            placeholder="Enter your password here"
+            onChange={(pw) => setPassword(pw.target.value)}
+          />
+          <label className="errorLabel">{passwordError}</label>
+        </div>
         <input
-          value={username}
-          placeholder="Enter your username here"
-          onChange={(un) => setUsername(un.target.value)}
+          onClick={onLoginButtonClick}
+          className="loginButton"
+          type="button"
+          value="Login"
         />
-        <label className="errorLabel">{usernameError}</label>
       </div>
-      <br />
-      <div className="inputContainer">
-        <input
-          value={password}
-          placeholder="Enter your password here"
-          onChange={(pw) => setPassword(pw.target.value)}
-        />
-        <label className="errorLabel">{passwordError}</label>
-      </div>
-      <input
-        onClick={onLoginButtonClick}
-        className="loginButton"
-        type="button"
-        value="Login"
-      />
     </div>
   );
 }

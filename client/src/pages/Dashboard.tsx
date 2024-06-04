@@ -93,49 +93,51 @@ function Dashboard() {
   }, []);
 
   return (
-    <div className="dashboard-container">
-      <h1>Hello, {username} 👋</h1>
-      <div className="create-sheet-container">
-        <input
-          value={sheetName}
-          placeholder="Untitled Sheet"
-          className="create-sheet-input"
-          onChange={(e) => setSheetName(e.target.value)}
-        />
-        <button onClick={handleCreateSheet} className="create-sheet-button">
-          Create new sheet +
-        </button>
+    <div className="wrapper">
+      <div className="dashboard-container">
+        <p style={{"fontSize": "28px", "fontWeight": "bold", "color": "#5b5b5d", "marginBottom": "50px"}}>Hello, {username} 👋</p>
+        <div className="create-sheet-container">
+          <input
+            value={sheetName}
+            placeholder="Untitled Sheet"
+            className="create-sheet-input"
+            onChange={(e) => setSheetName(e.target.value)}
+          />
+          <button onClick={handleCreateSheet} className="create-sheet-button">
+            Create new sheet +
+          </button>
+        </div>
+        {publishers
+          .sort((a, b) => (a === username ? -1 : b === username ? 1 : 0)) // Move current user's publisher to the top
+          .map(publisher => (
+            <div key={publisher}>
+              <h2 onClick={() => toggleExpand(publisher)} className="publisher-header">
+                <span className="chevron-icon">{expanded[publisher] ? "▼" : "►"}</span>
+                {publisher}
+              </h2>
+              {expanded[publisher] && (
+                <div className="sheet-buttons-container">
+                  {sheetsByPublisher[publisher]?.slice().reverse().map((sheet, index) => ( // Reverse the sheets array
+                    <div key={index} className="sheet-button-container">
+                      <button
+                        onClick={() => handleSheetClick(sheet)}
+                        className="sheet-button"
+                      >
+                        <p className="sheet-name-text">{sheet.sheet}</p>
+                      </button>
+                      <button
+                        className="delete-button"
+                        onClick={() => handleDeleteSheet(sheet)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
       </div>
-      {publishers
-        .sort((a, b) => (a === username ? -1 : b === username ? 1 : 0)) // Move current user's publisher to the top
-        .map(publisher => (
-          <div key={publisher}>
-            <h2 onClick={() => toggleExpand(publisher)} className="publisher-header">
-              <span className="chevron-icon">{expanded[publisher] ? "▼" : "►"}</span>
-              {publisher}
-            </h2>
-            {expanded[publisher] && (
-              <div className="sheet-buttons-container">
-                {sheetsByPublisher[publisher]?.slice().reverse().map((sheet, index) => ( // Reverse the sheets array
-                  <div key={index} className="sheet-button-container">
-                    <button
-                      onClick={() => handleSheetClick(sheet)}
-                      className="sheet-button"
-                    >
-                      <p className="sheet-name-text">{sheet.sheet}</p>
-                    </button>
-                    <button
-                      className="delete-button"
-                      onClick={() => handleDeleteSheet(sheet)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
     </div>
   );
 }
