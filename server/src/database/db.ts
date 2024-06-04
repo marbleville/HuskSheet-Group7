@@ -37,6 +37,7 @@ interface GetUpdateRow extends RowDataPacket {
 interface GetAllUpdates extends RowDataPacket {
 	payload: string;
 	sheet: number;
+	updateid: number;
 }
 
 interface GetSheetID extends RowDataPacket {

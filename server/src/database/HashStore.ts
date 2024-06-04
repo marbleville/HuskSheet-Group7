@@ -1,7 +1,9 @@
-import { Ref, Term, Payload } from "../../../types/types";
+import { Ref, Term, Payload, ID } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
 import DatabaseQueries from "../../../types/queries";
 import { GetAllUpdates, GetSheetID } from "../database/db";
+const accessSheetMap = 0;
+const accessSheetID = 1;
 
 /**
  * Singleton class that stores a cache of each of the sheets in the database.
@@ -9,7 +11,7 @@ import { GetAllUpdates, GetSheetID } from "../database/db";
  * @author marbleville, huntebrodie
  */
 export default class HashStore {
-	private static sheets: Array<Map<Ref, Term>>;
+	private static sheets: Array<[Map<Ref, Term>, ID]>;
 
 	constructor() {}
 
@@ -24,31 +26,33 @@ export default class HashStore {
 			return;
 		}
 
-		HashStore.sheets = new Array<Map<Ref, Term>>();
+		HashStore.sheets = new Array<[Map<Ref, Term>, ID]>();
 
 		let allOwnerUpdates =
 			await DatabaseInstance.getInstance().query<GetAllUpdates>(
 				DatabaseQueries.getAllOwnerUpdates()
 			);
 
-		allOwnerUpdates.forEach((update) => {
-			let sheetID = update.sheet;
-			let payload = update.payload;
+		allOwnerUpdates.forEach((sheet) => {
+			let sheetID = sheet.sheet;
+			let payload = sheet.payload;
 
 			let payloadArr = payload.split("\n");
 
-			payloadArr.forEach((update) => {
-				let [ref, value] = update.split(" ");
+			payloadArr.forEach((updatePerSheet) => {
+				let [ref, value] = updatePerSheet.split(" ");
 
 				let refObj = HashStore.getRefFromString(ref);
 
-				HashStore.sheets[sheetID].set(refObj, value);
+				HashStore.sheets[sheetID][accessSheetMap].set(refObj, value);
+
+				HashStore.sheets[sheetID][accessSheetID] =
+					sheet.updateid.toString();
 			});
 		});
 	}
 
 	/**
-	 *
 	 * @param publisher the publisher of the sheet ot get the payload for
 	 * @param sheetName the name of the sheet to get the payload for
 	 *
@@ -63,7 +67,7 @@ export default class HashStore {
 	): Promise<Payload> {
 		let sheetID = await HashStore.getSheetID(publisher, sheetName);
 
-		let sheetMap = HashStore.sheets[sheetID];
+		let sheetMap = HashStore.sheets[sheetID][accessSheetMap];
 
 		let payload = "";
 
@@ -75,10 +79,10 @@ export default class HashStore {
 	}
 
 	/**
-	 * Updates teh cache of the given sheet with the new changes in the payload.
+	 * Updates the cache of the given sheet with the new changes in the payload.
 	 *
-	 * @param sheetName the name of the sheet to update
-	 * @param publisher the publisher of the sheet to update
+	 * @param sheetName the name of the sheet to updatePerSheet
+	 * @param publisher the publisher of the sheet to updatePerSheet
 	 * @param payload the payload coantinig new changes to add to the cache
 	 *
 	 * @author marbleville, huntebrodie
@@ -90,12 +94,12 @@ export default class HashStore {
 	): Promise<void> {
 		let sheetID = await HashStore.getSheetID(publisher, sheetName);
 
-		let sheetMap = HashStore.sheets[sheetID];
+		let sheetMap = HashStore.sheets[sheetID][accessSheetMap];
 
 		let updates = payload.split("\n");
 
-		for (let update of updates) {
-			let [ref, value] = update.split(" ");
+		for (let updatePerSheet of updates) {
+			let [ref, value] = updatePerSheet.split(" ");
 
 			let refObj = HashStore.getRefFromString(ref);
 

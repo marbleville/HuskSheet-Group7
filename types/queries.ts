@@ -60,7 +60,11 @@ export default class DatabaseQueries {
 	 *
 	 * @author hunterbrodie
 	 */
-	static getUpdatesForPublished(publisher: string, sheetName: string, id: number): string {
+	static getUpdatesForPublished(
+		publisher: string,
+		sheetName: string,
+		id: number
+	): string {
 		return `SELECT updates.* FROM updates
       INNER JOIN sheets ON updates.sheet=sheets.sheetid 
       INNER JOIN publishers ON sheets.owner=publishers.userid
@@ -72,7 +76,11 @@ export default class DatabaseQueries {
 	 *
 	 * @author hunterbrodie
 	 */
-	static getUpdatesForSubscription(publisher: string, sheetName: string, id: number): string {
+	static getUpdatesForSubscription(
+		publisher: string,
+		sheetName: string,
+		id: number
+	): string {
 		return `SELECT updates.* FROM updates
       INNER JOIN sheets ON updates.sheet=sheets.sheetid 
       INNER JOIN publishers ON sheets.owner=publishers.userid
@@ -156,7 +164,7 @@ export default class DatabaseQueries {
 	}
 
 	static getAllOwnerUpdates(): string {
-		return `SELECT updates.sheetid, updates.payload FROM updates 
+		return `SELECT updates.sheetid, updates.payload, updates.updateid FROM updates 
 		INNER JOIN sheets ON updates.sheet=sheets.sheetid WHERE 
 		sheet.owner=updates.owner;`;
 	}
