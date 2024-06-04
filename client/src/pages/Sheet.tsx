@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import Cell from "./Cell";
 import { fetchWithAuth } from "../utils";
 import "../styles/Sheet.css";
@@ -63,10 +63,13 @@ const getHeaderLetter = (curr: number): string => {
  * @author kris-amerman, rishavsarma5, eduardo-ruiz-garay
  */
 const Sheet: React.FC = () => {
+  
+  /*
   const { publisher, sheet } = useParams<{
     publisher: string;
     sheet: string;
   }>();
+  */
 
   // receive information about sheet from dashboard page
   const location = useLocation();
@@ -206,8 +209,8 @@ const Sheet: React.FC = () => {
   return (
     <div className="sheet-container">
       <div className="info-section">
-        <div className="publisher-info">Publisher: {publisher}</div>
-        <div className="sheet-name">Sheet Name: {sheet}</div>
+        <div className="publisher-info">Publisher: {sheetInfo.publisher}</div>
+        <div className="sheet-name">Sheet Name: {sheetInfo.sheet}</div>
         <button
           onClick={onPublishButtonClick}
           className="publish-button"

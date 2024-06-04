@@ -30,6 +30,9 @@ const Cell: React.FC<CellProps> = ({ cellId, initialValue, onUpdate }) => {
  */
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value;
+
+    // TODO: Handle Formula/Expression Evaluation here
+
     setValue(newValue);
     onUpdate(newValue, cellId);
   };
