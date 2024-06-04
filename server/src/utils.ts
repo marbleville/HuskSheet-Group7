@@ -39,7 +39,7 @@ async function getUpdatesHelper(
 	let id: ID = argument.id;
 
 	if (parseInt(id) == 0) {
-		HashStore.initHash();
+		await HashStore.initHash();
 		let payload = await HashStore.getSheetPayload(publisher, sheetName);
 		updates.payload = payload[0];
 		updates.id = payload[1];
