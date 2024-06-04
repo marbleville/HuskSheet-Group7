@@ -3,7 +3,7 @@ import { Argument } from "../../../types/types";
 
 describe("getPublishers", () => {
 	it("should return an array of arguments containing all publishers", async () => {
-    expect(await getPublishers(true)).toEqual([
+    expect(await getPublishers()).toEqual([
       {
        "id": "",
         "payload": "",

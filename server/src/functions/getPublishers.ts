@@ -8,7 +8,7 @@ import { GetSheetRow, GetUserRow } from "../database/db";
  *
  * @author marbleville, rishavsarma5
  */
-async function getPublishers(test: boolean = false): Promise<Array<Argument>> {
+async function getPublishers(): Promise<Array<Argument>> {
 	let publishers: Array<Argument> = [];
 
 	/**
@@ -21,8 +21,7 @@ async function getPublishers(test: boolean = false): Promise<Array<Argument>> {
 	const database = DatabaseInstance.getInstance();
 
 	const publishers_result = await database.query<GetUserRow>(
-		get_publishers_query,
-    test
+		get_publishers_query
 	);
 
 	// Push publishers to the publishers array

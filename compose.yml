@@ -24,10 +24,26 @@ services:
             - "./server:/server"
             - "/server/node_modules"
             - "./types:/types"
-            - './test:/test'
-        command: bash -c "(npm install --prefix /test && npm run test --prefix /test) || (npm install --prefix /server && npm run dev --prefix /server)"
+        command: bash -c "npm install --prefix /server && npm run dev --prefix /server"
         links:
             - "db:db"
+        env_file:
+            - "./config/db.dev.env"
+
+    testing:
+        image: node
+        container_name: testing
+        volumes:
+            - "./server:/server"
+            - "/server/node_modules"
+            - "./types:/types"
+            - "./test:/test"
+        command: bash -c "npm install --prefix /server && npm install --prefix /test && npm run test --prefix /test"
+        links:
+            - "db:db"
+        env_file:
+            - "./config/db.test.env"
+
 
     frontend:
         image: node
