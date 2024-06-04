@@ -3,7 +3,6 @@ import { useLocation } from "react-router-dom";
 import Cell from "./Cell";
 import { fetchWithAuth } from "../utils";
 import "../styles/Sheet.css";
-import { SheetResponse } from "./Dashboard";
 import { Argument } from "../../../types/types";
 
 /**
@@ -73,7 +72,7 @@ const Sheet: React.FC = () => {
 
   // receive information about sheet from dashboard page
   const location = useLocation();
-  const sheetInfo: SheetResponse = location.state;
+  const sheetInfo: Argument = location.state;
 
   // initializes the first sheetData with 100 rows/columns
   const initialSheetData: SheetDataMap = initializeSheet(

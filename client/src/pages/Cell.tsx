@@ -18,7 +18,7 @@ interface CellProps {
  * 
  * @author rishavsarma5
  */
-const Cell: React.FC<CellProps> = ({ cellId, initialValue, onUpdate }) => {
+const Cell: React.FC<CellProps> = React.memo(({ cellId, initialValue, onUpdate }) => {
   // sets state for cell
   const [value, setValue] = useState(initialValue);
 
@@ -34,8 +34,15 @@ const Cell: React.FC<CellProps> = ({ cellId, initialValue, onUpdate }) => {
     // TODO: Handle Formula/Expression Evaluation here
 
     setValue(newValue);
-    onUpdate(newValue, cellId);
   };
+
+  React.useEffect(() => {
+    const handler = setTimeout(() => {
+      onUpdate(value, cellId);
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [cellId, onUpdate, value])
 
   // html for rendering a cell
   return (
@@ -48,6 +55,6 @@ const Cell: React.FC<CellProps> = ({ cellId, initialValue, onUpdate }) => {
       />
     </td>
   );
-};
+});
 
 export default Cell;
