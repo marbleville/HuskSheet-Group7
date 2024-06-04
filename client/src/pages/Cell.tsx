@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "../styles/Cell.css";
-import Parser from "../functions/Parser";
+//import Parser from "../functions/Parser";
 
 /**
  * @description This is the Props object used for communicating between a Cell and the Sheet.
@@ -38,6 +38,7 @@ const Cell: React.FC<CellProps> = React.memo(
       // Start with handling functions that begin with =___(), then move to
       // Create a parser function that checks whether there is a formula or
 
+      /*
       console.log(newValue);
       const parser = new Parser();
       console.log(parser.parse(""));
@@ -63,7 +64,8 @@ const Cell: React.FC<CellProps> = React.memo(
       }
       console.log(parseSumFunction(newValue));
       const formulatedVal = parseSumFunction(newValue).toString();
-      setValue(formulatedVal);
+      */
+      setValue(newValue);
     };
 
     const handleBlur = () => {

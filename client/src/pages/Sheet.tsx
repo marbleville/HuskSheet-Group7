@@ -62,13 +62,6 @@ const getHeaderLetter = (curr: number): string => {
  * @author kris-amerman, rishavsarma5, eduardo-ruiz-garay
  */
 const Sheet: React.FC = () => {
-  /*
-  const { publisher, sheet } = useParams<{
-    publisher: string;
-    sheet: string;
-  }>();
-  */
-
   // receive information about sheet from dashboard page
   const location = useLocation();
   const sheetInfo: Argument = location.state;
@@ -90,7 +83,7 @@ const Sheet: React.FC = () => {
    * @author rishavsarma5, eduardo-ruiz-garay
    */
   const handleCellUpdate = (value: string, cellId: string) => {
-    console.log(`should be called for ${cellId} with value: ${value}`);
+    //console.log(`should be called for ${cellId} with value: ${value}`);
     setSheetData((prevSheetData) => {
       const updatedSheetData = { ...prevSheetData, [cellId]: value };
       prevCellDataRef.current = {
@@ -126,6 +119,8 @@ const Sheet: React.FC = () => {
       id: "",
       payload: getAllCellUpdates(),
     };
+
+    //console.log(allUpdates.payload);
 
     // calls updatePublished or updateSubscribed depending on user and relation to sheet
     // @TODO: call UpdateSubscribed
