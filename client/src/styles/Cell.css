@@ -1,24 +1,30 @@
-.cell {
-    border: 1px solid #d2d6dc;
-    padding: 0;
-    position: relative;
-  }
-  
-  .cell-input {
-    width: 100%;
-    padding: 8px;
-    border: none;
-    outline: none;
-    box-sizing: border-box;
-  }
+/**
+ * @description CSS for Cell.
+ * 
+ * @author rishavsarma5
+ */
 
-  .cell-input:focus {
-    outline: 2px solid #2b7b50;
-  }
+.cell {
+  border: 1px solid #d2d6dc;
+  padding: 0;
+  position: relative;
+}
   
-  .cell-input::selection {
-    background-color: #2b7b50;
-    color: white;
-  }
-  
+.cell-input {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.cell-input:focus {
+  outline: 2px solid #2b7b50;
+}
+
+.cell-input::selection {
+  background-color: #2b7b50;
+  color: white;
+}
+
 

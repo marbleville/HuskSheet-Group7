@@ -1,3 +1,9 @@
+/**
+ * @description CSS for Login page.
+ * 
+ * @author rishavsarma5
+ */
+
 .loginPage {
   display: flex;
   flex-direction: column;

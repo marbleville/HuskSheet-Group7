@@ -6,13 +6,24 @@ import "../styles/Sheet.css";
 import { SheetResponse } from "./Dashboard";
 import { Argument } from "../../../types/types";
 
+/**
+ * @description This is the HashMap type that represents how cell data is stored on a sheet.
+ * 
+ * @author rishavsarma5
+ */
 interface SheetDataMap {
   [ref: string]: string;
 }
 
-const initialSheetRowSize = 52;
-const initialSheetColumnSize = 52;
+// GLOBAL CONSTANTS
+const INITIALSHEETROWSIZE = 100;
+const INITIALSHEETCOLUMNSIZE = 100;
 
+/**
+ * @description Initializes the sheet HashMap based on given row/columns.
+ * 
+ * @author rishavsarma5
+ */
 const initializeSheet = (rowSize: number, colSize: number): SheetDataMap => {
   const initialData: SheetDataMap = {};
 
@@ -27,6 +38,12 @@ const initializeSheet = (rowSize: number, colSize: number): SheetDataMap => {
   return initialData;
 };
 
+/**
+ * @description Helper to get the letter of the column
+ * Starts from 'A ... Z, then 'AA ... AZ', etc.
+ * 
+ * @author rishavsarma5
+ */
 const getHeaderLetter = (curr: number): string => {
   let currentCol = curr;
   let letters = "";
@@ -39,48 +56,61 @@ const getHeaderLetter = (curr: number): string => {
   return letters;
 };
 
+/**
+ * @description Represents a Sheet that a publisher owns and Subscribers can make edits on.
+ * Renders a scrollable table with cell inputs and a publish button to allow edits to be saved to the server.
+ * 
+ * @author kris-amerman, rishavsarma5, eduardo-ruiz-garay
+ */
 const Sheet: React.FC = () => {
   const { publisher, sheet } = useParams<{
     publisher: string;
     sheet: string;
   }>();
 
-  // these two lines receive data from dashboard
+  // receive information about sheet from dashboard page
   const location = useLocation();
   const sheetInfo: SheetResponse = location.state;
 
-  let sheetData: SheetDataMap = initializeSheet(
-    initialSheetRowSize,
-    initialSheetColumnSize
+  // initializes the first sheetData with 100 rows/columns
+  const initialSheetData: SheetDataMap = initializeSheet(
+    INITIALSHEETROWSIZE,
+    INITIALSHEETCOLUMNSIZE
   );
 
-  //sets use state as sheet data
-  const [cellValue, setCellValue] = useState<SheetDataMap>(sheetData);
+  // sets state for sheet data
+  const [sheetData, setSheetData] = useState<SheetDataMap>(initialSheetData);
 
-  const handleChange = (value: string, cellId: string) => {
-    // console.log(value);
-    sheetData = { ...sheetData, [cellId]: value };
-    setCellValue(sheetData);
-    console.log(cellId);
-    console.log(sheetData[cellId]);
-    // console.log(cellValue);
+/**
+ * @description Updates the sheetData when a cell's input changes.
+ * 
+ * @author rishavsarma5, eduardo-ruiz-garay
+ */
+  const handleCellUpdate = (value: string, cellId: string) => {
+    setSheetData((prevState) => {
+      return { ...prevState, [cellId]: value };
+    });
   };
 
-  // Gets the updates to the cel map and pushes to backend using args.
+/**
+ * @description Gets all new updates a Publisher/Subscriber makes on a sheet and pushes to server using args.
+ * 
+ * @author rishavsarma5, eduardo-ruiz-garay
+ */
   const onPublishButtonClick = async () => {
+
+    // iterates through sheetData and stores updates in a new-line delimited string
     const getAllCellUpdates = (): string => {
       const payload: string[] = [];
       for (const [ref, valueAtCell] of Object.entries(sheetData)) {
-        console.log(ref);
-        console.log(valueAtCell);
         if (valueAtCell !== "") {
           payload.push(`${ref} ${valueAtCell}`);
-          console.log(valueAtCell);
         }
       }
       return payload.join("/n");
     };
 
+    // Argument object of all updates to a sheet
     const allUpdates: Argument = {
       publisher: sheetInfo.publisher,
       sheet: sheetInfo.sheet,
@@ -93,6 +123,9 @@ const Sheet: React.FC = () => {
     console.log(allUpdates.id);
     console.log(allUpdates.payload);
 
+    // calls updatePublished or updateSubscribed depending on user and relation to sheet
+    // TODO: call UpdateSubscribed
+
     try {
       await fetchWithAuth("http://localhost:3000/api/v1/updatePublished", {
         method: "POST",
@@ -104,15 +137,18 @@ const Sheet: React.FC = () => {
   };
 
   /**
-   * Displays the headers of the columns correctly with the A then to AA by using mod 26
+   * Renders the headers of the columns correctly with the A then to AA by using mod 26.
    *
+   * @author rishavsarma5, eduardo-ruiz-garay
    * @returns the new headers for the columns
    */
+
+  // TODO: make dynamic
   const renderSheetHeader = () => {
     const headers = [];
     headers.push(<th key="header-empty" className="header"></th>);
 
-    const col = initialSheetColumnSize;
+    const col = INITIALSHEETCOLUMNSIZE;
     for (let i = 0; i < col; i++) {
       const letters: string = getHeaderLetter(i);
       headers.push(
@@ -125,10 +161,18 @@ const Sheet: React.FC = () => {
     return <tr>{headers}</tr>;
   };
 
+  /**
+   * Renders the rows and renders cells for each column in each row.
+   *
+   * @author rishavsarma5, eduardo-ruiz-garay
+   * @returns the row headers and cells per row
+   */
+
+  // TODO: make dynamic
   const renderSheetRows = () => {
     const rows = [];
 
-    for (let row = 1; row <= initialSheetRowSize; row++) {
+    for (let row = 1; row <= INITIALSHEETROWSIZE; row++) {
       const cellsPerRow = [];
       cellsPerRow.push(
         <td key={`row-header-${row}`} className="row-header">
@@ -136,15 +180,15 @@ const Sheet: React.FC = () => {
         </td>
       );
 
-      for (let col = 0; col < initialSheetColumnSize; col++) {
+      for (let col = 0; col < INITIALSHEETCOLUMNSIZE; col++) {
         const columnLetter: string = getHeaderLetter(col);
         const cellId = `$${columnLetter}${row}`;
         cellsPerRow.push(
           <Cell
             key={cellId}
             cellId={cellId}
-            initialValue={cellValue[cellId]}
-            onUpdate={handleChange}
+            initialValue={sheetData[cellId]}
+            onUpdate={handleCellUpdate}
           />
         );
       }
@@ -158,6 +202,7 @@ const Sheet: React.FC = () => {
     return rows;
   };
 
+  // html for rendering sheet
   return (
     <div className="sheet-container">
       <div className="info-section">
