@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Cell from "./Cell";
 import { fetchWithAuth } from "../utils";
@@ -7,7 +7,7 @@ import { Argument } from "../../../types/types";
 
 /**
  * @description This is the HashMap type that represents how cell data is stored on a sheet.
- * 
+ *
  * @author rishavsarma5
  */
 interface SheetDataMap {
@@ -20,7 +20,7 @@ const INITIALSHEETCOLUMNSIZE = 100;
 
 /**
  * @description Initializes the sheet HashMap based on given row/columns.
- * 
+ *
  * @author rishavsarma5
  */
 const initializeSheet = (rowSize: number, colSize: number): SheetDataMap => {
@@ -40,7 +40,7 @@ const initializeSheet = (rowSize: number, colSize: number): SheetDataMap => {
 /**
  * @description Helper to get the letter of the column
  * Starts from 'A ... Z, then 'AA ... AZ', etc.
- * 
+ *
  * @author rishavsarma5
  */
 const getHeaderLetter = (curr: number): string => {
@@ -58,11 +58,10 @@ const getHeaderLetter = (curr: number): string => {
 /**
  * @description Represents a Sheet that a publisher owns and Subscribers can make edits on.
  * Renders a scrollable table with cell inputs and a publish button to allow edits to be saved to the server.
- * 
+ *
  * @author kris-amerman, rishavsarma5, eduardo-ruiz-garay
  */
 const Sheet: React.FC = () => {
-  
   /*
   const { publisher, sheet } = useParams<{
     publisher: string;
@@ -83,30 +82,37 @@ const Sheet: React.FC = () => {
   // sets state for sheet data
   const [sheetData, setSheetData] = useState<SheetDataMap>(initialSheetData);
 
-/**
- * @description Updates the sheetData when a cell's input changes.
- * 
- * @author rishavsarma5, eduardo-ruiz-garay
- */
+  const prevCellDataRef = useRef<SheetDataMap>({ ...sheetData });
+
+  /**
+   * @description Updates the sheetData when a cell's input changes.
+   *
+   * @author rishavsarma5, eduardo-ruiz-garay
+   */
   const handleCellUpdate = (value: string, cellId: string) => {
-    //console.log(`should be called for ${cellId} with value: ${value}`);
-    setSheetData((prevState) => {
-      return { ...prevState, [cellId]: value };
+    console.log(`should be called for ${cellId} with value: ${value}`);
+    setSheetData((prevSheetData) => {
+      const updatedSheetData = { ...prevSheetData, [cellId]: value };
+      prevCellDataRef.current = {
+        ...prevCellDataRef.current,
+        [cellId]: prevSheetData[cellId],
+      };
+      return updatedSheetData;
     });
   };
 
-/**
- * @description Gets all new updates a Publisher/Subscriber makes on a sheet and pushes to server using args.
- * 
- * @author rishavsarma5, eduardo-ruiz-garay
- */
+  /**
+   * @description Gets all new updates a Publisher/Subscriber makes on a sheet and pushes to server using args.
+   *
+   * @author rishavsarma5, eduardo-ruiz-garay
+   */
   const onPublishButtonClick = async () => {
-
     // iterates through sheetData and stores updates in a new-line delimited string
     const getAllCellUpdates = (): string => {
       const payload: string[] = [];
       for (const [ref, valueAtCell] of Object.entries(sheetData)) {
-        if (valueAtCell !== "") {
+        const prevValueAtCell = prevCellDataRef.current[ref] || "";
+        if (valueAtCell !== prevValueAtCell) {
           payload.push(`${ref} ${valueAtCell}`);
         }
       }
