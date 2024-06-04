@@ -35,27 +35,26 @@ export const fetchWithAuth = async (
     const response = await fetch(url, options);
     if (response.ok) {
       const data = await response.json();
-      console.log(data);
       if (data.success) {
         if (onSuccess) {
           onSuccess(data);
         }
       } else {
-        console.error(`Internal server error: ${data.message}`);
+        console.warn(`data.success was false: ${data.message}`)
         if (onFailure) {
           onFailure(data);
         }
       }
     } else {
-      console.error("Error fetching: `response.ok` came back False.");
+      console.error("Error fetching");
       if (onFailure) {
-        onFailure(null);
+        onFailure(null); // how to handle better
       }
     }
   } catch (error) {
     console.error("Error fetching", error);
     if (onFailure) {
-      onFailure(error);
+      onFailure(error); // how to handle better
     }
   }
 };

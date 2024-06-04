@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchWithAuth } from "../utils";
 import "../styles/Login.css";
+import { Result } from "../../../types/types";
 
 /**
  * @description This is the Login page for our project. It accepts user-inputted username/password
@@ -17,28 +18,19 @@ function Login() {
 
   const navigate = useNavigate();
 
-  const onLoginButtonClick = () => {
-    setUsernameError("");
-    setPasswordError("");
-
-    if ("" === username) {
-      setUsernameError("Username Invalid!");
-      return;
-    }
-
-    if ("" === password) {
-      setPasswordError("Password Invalid!");
-      return;
-    }
-
-    sessionStorage.setItem("username", username);
-    sessionStorage.setItem("password", password);
-
-    // Navigate to the dashboard
+  const handleRegisterSuccess = (data: Result) => {
+    console.log(`SUCCESSFUL LOGIN:`);
+    console.log(data);
+    sessionStorage.setItem("auth", "authorized");
     navigate("/dashboard");
-  };
+  }
+  const handleRegisterFailure = (data: Result) => {
+    console.log(`FAILED LOGIN:`);
+    console.log(data);
+    sessionStorage.setItem("auth", "");
+  }
 
-  const onRegisterButtonClick = async () => {
+  const onLoginButtonClick = async () => {
     setUsernameError("");
     setPasswordError("");
 
@@ -56,15 +48,15 @@ function Login() {
     sessionStorage.setItem("password", password);
 
     try {
-      await fetchWithAuth("http://localhost:3000/api/v1/register", {
-        method: "GET",
-      });
+      await fetchWithAuth(
+        "http://localhost:3000/api/v1/register", 
+        { method: "GET" },
+        (data) => handleRegisterSuccess(data),
+        (data) => handleRegisterFailure(data)
+      );
     } catch (error) {
       console.error("Error registering new user", error);
     }
-
-    // Navigate to the dashboard
-    navigate("/dashboard");
   };
 
   return (
@@ -94,12 +86,6 @@ function Login() {
         className="loginButton"
         type="button"
         value="Login"
-      />
-      <input
-        onClick={onRegisterButtonClick}
-        className="registerButton"
-        type="button"
-        value="Register"
       />
     </div>
   );

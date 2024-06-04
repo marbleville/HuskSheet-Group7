@@ -56,8 +56,7 @@
   color: #ff0000; 
 }
 
-.loginButton,
-.registerButton {
+.loginButton {
   width: 100%;
   padding: 10px;
   border: none;
@@ -68,7 +67,6 @@
   transition: background-color 0.3s ease;
 }
 
-.loginButton:hover,
-.registerButton:hover {
+.loginButton:hover {
   background-color: #2b7b50; 
 }

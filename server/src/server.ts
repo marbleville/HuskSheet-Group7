@@ -36,14 +36,21 @@ const options: cors.CorsOptions = {
 app.use(cors(options));
 app.use(express.json());
 
-// register should be to register a publisher not add a user
+/**
+ * @description Register states:
+ * 		1.  authHeader is not provided => return false (Unauthorized)
+ * 		2.  publisher does not exist => create publisher, return true (Authorized)
+ * 		3.  publisher exists, password does not match => return false (Unauthorized)
+ * 		4.  publisher exists, password matches => return true (Authorized)
+ * 
+ * 		Generally, two outcomes exist:
+ * 		1. success: false => Unauthorized
+ * 		2. success: true  => Authorized
+ * 
+ * @author kris-amerman
+ */
 app.get("/api/v1/register", async (req: Request, res: Response) => {
-	let result: {
-		success: Boolean;
-		message: string | null;
-		value: Array<Argument>;
-		time: number;
-	};
+	let result: Result;
 
 	const database = DatabaseInstance.getInstance();
 	const authHeader = req.headers.authorization;
@@ -52,9 +59,8 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 	if (authHeader === undefined) {
 		result = {
 			success: false,
-			message: "Unauthorized",
+			message: "",
 			value: [],
-			time: Date.now(),
 		};
 		res.send(JSON.stringify(result));
 		return;
@@ -67,7 +73,7 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 	let userExists = false;
 	let isAuthenticated = false;
 
-	// Check if a user exists (could be in separate function)
+	// Check if a publisher exists (could be in separate function)
 	try {
 		queryResult = await database.query(queryString);
 	} catch (error) {
@@ -75,29 +81,23 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 	}
 	userExists = queryResult?.length != 0 ? true : false;
 
-	console.log("check if user exists");
-
-	// If user does NOT exist, create user
+	// If publisher does NOT exist, create publisher
 	if (!userExists) {
 		await register(username, password);
-		console.log("create user");
 	}
 
 	isAuthenticated = await authenticate(authHeader);
 	let success = false;
 
-	console.log("call authenticate");
-
-	// If user exists and password matches, set success to true, otherwise leave false
+	// If publisher exists and password matches, set success to true, otherwise leave false
 	if (isAuthenticated) {
 		success = true;
 	}
 
 	result = {
 		success: success,
-		message: null,
+		message: "",
 		value: [],
-		time: Date.now(),
 	};
 	res.send(JSON.stringify(result));
 });
