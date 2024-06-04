@@ -32,7 +32,7 @@ export default class DatabaseQueries {
 		return `DELETE sheets FROM sheets
       INNER JOIN publishers ON sheets.owner=publishers.userid
       WHERE publishers.username='${publisher}' 
-      AND sheets.name='${sheetName}';`;
+      AND sheets.sheetname='${sheetName}';`;
 	}
 
 	/**

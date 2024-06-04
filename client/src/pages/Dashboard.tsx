@@ -2,13 +2,7 @@ import { useState, useEffect } from "react";
 import { fetchWithAuth } from "../utils";
 import { useNavigate } from "react-router-dom";
 import "../styles/Dashboard.css";
-
-export interface SheetResponse {
-  publisher: string;
-  id: string;
-  sheet: string;
-  payload: string;
-}
+import { Argument } from "../../../types/types";
 
 /**
  * @description The dashboard page. Displays all sheets for the current user. Provides options to create, edit, and delete sheets.
@@ -16,74 +10,132 @@ export interface SheetResponse {
  * @author kris-amerman, rishavsarma5
  */
 function Dashboard() {
-  const [sheets, setSheets] = useState<SheetResponse[]>([]);
+  const [username, setUsername] = useState<string>("");
+  const [sheetsByPublisher, setSheetsByPublisher] = useState<{ [key: string]: Argument[] }>({});
+  const [publishers, setPublishers] = useState<string[]>([]);
+  const [expanded, setExpanded] = useState<{ [key: string]: boolean }>({});
+  const [sheetName, setSheetName] = useState<string>("Untitled Sheet");
+  const navigate = useNavigate();
 
-  const fetchData = async () => {
-    const username = sessionStorage.getItem("username");
-    if (!username) {
-      console.error("Username not found in sessionStorage");
-      return;
-    }
+  const fetchPublishers = async (currentUser: string) => {
+    fetchWithAuth(
+      "http://localhost:3000/api/v1/getPublishers",
+      { method: "GET" },
+      (data) => {
+        const publishers = data.value.map((item: Argument) => item.publisher);
+        setPublishers(publishers);
+        publishers.forEach((publisher: string) => {
+          fetchSheets(publisher);
+          // Initialize expanded state to true for the current user and false for others
+          setExpanded(prevState => ({ ...prevState, [publisher]: publisher === currentUser }));
+        });
+      }
+    );
+  }
 
-    const argument = { publisher: username };
-
+  // fetchSheets for a given publisher
+  const fetchSheets = async (publisher: string) => {
     fetchWithAuth(
       "http://localhost:3000/api/v1/getSheets",
-      { method: "POST", body: JSON.stringify(argument) },
-      (data) => setSheets(data.value)
+      { method: "POST", body: JSON.stringify({ publisher }) },
+      (data) => {
+        setSheetsByPublisher(prevState => ({
+          ...prevState,
+          [publisher]: data.value
+        }));
+      }
     );
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const navigate = useNavigate();
-
-  // Create a new sheet with the on click and load any data that is on the sheet
-  const handleSheetClick = (sheet: SheetResponse) => {
-    // Placeholder handler for clicking on a sheet name
-
-    //console.log("Clicked on sheet:", sheet.sheet);
-    //alert("Clicked on sheet: " + sheet.sheet);
-    navigate(`/${sheet.sheet}`, { state: sheet });
+  const handleDeleteSheet = (sheet: Argument) => {
+    fetchWithAuth(
+      "http://localhost:3000/api/v1/deleteSheet",
+      {
+        method: "POST", body: JSON.stringify({
+          publisher: sheet.publisher,
+          sheet: sheet.sheet
+        })
+      },
+      () => fetchSheets(sheet.publisher)
+    );
   };
 
   const handleCreateSheet = async () => {
-    const username = sessionStorage.getItem("username");
-    if (!username) {
-      console.error("Username not found in sessionStorage");
-      return;
-    }
-
     const argument = {
       publisher: username,
-      sheet: "Untitled Sheet", // "Untitled Sheet" for now
+      sheet: sheetName,
     };
-
     fetchWithAuth(
       "http://localhost:3000/api/v1/createSheet",
       { method: "POST", body: JSON.stringify(argument) },
-      () => fetchData() // Refresh sheets after creating a new one
+      () => fetchSheets(username) // Refresh sheets after creating a new one
     );
   };
 
+  // Toggle expand/collapse for a publisher
+  const toggleExpand = (publisher: string) => {
+    setExpanded(prevState => ({ ...prevState, [publisher]: !prevState[publisher] }));
+  };
+
+  // Create a new sheet with the on click and load any data that is on the sheet
+  const handleSheetClick = (sheet: Argument) => {
+    navigate(`/${sheet.sheet}`, { state: sheet });
+  };
+
+  useEffect(() => {
+    const currentUser = sessionStorage.getItem("username");
+    if (!currentUser) {
+      console.error("Username not found in sessionStorage");
+      return;
+    }
+    setUsername(currentUser);
+    fetchPublishers(currentUser);
+  }, []);
+
   return (
     <div className="dashboard-container">
-      <div className="sheet-buttons-container">
-        {sheets.map((sheet, index) => (
-          <button
-            key={index}
-            onClick={() => handleSheetClick(sheet)}
-            className="sheet-button"
-          >
-            {sheet.sheet}
-          </button>
-        ))}
+      <h1>Hello, {username} 👋</h1>
+      <div className="create-sheet-container">
+        <input
+          value={sheetName}
+          placeholder="Untitled Sheet"
+          className="create-sheet-input"
+          onChange={(e) => setSheetName(e.target.value)}
+        />
+        <button onClick={handleCreateSheet} className="create-sheet-button">
+          Create new sheet +
+        </button>
       </div>
-      <button onClick={handleCreateSheet} className="create-sheet-button">
-        Create new sheet
-      </button>
+      {publishers
+        .sort((a, b) => (a === username ? -1 : b === username ? 1 : 0)) // Move current user's publisher to the top
+        .map(publisher => (
+          <div key={publisher}>
+            <h2 onClick={() => toggleExpand(publisher)} className="publisher-header">
+              <span className="chevron-icon">{expanded[publisher] ? "▼" : "►"}</span>
+              {publisher}
+            </h2>
+            {expanded[publisher] && (
+              <div className="sheet-buttons-container">
+                {sheetsByPublisher[publisher]?.slice().reverse().map((sheet, index) => ( // Reverse the sheets array
+                  <div key={index} className="sheet-button-container">
+                    <button
+                      onClick={() => handleSheetClick(sheet)}
+                      className="sheet-button"
+                    >
+                      <p className="sheet-name-text">{sheet.sheet}</p>
+                    </button>
+                    <button
+                      className="delete-button"
+                      onClick={() => handleDeleteSheet(sheet)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
     </div>
   );
 }

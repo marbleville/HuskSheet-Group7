@@ -21,7 +21,7 @@ function Login() {
   const handleRegisterSuccess = (data: Result) => {
     console.log(`SUCCESSFUL LOGIN:`);
     console.log(data);
-    sessionStorage.setItem("auth", "authorized");
+    sessionStorage.setItem("auth", "authenticated");
     navigate("/dashboard");
   }
   const handleRegisterFailure = (data: Result) => {
