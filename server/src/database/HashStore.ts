@@ -3,7 +3,7 @@ import DatabaseInstance from "../database/databaseInstance";
 import DatabaseQueries from "../../../types/queries";
 import { GetAllUpdates, GetSheetID } from "../database/db";
 const accessSheetMap = 0;
-const accessSheetID = 1;
+const accessUpdateID = 1;
 
 /**
  * Singleton class that stores a cache of each of the sheets in the database.
@@ -46,7 +46,7 @@ export default class HashStore {
 
 				HashStore.sheets[sheetID][accessSheetMap].set(refObj, value);
 
-				HashStore.sheets[sheetID][accessSheetID] =
+				HashStore.sheets[sheetID][accessUpdateID] =
 					sheet.updateid.toString();
 			});
 		});
@@ -64,7 +64,7 @@ export default class HashStore {
 	public static async getSheetPayload(
 		publisher: string,
 		sheetName: string
-	): Promise<Payload> {
+	): Promise<[Payload, ID]> {
 		let sheetID = await HashStore.getSheetID(publisher, sheetName);
 
 		let sheetMap = HashStore.sheets[sheetID][accessSheetMap];
@@ -72,10 +72,12 @@ export default class HashStore {
 		let payload = "";
 
 		for (let [key, value] of sheetMap) {
+			// Would be possible to add support for getting updates during
+			// runtime with IDs here
 			payload += "$" + key.column + key.row + " " + value + "\n";
 		}
 
-		return payload;
+		return [payload, HashStore.sheets[sheetID][accessUpdateID]];
 	}
 
 	/**
@@ -98,12 +100,15 @@ export default class HashStore {
 
 		let updates = payload.split("\n");
 
-		for (let updatePerSheet of updates) {
-			let [ref, value] = updatePerSheet.split(" ");
+		for (let update of updates) {
+			let [ref, value] = update.split(" ");
 
 			let refObj = HashStore.getRefFromString(ref);
 
 			sheetMap.set(refObj, value);
+
+			HashStore.sheets[sheetID][accessUpdateID] =
+				HashStore.sheets[sheetID][accessUpdateID] + 1;
 		}
 	}
 

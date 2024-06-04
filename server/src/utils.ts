@@ -41,8 +41,8 @@ async function getUpdatesHelper(
 	if (parseInt(id) == 0) {
 		HashStore.initHash();
 		let payload = await HashStore.getSheetPayload(publisher, sheetName);
-		updates.payload = payload;
-		updates.id = "0"; // TODO: change to the last update id
+		updates.payload = payload[0];
+		updates.id = payload[1];
 		return updates;
 	}
 

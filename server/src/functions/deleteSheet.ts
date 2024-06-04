@@ -15,13 +15,7 @@ async function deleteSheet(argument: Argument): Promise<void> {
 	let publisher: Publisher = argument.publisher;
 	let sheetName: Sheet = argument.sheet;
 
-	/**
-	 * argument.publisher is the publisher to delete the sheet for
-	 * argument.sheet is the name of the sheet to delete
-	 *
-	 * Delete the sheet from the Sheets table where the owner is the
-	 * argument.publisher and the name is the argument.sheet
-	 */
+	// TODO: check if pub is the same as client
 	const database = DatabaseInstance.getInstance();
 
 	// Assemble query string
