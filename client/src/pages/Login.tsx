@@ -6,7 +6,7 @@ import { Result } from "../../../types/types";
 
 /**
  * @description This is the Login page for our project. It accepts user-inputted username/password
- * 
+ *
  * @author rishavsarma5, krisamerman, eduardo-ruiz-garay
  */
 function Login() {
@@ -23,12 +23,13 @@ function Login() {
     console.log(data);
     sessionStorage.setItem("auth", "authorized");
     navigate("/dashboard");
-  }
+  };
+
   const handleRegisterFailure = (data: Result) => {
     console.log(`FAILED LOGIN:`);
     console.log(data);
     sessionStorage.setItem("auth", "");
-  }
+  };
 
   const onLoginButtonClick = async () => {
     setUsernameError("");
@@ -49,7 +50,7 @@ function Login() {
 
     try {
       await fetchWithAuth(
-        "http://localhost:3000/api/v1/register", 
+        "http://localhost:3000/api/v1/register",
         { method: "GET" },
         (data) => handleRegisterSuccess(data),
         (data) => handleRegisterFailure(data)
