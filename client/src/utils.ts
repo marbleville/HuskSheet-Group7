@@ -40,7 +40,7 @@ export const fetchWithAuth = async (
           onSuccess(data);
         }
       } else {
-        console.warn(`data.success was false: ${data.message}`)
+        console.warn(`data.success was false`)
         if (onFailure) {
           onFailure(data);
         }
