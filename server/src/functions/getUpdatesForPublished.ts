@@ -23,7 +23,7 @@ async function getUpdatesForPublished(argument: Argument): Promise<Argument> {
 		id
 	);
 
-	return getUpdatesHelper(argument, queryString);
+	return await getUpdatesHelper(argument, queryString);
 }
 
 export { getUpdatesForPublished };

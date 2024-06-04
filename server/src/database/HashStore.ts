@@ -35,14 +35,25 @@ export default class HashStore {
 
 		allOwnerUpdates.forEach((sheet) => {
 			let sheetID = sheet.sheet;
-			let payload = sheet.payload;
+			let payload: Payload = sheet.changes;
 
 			let payloadArr = payload.split("\n");
 
 			payloadArr.forEach((updatePerSheet) => {
-				let [ref, value] = updatePerSheet.split(" ");
+				let ref = updatePerSheet.substring(
+					0,
+					updatePerSheet.indexOf(" ")
+				);
+
+				let value = updatePerSheet.substring(
+					updatePerSheet.indexOf(" ") + 1
+				);
 
 				let refObj = HashStore.getRefFromString(ref);
+
+				if (HashStore.sheets[sheetID] == undefined) {
+					HashStore.sheets[sheetID] = [new Map<Ref, Term>(), "0"];
+				}
 
 				HashStore.sheets[sheetID][accessSheetMap].set(refObj, value);
 

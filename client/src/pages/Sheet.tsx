@@ -127,13 +127,8 @@ const Sheet: React.FC = () => {
       payload: getAllCellUpdates(),
     };
 
-    console.log(allUpdates.publisher);
-    console.log(allUpdates.sheet);
-    console.log(allUpdates.id);
-    console.log(allUpdates.payload);
-
     // calls updatePublished or updateSubscribed depending on user and relation to sheet
-    // TODO: call UpdateSubscribed
+    // @TODO: call UpdateSubscribed
 
     try {
       await fetchWithAuth("http://localhost:3000/api/v1/updatePublished", {
