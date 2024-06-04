@@ -16,14 +16,6 @@ const Cell: React.FC<CellProps> = ({ cellId, initialValue, onUpdate }) => {
     onUpdate(newValue, cellId);
   };
 
-  const applyUpdate = (update: string) => {
-    setValue(update);
-  };
-
-  const getCurrentUpdate = (): string => {
-    return `${cellId} ${value}`;
-  };
-
   return (
     <td key={cellId} className="cell">
       <input

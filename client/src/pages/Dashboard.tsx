@@ -3,7 +3,7 @@ import { fetchWithAuth } from "../utils";
 import { useNavigate } from "react-router-dom";
 import "../styles/Dashboard.css";
 
-interface SheetResponse {
+export interface SheetResponse {
   publisher: string;
   id: string;
   sheet: string;
@@ -12,7 +12,7 @@ interface SheetResponse {
 
 /**
  * @description The dashboard page. Displays all sheets for the current user. Provides options to create, edit, and delete sheets.
- * 
+ *
  * @author kris-amerman, rishavsarma5
  */
 function Dashboard() {
@@ -43,7 +43,7 @@ function Dashboard() {
   // Create a new sheet with the on click and load any data that is on the sheet
   const handleSheetClick = (sheet: SheetResponse) => {
     // Placeholder handler for clicking on a sheet name
-    
+
     //console.log("Clicked on sheet:", sheet.sheet);
     //alert("Clicked on sheet: " + sheet.sheet);
     navigate(`/${sheet.sheet}`, { state: sheet });

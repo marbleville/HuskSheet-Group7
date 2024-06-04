@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import Cell from "./Cell";
 import { fetchWithAuth } from "../utils";
 import "../styles/Sheet.css";
+import { SheetResponse } from "./Dashboard";
+import { Argument } from "../../../types/types";
 
 interface SheetDataMap {
   [ref: string]: string;
@@ -44,26 +46,57 @@ const Sheet: React.FC = () => {
   }>();
 
   // these two lines receive data from dashboard
-  // const location = useLocation();
-  // const data = location.state;
+  const location = useLocation();
+  const sheetInfo: SheetResponse = location.state;
 
-  let sheetData: SheetDataMap = {};
+  let sheetData: SheetDataMap = initializeSheet(
+    initialSheetRowSize,
+    initialSheetColumnSize
+  );
 
-  const [cellValue, setCellValue] = useState(() => {
-    sheetData = initializeSheet(initialSheetRowSize, initialSheetColumnSize);
-    return sheetData;
-  });
+  //sets use state as sheet data
+  const [cellValue, setCellValue] = useState<SheetDataMap>(sheetData);
 
   const handleChange = (value: string, cellId: string) => {
-    setCellValue((prevData) => ({ ...prevData, [cellId]: value }));
+    // console.log(value);
+    sheetData = { ...sheetData, [cellId]: value };
+    setCellValue(sheetData);
+    console.log(cellId);
+    console.log(sheetData[cellId]);
+    // console.log(cellValue);
   };
 
+  // Gets the updates to the cel map and pushes to backend using args.
   const onPublishButtonClick = async () => {
-    // need to add getting all current updates from cells and sending that as well
+    const getAllCellUpdates = (): string => {
+      const payload: string[] = [];
+      for (const [ref, valueAtCell] of Object.entries(sheetData)) {
+        console.log(ref);
+        console.log(valueAtCell);
+        if (valueAtCell !== "") {
+          payload.push(`${ref} ${valueAtCell}`);
+          console.log(valueAtCell);
+        }
+      }
+      return payload.join("/n");
+    };
+
+    const allUpdates: Argument = {
+      publisher: sheetInfo.publisher,
+      sheet: sheetInfo.sheet,
+      id: sheetInfo.id,
+      payload: getAllCellUpdates(),
+    };
+
+    console.log(allUpdates.publisher);
+    console.log(allUpdates.sheet);
+    console.log(allUpdates.id);
+    console.log(allUpdates.payload);
 
     try {
       await fetchWithAuth("http://localhost:3000/api/v1/updatePublished", {
-        method: "GET",
+        method: "POST",
+        body: JSON.stringify(allUpdates),
       });
     } catch (error) {
       console.error("Error publishing new changes", error);
