@@ -1,5 +1,6 @@
 import mysql from "mysql2";
 import dbConfig from "./db.config";
+import dbTestConfig from "./db.test.config";
 import { Connection, QueryError, RowDataPacket, FieldPacket } from "mysql2";
 
 /**
@@ -37,12 +38,35 @@ export default class DatabaseInstance {
 		return DatabaseInstance.instance;
 	}
 
+  /**
+   *
+   */
+	public static getInstanceTest() {
+		if (DatabaseInstance.instance == null) {
+			DatabaseInstance.instance = new DatabaseInstance();
+		}
+
+		return DatabaseInstance.instance;
+	}
+
 	private static getConnection(): Connection {
 		const connection = mysql.createConnection({
 			host: dbConfig.HOST,
 			user: dbConfig.USER,
 			password: dbConfig.PASSWORD,
 			database: dbConfig.DB,
+		});
+		connection.connect();
+
+		return connection;
+	}
+
+	private static getConnectionTest(): Connection {
+		const connection = mysql.createConnection({
+			host: dbTestConfig.HOST,
+			user: dbTestConfig.USER,
+			password: dbTestConfig.PASSWORD,
+			database: dbTestConfig.DB,
 		});
 		connection.connect();
 
@@ -59,8 +83,12 @@ export default class DatabaseInstance {
 	 *
 	 * @author marbleville
 	 */
-	public async query<T extends RowDataPacket>(query: string): Promise<T[]> {
+	public async query<T extends RowDataPacket>(query: string, test: boolean = false): Promise<T[]> {
 		let connection = DatabaseInstance.getConnection();
+
+    if (test) {
+      connection = DatabaseInstance.getConnectionTest();
+    }
 
 		let queryPromise = new Promise((resolve, reject) => {
 			connection.query(
