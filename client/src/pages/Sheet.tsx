@@ -89,6 +89,7 @@ const Sheet: React.FC = () => {
  * @author rishavsarma5, eduardo-ruiz-garay
  */
   const handleCellUpdate = (value: string, cellId: string) => {
+    //console.log(`should be called for ${cellId} with value: ${value}`);
     setSheetData((prevState) => {
       return { ...prevState, [cellId]: value };
     });
@@ -109,14 +110,14 @@ const Sheet: React.FC = () => {
           payload.push(`${ref} ${valueAtCell}`);
         }
       }
-      return payload.join("/n");
+      return payload.join("\n");
     };
 
     // Argument object of all updates to a sheet
     const allUpdates: Argument = {
       publisher: sheetInfo.publisher,
       sheet: sheetInfo.sheet,
-      id: sheetInfo.id,
+      id: "",
       payload: getAllCellUpdates(),
     };
 

@@ -21,6 +21,7 @@ interface CellProps {
 const Cell: React.FC<CellProps> = React.memo(({ cellId, initialValue, onUpdate }) => {
   // sets state for cell
   const [value, setValue] = useState(initialValue);
+  const [prevValue, setPrevValue] = useState(initialValue);
 
   /**
  * @description On the change in input of a cell, it will update its state and call onUpdate,
@@ -30,19 +31,15 @@ const Cell: React.FC<CellProps> = React.memo(({ cellId, initialValue, onUpdate }
  */
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value;
-
-    // TODO: Handle Formula/Expression Evaluation here
-
     setValue(newValue);
   };
 
-  React.useEffect(() => {
-    const handler = setTimeout(() => {
+  const handleBlur = () => {
+    if (value !== prevValue) {
       onUpdate(value, cellId);
-    }, 300);
-
-    return () => clearTimeout(handler);
-  }, [cellId, onUpdate, value])
+      setPrevValue(value);
+    }
+  };
 
   // html for rendering a cell
   return (
@@ -51,6 +48,7 @@ const Cell: React.FC<CellProps> = React.memo(({ cellId, initialValue, onUpdate }
         type="text"
         value={value}
         onChange={handleChange}
+        onBlur={handleBlur}
         className="cell-input"
       />
     </td>
