@@ -39,6 +39,11 @@ export default class HashStore {
 
 			let payloadArr = payload.split("\n");
 
+			// conctols for an update in the db that ends with \n
+			if (payloadArr[payloadArr.length - 1] == "") {
+				payloadArr.pop();
+			}
+
 			payloadArr.forEach((updatePerSheet) => {
 				let ref = updatePerSheet.substring(
 					0,
@@ -49,7 +54,7 @@ export default class HashStore {
 					updatePerSheet.indexOf(" ") + 1
 				);
 
-				let refObj = HashStore.getRefFromString(ref);
+				let refObj = HashStore.getRefFromString(ref, sheetID);
 
 				if (HashStore.sheets[sheetID] == undefined) {
 					HashStore.sheets[sheetID] = [new Map<Ref, Term>(), "0"];
@@ -114,7 +119,7 @@ export default class HashStore {
 		for (let update of updates) {
 			let [ref, value] = update.split(" ");
 
-			let refObj = HashStore.getRefFromString(ref);
+			let refObj = HashStore.getRefFromString(ref, sheetID);
 
 			sheetMap.set(refObj, value);
 
@@ -154,13 +159,34 @@ export default class HashStore {
 	 *
 	 * @author marbleville, huntebrodie
 	 */
-	private static getRefFromString(ref: string): Ref {
+	private static getRefFromString(ref: string, sheetID: number): Ref {
 		let refWiothout$ = ref.substring(1);
 
 		let pattern1 = /[0-9]/g;
 		let pattern2 = /[a-zA-Z]/g;
 		let column = refWiothout$.match(pattern2);
 		let row = refWiothout$.match(pattern1);
+
+		let mapHasRef = false;
+		let refInMap = null;
+
+		if (HashStore.sheets[sheetID] != undefined) {
+			HashStore.sheets[sheetID][accessSheetMap].forEach((value, key) => {
+				if (
+					column &&
+					key.column == column.join("") &&
+					row &&
+					key.row == parseInt(row.join(""))
+				) {
+					mapHasRef = true;
+					refInMap = key;
+				}
+			});
+		}
+
+		if (mapHasRef && refInMap) {
+			return refInMap;
+		}
 
 		let refObj: Ref = {
 			column: column ? column.join("") : "",

@@ -51,7 +51,7 @@ describe("Formula Parser tests", () => {
 	test("check that parser takes in two numbers and adds them correctly", () => {
 		const formula: string = "1+1";
 		const result: string = parser.parse(formula);
-		const expected: string = "";
+		const expected: string = "2";
 		expect(result).toEqual(expected);
 	});
 });
