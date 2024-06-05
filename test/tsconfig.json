@@ -9,5 +9,5 @@
 		"sourceMap": true
 	},
 	"include": ["./**/*.ts"],
-	"exclude": ["node_modules", "../server/**/*.ts", "../types/**/*.ts"]
+	"exclude": ["node_modules"]
 }

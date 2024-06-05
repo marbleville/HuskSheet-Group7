@@ -38,12 +38,12 @@ services:
             - "/server/node_modules"
             - "./types:/types"
             - "./test:/test"
+            - "./client:/client"
         command: bash -c "npm install --prefix /server && npm install --prefix /test && npm run test --prefix /test"
         links:
             - "db:db"
         env_file:
             - "./config/db.test.env"
-
 
     frontend:
         image: node
