@@ -53,7 +53,9 @@ async function getUpdatesHelper(
 	let payload: Payload = "";
 
 	result.forEach((update) => {
-		payload += update.changes + "\n";
+		payload += update.changes.includes("\n", update.changes.length - 2)
+			? update.changes
+			: update.changes + "\n";
 	});
 
 	updates.publisher = publisher;

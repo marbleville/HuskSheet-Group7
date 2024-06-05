@@ -38,4 +38,22 @@ describe("getUpdatesForPublished", () => {
 			)
 		);
 	});
+
+	it("should return an argument object containing the updates stored in the updates table with multiple updates and id > 0", async () => {
+		const testArg: Argument = assembleTestArgumentObject(
+			"hunter",
+			"test3",
+			"2",
+			""
+		);
+
+		expect(await getUpdatesForPublished(testArg)).toEqual(
+			assembleTestArgumentObject(
+				"hunter",
+				"test3",
+				"5",
+				'$A1 1\n$a2 "help"\n$B1 -1.01\n$C4 ""\n$c1 = SUM($A1:$B1)\n$A1 2\n$A2 "helping"\n'
+			)
+		);
+	});
 });
