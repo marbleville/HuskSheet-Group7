@@ -56,4 +56,17 @@ describe("getUpdatesForSubscription", () => {
 			)
 		);
 	});
+
+	it("should return an argument object containing the updates stored in the updates table with no updates", async () => {
+		const testArg: Argument = assembleTestArgumentObject(
+			"laurence",
+			"test2",
+			"0",
+			""
+		);
+
+		expect(await getUpdatesForSubscription(testArg)).toEqual(
+			assembleTestArgumentObject("laurence", "test2", "0", "")
+		);
+	});
 });
