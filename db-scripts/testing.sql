@@ -73,7 +73,7 @@ INSERT INTO
   updates (updatetime, sheet, owner, changes)
 VALUES
   ('1717535133', 1, 1, '$A1 1\n$a2 "help"\n'),
-  ('1717535133', 2, 2, '$A1 1\n$a2 "help"\n$B1 -1.01\n$C4 ""\n$c1 = SUM($A1:$B1)'),
+  ('1717535133', 2, 2, ''),
   ('1717535133', 3, 5, '$A1 1\n$a2 "help"\n$B1 -1.01\n$C4 ""\n$c1 = SUM($A1:$B1)'),
   ('1717535133', 3, 5, '$A1 2\n'),
   ('1717535133', 3, 4, '$A2 "helping"\n');
