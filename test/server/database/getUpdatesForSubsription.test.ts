@@ -1,8 +1,8 @@
-import { getUpdatesForPublished } from "../../../server/src/functions/getUpdatesForPublished";
+import { getUpdatesForSubscription } from "../../../server/src/functions/getUpdatesForSubscription";
 import { Argument } from "../../../types/types";
 import { assembleTestArgumentObject } from "../../utils";
 
-describe("getUpdatesForPublished", () => {
+describe("getUpdatesForSubscription", () => {
 	it("should return an argument object containing the updates stored in the updates table with multiple accepted updates", async () => {
 		const testArg: Argument = assembleTestArgumentObject(
 			"hunter",
@@ -11,7 +11,7 @@ describe("getUpdatesForPublished", () => {
 			""
 		);
 
-		expect(await getUpdatesForPublished(testArg)).toEqual(
+		expect(await getUpdatesForSubscription(testArg)).toEqual(
 			assembleTestArgumentObject(
 				"hunter",
 				"test3",
@@ -29,7 +29,7 @@ describe("getUpdatesForPublished", () => {
 			""
 		);
 
-		expect(await getUpdatesForPublished(testArg)).toEqual(
+		expect(await getUpdatesForSubscription(testArg)).toEqual(
 			assembleTestArgumentObject(
 				"rishav",
 				"test1",
@@ -43,16 +43,16 @@ describe("getUpdatesForPublished", () => {
 		const testArg: Argument = assembleTestArgumentObject(
 			"hunter",
 			"test3",
-			"2",
+			"1",
 			""
 		);
 
-		expect(await getUpdatesForPublished(testArg)).toEqual(
+		expect(await getUpdatesForSubscription(testArg)).toEqual(
 			assembleTestArgumentObject(
 				"hunter",
 				"test3",
-				"5",
-				'$A1 1\n$a2 "help"\n$B1 -1.01\n$C4 ""\n$c1 = SUM($A1:$B1)\n$A1 2\n$A2 "helping"\n'
+				"4",
+				'$A1 1\n$a2 "help"\n$B1 -1.01\n$C4 ""\n$c1 = SUM($A1:$B1)\n$A1 2\n'
 			)
 		);
 	});
