@@ -44,6 +44,10 @@ export default class HashStore {
 				payloadArr.pop();
 			}
 
+			if (payloadArr.length == 0) {
+				HashStore.sheets[sheetID] = [new Map<Ref, Term>(), "0"];
+			}
+
 			payloadArr.forEach((updatePerSheet) => {
 				let ref = updatePerSheet.substring(
 					0,
