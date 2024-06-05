@@ -3,7 +3,7 @@ import { Argument } from "../../../types/types";
 import { assembleTestArgumentObject } from "../../utils";
 
 describe("getUpdatesForPublished", () => {
-	it("should return an array of arguments containing all publishers", async () => {
+	it("should return an argument object containing the updates stored in the updates table", async () => {
 		const testArg: Argument = assembleTestArgumentObject(
 			"hunter",
 			"test3",
