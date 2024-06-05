@@ -15,8 +15,8 @@ interface SheetDataMap {
 }
 
 // GLOBAL CONSTANTS
-const INITIALSHEETROWSIZE = 100;
-const INITIALSHEETCOLUMNSIZE = 100;
+const INITIALSHEETROWSIZE = 10;
+const INITIALSHEETCOLUMNSIZE = 10;
 
 /**
  * @description Initializes the sheet HashMap based on given row/columns.
@@ -74,8 +74,11 @@ const Sheet: React.FC = () => {
 
   // sets state for sheet data
   const [sheetData, setSheetData] = useState<SheetDataMap>(initialSheetData);
-
   const prevCellDataRef = useRef<SheetDataMap>({ ...sheetData });
+
+  const [numRows, setNumRows] = useState(INITIALSHEETROWSIZE);
+  const [numCols, setNumCols] = useState(INITIALSHEETCOLUMNSIZE);
+  const [newlyCreatedCells, setNewlyCreatedCells] = useState<Set<string>>(new Set());
 
   /**
    * @description Updates the sheetData when a cell's input changes.
@@ -83,7 +86,7 @@ const Sheet: React.FC = () => {
    * @author rishavsarma5, eduardo-ruiz-garay
    */
   const handleCellUpdate = (value: string, cellId: string) => {
-    //console.log(`should be called for ${cellId} with value: ${value}`);
+    console.log(`should be called for ${cellId} with value: ${value}`);
     setSheetData((prevSheetData) => {
       const updatedSheetData = { ...prevSheetData, [cellId]: value };
       prevCellDataRef.current = {
@@ -105,7 +108,7 @@ const Sheet: React.FC = () => {
       const payload: string[] = [];
       for (const [ref, valueAtCell] of Object.entries(sheetData)) {
         const prevValueAtCell = prevCellDataRef.current[ref] || "";
-        if (valueAtCell !== prevValueAtCell) {
+        if (valueAtCell !== prevValueAtCell || newlyCreatedCells.has(ref)) {
           payload.push(`${ref} ${valueAtCell}`);
         }
       }
@@ -120,7 +123,7 @@ const Sheet: React.FC = () => {
       payload: getAllCellUpdates(),
     };
 
-    //console.log(allUpdates.payload);
+    console.log(allUpdates.payload);
 
     // calls updatePublished or updateSubscribed depending on user and relation to sheet
     // @TODO: call UpdateSubscribed
@@ -135,6 +138,43 @@ const Sheet: React.FC = () => {
     }
   };
 
+  const addNewRow = () => {
+    setNumRows((prevNumRows) => prevNumRows + 1);
+
+    const newSheetData = { ...sheetData };
+    const newRowNumber = numRows + 1;
+    const newCells = new Set(newlyCreatedCells);
+
+    for (let col = 0; col <= numCols; col++) {
+      const colLetter = getHeaderLetter(col);
+      const cellID = `$${colLetter}${newRowNumber}`;
+      newSheetData[cellID] = ""
+      prevCellDataRef.current[cellID] = "";
+      newCells.add(cellID);
+    }
+
+    setSheetData(newSheetData);
+    setNewlyCreatedCells(newCells);
+  };
+
+  const addNewCol = () => {
+    setNumCols((prevNumCols) => prevNumCols + 1);
+
+    const newSheetData = { ...sheetData };
+    const newColumnLetter = getHeaderLetter(numCols + 1);
+    const newCells = new Set(newlyCreatedCells);
+
+    for (let row = 1; row <= numRows; row++) {
+      const cellID = `$${newColumnLetter}${row}`;
+      newSheetData[cellID] = ""
+      prevCellDataRef.current[cellID] = "";
+      newCells.add(cellID);
+    }
+
+    setSheetData(newSheetData);
+    setNewlyCreatedCells(newCells);
+  };
+
   /**
    * Renders the headers of the columns correctly with the A then to AA by using mod 26.
    *
@@ -147,7 +187,7 @@ const Sheet: React.FC = () => {
     const headers = [];
     headers.push(<th key="header-empty" className="header"></th>);
 
-    const col = INITIALSHEETCOLUMNSIZE;
+    const col = numCols;
     for (let i = 0; i < col; i++) {
       const letters: string = getHeaderLetter(i);
       headers.push(
@@ -157,6 +197,18 @@ const Sheet: React.FC = () => {
       );
     }
 
+    headers.push(
+      <th key="add-column-header">
+        <button
+          onClick={addNewCol}
+          className="add-column-button"
+          key="add-column-button"
+        >
+          Add Column
+        </button>
+      </th>
+    );
+  
     return <tr>{headers}</tr>;
   };
 
@@ -171,7 +223,7 @@ const Sheet: React.FC = () => {
   const renderSheetRows = () => {
     const rows = [];
 
-    for (let row = 1; row <= INITIALSHEETROWSIZE; row++) {
+    for (let row = 1; row <= numRows; row++) {
       const cellsPerRow = [];
       cellsPerRow.push(
         <td key={`row-header-${row}`} className="row-header">
@@ -179,7 +231,7 @@ const Sheet: React.FC = () => {
         </td>
       );
 
-      for (let col = 0; col < INITIALSHEETCOLUMNSIZE; col++) {
+      for (let col = 0; col < numCols; col++) {
         const columnLetter: string = getHeaderLetter(col);
         const cellId = `$${columnLetter}${row}`;
         cellsPerRow.push(
@@ -198,7 +250,22 @@ const Sheet: React.FC = () => {
       );
     }
 
-    return rows;
+    return (
+      <>
+        {rows}
+        <tr>
+          <td colSpan={numCols + 1}>
+            <button
+              onClick={addNewRow}
+              className="add-row-button"
+              key="add-row-button"
+            >
+              Add Row
+            </button>
+          </td>
+        </tr>
+      </>
+    );
   };
 
   // html for rendering sheet

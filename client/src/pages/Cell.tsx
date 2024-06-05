@@ -80,7 +80,7 @@ const Cell: React.FC<CellProps> = React.memo(
       <td key={cellId} className="cell">
         <input
           type="text"
-          value={value}
+          value={value ?? ""}
           onChange={handleChange}
           onBlur={handleBlur}
           className="cell-input"
