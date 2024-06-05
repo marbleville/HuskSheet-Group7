@@ -56,4 +56,30 @@ describe("getUpdatesForPublished", () => {
 			)
 		);
 	});
+
+	it("should return an argument object containing the updates stored in the updates table with no updates", async () => {
+		const testArg: Argument = assembleTestArgumentObject(
+			"laurence",
+			"test2",
+			"0",
+			""
+		);
+
+		expect(await getUpdatesForPublished(testArg)).toEqual(
+			assembleTestArgumentObject("laurence", "test2", "0", "")
+		);
+	});
+
+	it("should return an argument object containing the updates stored in the updates table with no updates and id too high", async () => {
+		const testArg: Argument = assembleTestArgumentObject(
+			"laurence",
+			"test2",
+			"1",
+			""
+		);
+
+		expect(await getUpdatesForPublished(testArg)).toEqual(
+			assembleTestArgumentObject("laurence", "test2", "2", "")
+		);
+	});
 });
