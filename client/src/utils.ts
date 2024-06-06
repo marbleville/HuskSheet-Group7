@@ -6,9 +6,7 @@
 export const fetchWithAuth = async (
   url: string,
   options: RequestInit = {},
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSuccess?: (data: any) => void,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onFailure?: (error: any) => void
 ): Promise<void> => {
   // Retrieve username and password from sessionStorage
@@ -40,7 +38,7 @@ export const fetchWithAuth = async (
           onSuccess(data);
         }
       } else {
-        console.warn(`data.success was false`)
+        console.warn(`data.success was false ${data.message}`)
         if (onFailure) {
           onFailure(data);
         }
