@@ -3,56 +3,66 @@
  * @description A client utility file. Offers common utility functions.
  */
 
+/**
+ * Fetches data from the given URL with the given options and stored
+ * authorization. If the fetch is successful, the onSuccess function is called,
+ * otherwise the onFailure function is called.
+ *
+ * @param url the URL to fetch data from
+ * @param options the options to pass to the fetch function
+ * @param onSuccess the function to call if the fetch is successful
+ * @param onFailure the function to call if the fetch is unsuccessful
+ */
 export const fetchWithAuth = async (
-  url: string,
-  options: RequestInit = {},
-  onSuccess?: (data: any) => void,
-  onFailure?: (error: any) => void
+	url: string,
+	options: RequestInit = {},
+	onSuccess?: (data: any) => void,
+	onFailure?: (error: any) => void
 ): Promise<void> => {
-  // Retrieve username and password from sessionStorage
-  const username = sessionStorage.getItem("username");
-  const password = sessionStorage.getItem("password");
+	// Retrieve username and password from sessionStorage
+	const username = sessionStorage.getItem("username");
+	const password = sessionStorage.getItem("password");
 
-  // If username and password exist, set Authorization header
-  if (username && password) {
-    options.headers = {
-      ...options.headers,
-      Authorization: `Basic ${btoa(`${username}:${password}`)}`,
-    };
-  }
+	// If username and password exist, set Authorization header
+	if (username && password) {
+		options.headers = {
+			...options.headers,
+			Authorization: `Basic ${btoa(`${username}:${password}`)}`,
+		};
+	}
 
-  // If method is POST and body is provided, stringify body and set appropriate headers
-  if (options.method === "POST" && options.body) {
-    options.headers = {
-      ...options.headers,
-      "Content-Type": "application/json",
-    };
-  }
+	// If method is POST and body is provided, stringify body and set appropriate headers
+	if (options.method === "POST" && options.body) {
+		options.headers = {
+			...options.headers,
+			"Content-Type": "application/json",
+		};
+	}
 
-  try {
-    const response = await fetch(url, options);
-    if (response.ok) {
-      const data = await response.json();
-      if (data.success) {
-        if (onSuccess) {
-          onSuccess(data);
-        }
-      } else {
-        console.warn(`data.success was false ${data.message}`)
-        if (onFailure) {
-          onFailure(data);
-        }
-      }
-    } else {
-      console.error("Error fetching");
-      if (onFailure) {
-        onFailure(null); // how to handle better
-      }
-    }
-  } catch (error) {
-    console.error("Error fetching", error);
-    if (onFailure) {
-      onFailure(error); // how to handle better
-    }
-  }
+	try {
+		const response = await fetch(url, options);
+		if (response.ok) {
+			const data = await response.json();
+			if (data.success) {
+				if (onSuccess) {
+					onSuccess(data);
+				}
+			} else {
+				console.warn(`data.success was false ${data.message}`);
+				if (onFailure) {
+					onFailure(data);
+				}
+			}
+		} else {
+			console.error("Error fetching");
+			if (onFailure) {
+				onFailure(null); // how to handle better
+			}
+		}
+	} catch (error) {
+		console.error("Error fetching", error);
+		if (onFailure) {
+			onFailure(error); // how to handle better
+		}
+	}
 };
