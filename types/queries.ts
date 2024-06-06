@@ -60,11 +60,8 @@ export default class DatabaseQueries {
 	 *
 	 * @author hunterbrodie
 	 */
-	static getUpdatesForPublished(sheetName: string, id: number): string {
-		return `SELECT updates.* FROM updates
-      INNER JOIN sheets ON updates.sheet=sheets.sheetid 
-      INNER JOIN publishers ON sheets.owner=publishers.userid
-      WHERE updates.owner!=sheets.owner AND sheets.sheetname='${sheetName}' AND updates.updateid>${id};`;
+	static getUpdatesForPublished(publisher: string, sheetName: string, id: number): string {
+    return DatabaseQueries.getUpdatesHelper(publisher, sheetName, id, "<>");
 	}
 
 	/**
@@ -77,13 +74,21 @@ export default class DatabaseQueries {
 		sheetName: string,
 		id: number
 	): string {
+    return DatabaseQueries.getUpdatesHelper(publisher, sheetName, id, "=");
+	}
+
+  /**
+   * Helps the getUpdate functions.
+   *
+   * @author hunterbrodie
+   */
+  static getUpdatesHelper(publisher: string, sheetName: string, id: number, operator: string): string {
 		return `SELECT updates.* FROM updates
       INNER JOIN sheets ON updates.sheet=sheets.sheetid 
       INNER JOIN publishers ON sheets.owner=publishers.userid
       WHERE publishers.username='${publisher}' AND sheets.sheetname='${sheetName}'
-      AND updates.updateid>${id} AND updates.owner=(SELECT userid FROM publishers 
-      WHERE username = '${publisher}');`;
-	}
+      AND updates.owner${operator}sheets.owner AND updates.updateid>${id};`;
+  }
 
 	/**
 	 * Returns the query for register.

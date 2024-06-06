@@ -1,8 +1,11 @@
 import { getPublishers } from "../../../server/src/functions/getPublishers";
 import { Argument } from "../../../types/types";
+import { setupDB } from "../../utils";
 
 describe("getPublishers", () => {
 	it("should return an array of arguments containing all publishers", async () => {
+    await setupDB();
+
     expect(await getPublishers()).toEqual([
       {
        "id": "",

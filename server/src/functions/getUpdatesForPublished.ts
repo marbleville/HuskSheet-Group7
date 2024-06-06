@@ -17,7 +17,7 @@ async function getUpdatesForPublished(argument: Argument): Promise<Argument> {
 	let publisher: Publisher = argument.publisher;
 	let id: number = parseInt(argument.id);
 
-	const queryString = DatabaseQueries.getUpdatesForPublished(sheetName, id);
+	const queryString = DatabaseQueries.getUpdatesForPublished(publisher, sheetName, id);
 
 	return await getUpdatesHelper(argument, queryString);
 }
