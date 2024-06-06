@@ -174,11 +174,14 @@ const Sheet: React.FC = () => {
       sheet: sheetInfo.sheet,
       payload: payload,
     };
+
+    console.log(`Role is: ${sheetRelationship}, User is: ${sessionStorage.getItem("username")}`)
     
-    console.log("SENDING PAYLOAD:")
+    console.log("PAYLOAD:")
     console.log(allUpdates.payload);
     
     if (sheetRelationship === "OWNER") {
+      console.log(`calling updatePublished`)
       try {
         await fetchWithAuth("http://localhost:3000/api/v1/updatePublished", {
           method: "POST",
@@ -192,6 +195,7 @@ const Sheet: React.FC = () => {
         console.error("Error publishing new changes", error);
       }
     } else {
+      console.log(`calling updateSubscription`)
       try {
         await fetchWithAuth("http://localhost:3000/api/v1/updateSubscription", {
           method: "POST",
@@ -458,9 +462,36 @@ const Sheet: React.FC = () => {
           }
         }
       );
-    } else {
       fetchWithAuth(
         "http://localhost:3000/api/v1/getUpdatesForPublished",
+        {
+          method: "POST",
+          body: JSON.stringify(argument)
+        },
+        async (data) => {
+          console.log("INCOMING DATA:");
+          console.log(data);
+    
+          if (data.success && data.value && data.value.length > 0) {
+            const update = data.value[0];
+            const sheetUpdateHandler = SheetUpdateHandler.getInstance();
+            const updates = await sheetUpdateHandler.applyUpdates(update);
+  
+            // Check if payload is not empty before updating the sheetData
+            if (update.payload !== "") {
+              setSheetData(prevSheetData => ({
+                ...prevSheetData,
+                ...updates
+              }));
+            }
+    
+            // setLatestUpdateID(update.id);
+          }
+        }
+      );
+    } else {
+      fetchWithAuth(
+        "http://localhost:3000/api/v1/getUpdatesForSubscription",
         {
           method: "POST",
           body: JSON.stringify(argument)
