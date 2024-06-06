@@ -153,8 +153,9 @@ const Sheet: React.FC = () => {
       });
 
       // Reset newlyAddedCells and newlyDeletedCells sets to empty after successful fetch
-      setNewlyAddedCells(new Set());
-      setNewlyDeletedCells(new Set());
+      console.log("got here");
+      //setNewlyAddedCells(new Set());
+      //setNewlyDeletedCells(new Set());
     } catch (error) {
       console.error("Error publishing new changes", error);
     }
