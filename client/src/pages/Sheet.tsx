@@ -56,6 +56,10 @@ const getHeaderLetter = (curr: number): string => {
   return letters;
 };
 
+
+type SheetRelationship = "OWNER" | "SUBSCRIBER";
+
+
 /**
  * @description Represents a Sheet that a publisher owns and Subscribers can make edits on.
  * Renders a scrollable table with cell inputs and a publish button to allow edits to be saved to the server.
@@ -63,14 +67,33 @@ const getHeaderLetter = (curr: number): string => {
  * @author kris-amerman, rishavsarma5, eduardo-ruiz-garay
  */
 const Sheet: React.FC = () => {
-  useEffect(() => {
-    console.log("SHEET DATA")
-    console.log(sheetData)
-  })
 
   // receive information about sheet from dashboard page
   const location = useLocation();
   const sheetInfo: Argument = location.state;
+
+  const [sheetRelationship, setSheetRelationship] = useState<SheetRelationship>();
+
+  useEffect(() => {
+    // console.log("SHEET DATA")
+    // console.log(sheetData)
+
+    console.log(`publisher: ${sheetInfo.publisher}`)
+
+    console.log(`username: ${sessionStorage.getItem("username")}`)
+
+    console.log(`sheetRelationship: ${sheetRelationship}`)
+  })
+
+  useEffect(() => {
+    if (sheetInfo.publisher === sessionStorage.getItem("username")) {
+      setSheetRelationship("OWNER")
+    } else {
+      setSheetRelationship("SUBSCRIBER")
+    }
+
+
+  }, [])
 
   // initializes the first sheetData with 100 rows/columns
   const initialSheetData: SheetDataMap = initializeSheet(
@@ -100,7 +123,7 @@ const Sheet: React.FC = () => {
    * @author rishavsarma5, eduardo-ruiz-garay
    */
   const handleCellUpdate = (value: string, cellId: string) => {
-    console.log(`should be called for ${cellId} with value: ${value}`);
+    // console.log(`should be called for ${cellId} with value: ${value}`);
     if (value === "<DELETED>" || value === "<CREATED>") {
       value = "";
     }
@@ -151,23 +174,36 @@ const Sheet: React.FC = () => {
       sheet: sheetInfo.sheet,
       payload: payload,
     };
-
+    
+    console.log("SENDING PAYLOAD:")
     console.log(allUpdates.payload);
-
-    // calls updatePublished or updateSubscribed depending on user and relation to sheet
-    // @TODO: call UpdateSubscribed
-
-    try {
-      await fetchWithAuth("http://localhost:3000/api/v1/updatePublished", {
-        method: "POST",
-        body: JSON.stringify(allUpdates),
-      });
-
-      // Reset newlyAddedCells and newlyDeletedCells sets to empty after successful fetch
-      //setNewlyAddedCells(new Set());
-      //setNewlyDeletedCells(new Set());
-    } catch (error) {
-      console.error("Error publishing new changes", error);
+    
+    if (sheetRelationship === "OWNER") {
+      try {
+        await fetchWithAuth("http://localhost:3000/api/v1/updatePublished", {
+          method: "POST",
+          body: JSON.stringify(allUpdates),
+        });
+  
+        // Reset newlyAddedCells and newlyDeletedCells sets to empty after successful fetch
+        //setNewlyAddedCells(new Set());
+        //setNewlyDeletedCells(new Set());
+      } catch (error) {
+        console.error("Error publishing new changes", error);
+      }
+    } else {
+      try {
+        await fetchWithAuth("http://localhost:3000/api/v1/updateSubscription", {
+          method: "POST",
+          body: JSON.stringify(allUpdates),
+        });
+  
+        // Reset newlyAddedCells and newlyDeletedCells sets to empty after successful fetch
+        //setNewlyAddedCells(new Set());
+        //setNewlyDeletedCells(new Set());
+      } catch (error) {
+        console.error("Error publishing new changes", error);
+      }
     }
   };
 
@@ -393,34 +429,64 @@ const Sheet: React.FC = () => {
       id: latestUpdateID,
       payload: ""
     };
+    
+    if (sheetRelationship === "OWNER") {
+      fetchWithAuth(
+        "http://localhost:3000/api/v1/getUpdatesForSubscription",
+        {
+          method: "POST",
+          body: JSON.stringify(argument)
+        },
+        async (data) => {
+          console.log("INCOMING DATA:");
+          console.log(data);
+    
+          if (data.success && data.value && data.value.length > 0) {
+            const update = data.value[0];
+            const sheetUpdateHandler = SheetUpdateHandler.getInstance();
+            const updates = await sheetUpdateHandler.applyUpdates(update);
   
-    fetchWithAuth(
-      "http://localhost:3000/api/v1/getUpdatesForPublished",
-      {
-        method: "POST",
-        body: JSON.stringify(argument)
-      },
-      async (data) => {
-        console.log("DATA:");
-        console.log(data);
-  
-        if (data.success && data.value && data.value.length > 0) {
-          const update = data.value[0];
-          const sheetUpdateHandler = SheetUpdateHandler.getInstance();
-          const updates = await sheetUpdateHandler.applyUpdates(update);
-
-          // Check if payload is not empty before updating the sheetData
-          if (update.payload !== "") {
-            setSheetData(prevSheetData => ({
-              ...prevSheetData,
-              ...updates
-            }));
+            // Check if payload is not empty before updating the sheetData
+            if (update.payload !== "") {
+              setSheetData(prevSheetData => ({
+                ...prevSheetData,
+                ...updates
+              }));
+            }
+    
+            setLatestUpdateID(update.id);
           }
-  
-          setLatestUpdateID(update.id);
         }
-      }
-    );
+      );
+    } else {
+      fetchWithAuth(
+        "http://localhost:3000/api/v1/getUpdatesForPublished",
+        {
+          method: "POST",
+          body: JSON.stringify(argument)
+        },
+        async (data) => {
+          console.log("INCOMING DATA:");
+          console.log(data);
+    
+          if (data.success && data.value && data.value.length > 0) {
+            const update = data.value[0];
+            const sheetUpdateHandler = SheetUpdateHandler.getInstance();
+            const updates = await sheetUpdateHandler.applyUpdates(update);
+  
+            // Check if payload is not empty before updating the sheetData
+            if (update.payload !== "") {
+              setSheetData(prevSheetData => ({
+                ...prevSheetData,
+                ...updates
+              }));
+            }
+    
+            setLatestUpdateID(update.id);
+          }
+        }
+      );
+    }
   };
   
 
