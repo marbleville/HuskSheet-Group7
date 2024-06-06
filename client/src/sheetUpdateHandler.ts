@@ -86,23 +86,23 @@ class SheetUpdateHandler {
 	 *
 	 * @author rishavsarma5
 	 */
-    public async retrieveUpdates(argument: Argument): Promise<SheetUpdateMap> {
+    public async applyUpdates(argument: Argument): Promise<SheetUpdateMap> {
         // parses updates list from the payload field by new-line delimiter
         const updates: string[] = argument.payload.split('\n');
-
-        // initializes sheetsUpdate HashMap to have rows that go 'A ... Z a ... z'
-        // and columns to go until 52
-        let sheetsMap: SheetUpdateMap = {}
-        sheetsMap = this.initializeSheetMap(sheetsMap, 52);
-
-        // updates sheetsUpdate HashMap with each update
-        for (const update in updates) {
+    
+        // Initializes an empty update map
+        let sheetsMap: SheetUpdateMap = {};
+    
+        // Update each cell specified in the payload
+        for (const update of updates) {
             const [ref, term] = update.split(" ");
             sheetsMap[ref] = term;
         }
-
+    
         return sheetsMap;
     }
+    
+    
 
 }
 

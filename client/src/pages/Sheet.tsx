@@ -1,9 +1,10 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Cell from "./Cell";
 import { fetchWithAuth } from "../utils";
 import "../styles/Sheet.css";
 import { Argument } from "../../../types/types";
+import SheetUpdateHandler from "../sheetUpdateHandler";
 
 /**
  * @description This is the HashMap type that represents how cell data is stored on a sheet.
@@ -62,6 +63,10 @@ const getHeaderLetter = (curr: number): string => {
  * @author kris-amerman, rishavsarma5, eduardo-ruiz-garay
  */
 const Sheet: React.FC = () => {
+  useEffect(() => {
+    console.log(sheetData)
+  })
+
   // receive information about sheet from dashboard page
   const location = useLocation();
   const sheetInfo: Argument = location.state;
@@ -79,6 +84,9 @@ const Sheet: React.FC = () => {
   const [numRows, setNumRows] = useState(INITIALSHEETROWSIZE);
   const [numCols, setNumCols] = useState(INITIALSHEETCOLUMNSIZE);
   const [newlyCreatedCells, setNewlyCreatedCells] = useState<Set<string>>(new Set());
+
+  // This is the latestUpdateID that the client has. Initialized to 0 to fetch all updates on first load.
+  const [latestUpdateID, setLatestUpdateID] = useState<string>("0");
 
   /**
    * @description Updates the sheetData when a cell's input changes.
@@ -208,7 +216,7 @@ const Sheet: React.FC = () => {
         </button>
       </th>
     );
-  
+
     return <tr>{headers}</tr>;
   };
 
@@ -240,6 +248,7 @@ const Sheet: React.FC = () => {
             cellId={cellId}
             initialValue={sheetData[cellId]}
             onUpdate={handleCellUpdate}
+            cellValue={sheetData[cellId]}
           />
         );
       }
@@ -268,10 +277,48 @@ const Sheet: React.FC = () => {
     );
   };
 
-  // html for rendering sheet
+  const requestUpdatesHandler = () => {
+    const argument: Argument = {
+      publisher: sheetInfo.publisher,
+      sheet: sheetInfo.sheet,
+      id: latestUpdateID,
+      payload: ""
+    };
+  
+    fetchWithAuth(
+      "http://localhost:3000/api/v1/getUpdatesForPublished",
+      {
+        method: "POST",
+        body: JSON.stringify(argument)
+      },
+      async (data) => {
+        console.log("DATA:");
+        console.log(data);
+  
+        if (data.success && data.value && data.value.length > 0) {
+          const update = data.value[0];
+          const sheetUpdateHandler = SheetUpdateHandler.getInstance();
+          const updates = await sheetUpdateHandler.applyUpdates(update);
+  
+          // Check if payload is not empty before updating the sheetData
+          if (update.payload !== "") {
+            setSheetData(prevSheetData => ({
+              ...prevSheetData,
+              ...updates
+            }));
+          }
+  
+          setLatestUpdateID(update.id);
+        }
+      }
+    );
+  };
+  
+
   return (
     <div className="sheet-container">
       <div className="info-section">
+        <button onClick={() => { requestUpdatesHandler() }}>Request Updates</button>
         <div className="publisher-info">Publisher: {sheetInfo.publisher}</div>
         <div className="sheet-name">Sheet Name: {sheetInfo.sheet}</div>
         <button
