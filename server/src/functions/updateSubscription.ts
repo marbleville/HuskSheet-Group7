@@ -1,5 +1,8 @@
-import { Argument } from "../../../types/types";
-import { updatePublished } from "./updatePublished";
+import { Argument, Publisher, Sheet, Payload } from "../../../types/types";
+import DatabaseInstance from "../database/databaseInstance";
+import DatabaseQueries from "../../../types/queries";
+import HashStore from "../database/HashStore";
+import { GetUpdateRow } from "../database/db";
 
 /**
  * Updates the Updates table with the given publisher, sheet, and payload for
@@ -10,9 +13,28 @@ import { updatePublished } from "./updatePublished";
  *
  * @author marbleville
  */
-async function updateSubscription(argument: Argument): Promise<void> {
-	// The logic for updating a subscription is the same as updating a published
-	await updatePublished(argument);
+async function updateSubscription(
+	argument: Argument,
+	clientName: string
+): Promise<void> {
+	let publisher: Publisher = argument.publisher;
+	let sheetName: Sheet = argument.sheet;
+	let payload: Payload = argument.payload;
+
+	const database = DatabaseInstance.getInstance();
+
+	const queryString = DatabaseQueries.updateSubscription(
+		sheetName,
+		publisher,
+		payload,
+		clientName
+	);
+
+	try {
+		await database.query<GetUpdateRow>(queryString);
+	} catch (error) {
+		throw error;
+	}
 }
 
 export { updateSubscription };

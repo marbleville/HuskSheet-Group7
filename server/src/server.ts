@@ -1,8 +1,13 @@
 const express = require("express");
 import cors from "cors";
 import { Request, Response, Application } from "express";
-import { authenticate, runEndpointFuntion, parseAuthHeader } from "./utils";
-import { Result } from "../../types/types";
+import {
+	authenticate,
+	runEndpointFuntion,
+	parseAuthHeader,
+	assembleResultObject,
+} from "./utils";
+import { Result, Argument } from "../../types/types";
 import {
 	register,
 	getSheets,
@@ -54,7 +59,7 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 	if (authHeader === undefined) {
 		result = {
 			success: false,
-			message: "",
+			message: "No Authorization header provided.",
 			value: [],
 		};
 		res.send(JSON.stringify(result));
@@ -172,7 +177,52 @@ app.post("/api/v1/updatePublished", async (req: Request, res: Response) => {
  * @author marbleville
  */
 app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
-	runEndpointFuntion(req, res, updateSubscription);
+	let result: Result;
+
+	if (!(await authenticate(req.headers.authorization))) {
+		result = assembleResultObject(
+			false,
+			`updateSubscription: Unauthorized`,
+			[]
+		);
+		res.send(JSON.stringify(result));
+		return;
+	}
+
+	try {
+		let argument = req.body as Argument;
+		const authHeader = req.headers.authorization;
+
+		// Invalid Authorization header provided
+		if (authHeader === undefined) {
+			result = {
+				success: false,
+				message: "No Authorization header provided.",
+				value: [],
+			};
+			res.send(JSON.stringify(result));
+			return;
+		}
+
+		const [username, password] = parseAuthHeader(authHeader);
+
+		let value: Argument[] | Argument | void = await updateSubscription(
+			argument,
+			username
+		);
+
+		result = assembleResultObject(true, `updateSubscription: `, value);
+		res.send(JSON.stringify(result));
+	} catch (error) {
+		const err: Error = error as Error;
+		console.error(err);
+		result = assembleResultObject(
+			false,
+			`updateSubscription: ` + err.message,
+			[]
+		);
+		res.send(JSON.stringify(result));
+	}
 });
 
 app.on("listening", () => {
