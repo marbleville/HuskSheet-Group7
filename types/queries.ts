@@ -168,4 +168,9 @@ export default class DatabaseQueries {
 		INNER JOIN sheets ON updates.sheet=sheets.sheetid WHERE 
 		sheets.owner=updates.owner;`;
 	}
+
+  
+  static setUpTesting(): string {
+    return `CALL resetdata();`;
+  }
 }
