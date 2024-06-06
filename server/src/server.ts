@@ -1,12 +1,7 @@
 const express = require("express");
 import cors from "cors";
 import { Request, Response, Application } from "express";
-import {
-	authenticate,
-	assembleResultObject,
-	runEndpointFuntion,
-	parseAuthHeader,
-} from "./utils";
+import { authenticate, runEndpointFuntion, parseAuthHeader } from "./utils";
 import { Result } from "../../types/types";
 import {
 	register,
