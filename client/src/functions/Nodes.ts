@@ -1,25 +1,28 @@
-class NumberNode {
+export interface INode { }
+
+class NumberNode implements INode {
   constructor(public value: number) {}
 }
 
-class StringNode {
+class StringNode implements INode {
   constructor(public value: string) {}
 }
 
-class ReferenceNode {
+class ReferenceNode implements INode {
   constructor(public ref: string) {}
 }
 
-class OperationNode {
-  constructor(public left: any, public op: string, public right: any) {}
+class OperationNode<Type extends INode> implements INode {
+  constructor(public left: Type, public op: string, public right: Type) {}
 }
 
-class FunctionCallNode {
-  constructor(public func: string, public args: any[]) {}
+class FunctionCallNode<Type extends INode> implements INode {
+  constructor(public func: string, public args: Type[]) {}
 }
 
-class FormulaNode {
-  constructor(public expr: any) {}
+class FormulaNode<Type extends INode> implements INode {
+
+  constructor(public expr: Type) {}
 }
 
-default export NumberNode, StringNode;
+export { NumberNode, StringNode, ReferenceNode, OperationNode, FunctionCallNode, FormulaNode };

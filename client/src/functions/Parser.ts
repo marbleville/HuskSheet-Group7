@@ -1,3 +1,4 @@
+import { FormulaNode, FunctionCallNode, INode, OperationNode, ReferenceNode, StringNode } from "./Nodes";
 import Tokenizer from "./Tokenizer";
 
 class Parser {
@@ -9,8 +10,7 @@ class Parser {
     this.tokens = [];
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  parse(formula: string): any {
+  parse(formula: string): INode {
     this.tokens = new Tokenizer().tokenize(formula);
     this.index = 0;
     if (this.tokens.length > 0 && this.tokens[0] === "=") {
@@ -31,8 +31,7 @@ class Parser {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private parseTerm(): any {
+  private parseTerm(): INode {
     const token = this.tokens[this.index];
     if (this.isNumber(token)) {
       this.index++;
@@ -50,8 +49,7 @@ class Parser {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private parseExpression(): any {
+  private parseExpression(): INode {
     let node = this.parseTerm();
     while (
       this.index < this.tokens.length &&
@@ -65,8 +63,7 @@ class Parser {
     return node;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private parseFunction(): any {
+  private parseFunction(): INode {
     const func = this.tokens[this.index].slice(0, -1); // Remove '('
     this.index++;
     const args = [];
@@ -99,33 +96,6 @@ class Parser {
   private isFunction(token: string): boolean {
     return /^[A-Z]+\($/.test(token);
   }
-}
-
-class NumberNode {
-  constructor(public value: number) {}
-}
-
-class StringNode {
-  constructor(public value: string) {}
-}
-
-class ReferenceNode {
-  constructor(public ref: string) {}
-}
-
-class OperationNode {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(public left: any, public op: string, public right: any) {}
-}
-
-class FunctionCallNode {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(public func: string, public args: any[]) {}
-}
-
-class FormulaNode {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(public expr: any) {}
 }
 
 export default Parser;
