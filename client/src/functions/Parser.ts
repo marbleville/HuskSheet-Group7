@@ -1,7 +1,9 @@
-import { FormulaNode, FunctionCallNode, INode, NumberNode, OperationNode, ReferenceNode, StringNode } from "./Nodes";
+import { INode, FormulaNode, NumberNode, StringNode, ReferenceNode, OperationNode, FunctionCallNode } from "./Nodes";
 import Tokenizer from "./Tokenizer";
 
 class Parser {
+  private static instance: Parser;
+
   private index: number;
   private tokens: string[];
 
@@ -10,9 +12,16 @@ class Parser {
     this.tokens = [];
   }
 
+  public static getInstance() {
+    if (Parser.instance == null) {
+      Parser.instance = new Parser();
+    }
+    return Parser.instance;
+  }
+
   parse(formula: string): INode {
-    this.tokens = new Tokenizer().tokenize(formula);
-    this.index = 0;
+    this.index = 0; // Reset index for new parsing
+    this.tokens = Tokenizer.getInstance().tokenize(formula);
     if (this.tokens.length > 0 && this.tokens[0] === "=") {
       this.consume("=");
       return new FormulaNode(this.parseExpression());
@@ -51,10 +60,7 @@ class Parser {
 
   private parseExpression(): INode {
     let node = this.parseTerm();
-    while (
-      this.index < this.tokens.length &&
-      this.isOperator(this.tokens[this.index])
-    ) {
+    while (this.index < this.tokens.length && this.isOperator(this.tokens[this.index])) {
       const operator = this.tokens[this.index];
       this.index++;
       const rightNode = this.parseTerm();
@@ -82,11 +88,11 @@ class Parser {
   }
 
   private isString(token: string): boolean {
-    return /^".*"$/.test(token);
+    return /^"[^"]*"$/.test(token); // Adjusted regular expression for strings
   }
 
   private isReference(token: string): boolean {
-    return /^[A-Z]+\d+$/.test(token);
+    return /^\$[A-Z]+\d+$/.test(token);
   }
 
   private isOperator(token: string): boolean {
@@ -94,7 +100,7 @@ class Parser {
   }
 
   private isFunction(token: string): boolean {
-    return /^[A-Z]+\($/.test(token);
+    return /^(IF|SUM|MIN|AVG|MAX|CONCAT|DEBUG)\($/.test(token);
   }
 }
 

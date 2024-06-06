@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../styles/Cell.css";
+import Parser from "../functions/Parser";
 
 interface CellProps {
   cellId: string;
@@ -27,6 +28,7 @@ const Cell: React.FC<CellProps> = ({
   };
 
   const handleBlur = () => {
+    const parsedNode = Parser.getInstance().parse(value);
     onUpdate(value, cellId);
   };
 

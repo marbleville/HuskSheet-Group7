@@ -91,7 +91,7 @@ class SheetUpdateHandler {
         const updates: string[] = argument.payload.split('\n');
 
         // Initializes an empty update map
-        let sheetsMap: SheetUpdateMap = {};
+        const sheetsMap: SheetUpdateMap = {};
 
         // Update each cell specified in the payload
         for (const update of updates) {

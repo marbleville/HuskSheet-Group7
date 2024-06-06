@@ -1,26 +1,29 @@
 class Tokenizer {
+  private static instance: Tokenizer;
+
   //Creates a mapping with the type and the regex that accompanies it.
   private static tokenSpec: [string, RegExp][] = [
-    // Matches one or more digits, and matches decimals
-    ["NUMBER", /^\d+(\.\d+)?/],
-    // Matches double quites os any size and closing
-    ["STRING", /^"([^"\\]*(\\.[^"\\]*)*)"/],
-    // Matches one or more uppercase letters and an opening parenthesis
-    ["FUNCTION", /^[A-Z]+\(/],
-    // Matches any single character
-    ["OPERATOR", /^[+\-*/<>=&|,:]/],
-    //Matches parethesis
-    ["LPAREN", /^\(/],
-    ["RPAREN", /^\)/],
-    //Matches one or more uppercase letter and one or more digits
-    ["REFERENCE", /^\$[A-Z]+\d+/],
-    // matches spaces and tabs
-    ["WHITESPACE", /^\s+/],
+    ["NUMBER", /^\d+(\.\d+)?/], // Matches numbers
+    ["STRING", /^"([^"]*)"/], // Matches strings enclosed in double quotes
+    ["FUNCTION", /^(IF|SUM|MIN|AVG|MAX|CONCAT|DEBUG)\(/], // Matches functions
+    ["OPERATOR", /^[+\-*/<>=&|:]/], // Matches operators
+    ["LPAREN", /^\(/], // Matches left parenthesis
+    ["RPAREN", /^\)/], // Matches right parenthesis
+    ["REFERENCE", /^\$[A-Z]+\d+/], // Matches cell references
+    ["WHITESPACE", /^\s+/], // Matches whitespace
   ];
 
   //Loops over the index of a possible number
   private index: number;
   private formula: string;
+
+  public static getInstance() {
+    if (Tokenizer.instance == null) {
+      Tokenizer.instance = new Tokenizer();
+    }
+
+    return Tokenizer.instance;
+  }
 
   constructor() {
     this.index = 0;
@@ -28,6 +31,7 @@ class Tokenizer {
   }
 
   tokenize(formula: string): string[] {
+    this.index = 0; // Reset index for new tokenization
     this.formula = formula;
     const tokens: string[] = [];
 
@@ -42,12 +46,14 @@ class Tokenizer {
       }
     }
 
-    return tokens.filter((token) => !/^WHITESPACE$/.test(token));
+    return tokens.filter((token) => token !== "WHITESPACE");
   }
+
   nextToken(): string | null {
-    const substr = this.formula.slice(this.index);
+    const substr = this.formula.substring(this.index);
     for (const [type, regex] of Tokenizer.tokenSpec) {
       const match = regex.exec(substr);
+      console.log(`type: ${type} match: ${match}`);
       if (match) {
         this.index += match[0].length;
         if (type !== "WHITESPACE") {
