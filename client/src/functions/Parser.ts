@@ -22,6 +22,10 @@ class Parser {
   parse(formula: string): INode {
     this.index = 0; // Reset index for new parsing
     this.tokens = Tokenizer.getInstance().tokenize(formula);
+    console.log(`${this.tokens}`)
+    for (const token of this.tokens) {
+      console.log(`token: ${token}`);
+    }
     if (this.tokens.length > 0 && this.tokens[0] === "=") {
       this.consume("=");
       return new FormulaNode(this.parseExpression());
@@ -47,7 +51,7 @@ class Parser {
       return new NumberNode(parseFloat(token));
     } else if (this.isString(token)) {
       this.index++;
-      return new StringNode(token.slice(1, -1).replace(/\\"/g, '"'));
+      return new StringNode(token);
     } else if (this.isReference(token)) {
       this.index++;
       return new ReferenceNode(token);
@@ -70,7 +74,7 @@ class Parser {
   }
 
   private parseFunction(): INode {
-    const func = this.tokens[this.index].slice(0, -1); // Remove '('
+    const func = this.tokens[this.index].slice(0, -1); 
     this.index++;
     const args = [];
     while (this.tokens[this.index] !== ")") {
@@ -88,7 +92,7 @@ class Parser {
   }
 
   private isString(token: string): boolean {
-    return /^"[^"]*"$/.test(token); // Adjusted regular expression for strings
+    return /^[^()\s,]+$/.test(token);
   }
 
   private isReference(token: string): boolean {

@@ -3,13 +3,14 @@ class Tokenizer {
 
   //Creates a mapping with the type and the regex that accompanies it.
   private static tokenSpec: [string, RegExp][] = [
-    ["NUMBER", /^\d+(\.\d+)?/], // Matches numbers
-    ["STRING", /^"([^"]*)"/], // Matches strings enclosed in double quotes
-    ["FUNCTION", /^(IF|SUM|MIN|AVG|MAX|CONCAT|DEBUG)\(/], // Matches functions
+    ["FUNCTION", /^=(IF|SUM|MIN|AVG|MAX|CONCAT|DEBUG)\(/], // Matches functions
     ["OPERATOR", /^[+\-*/<>=&|:]/], // Matches operators
     ["LPAREN", /^\(/], // Matches left parenthesis
     ["RPAREN", /^\)/], // Matches right parenthesis
-    ["REFERENCE", /^\$[A-Z]+\d+/], // Matches cell references
+    ["REFERENCE", /^\$[A-Z]+\d+(:\$[A-Z]+\d+)?/], // Matches cell references and ranges
+    ["NUMBER", /^\d+(\.\d+)?/], // Matches numbers
+    ["STRING", /^[^()\s,]+/], // Matches strings
+    ["COMMA", /^,/], // Matches commas
     ["WHITESPACE", /^\s+/], // Matches whitespace
   ];
 
@@ -46,6 +47,8 @@ class Tokenizer {
       }
     }
 
+    
+
     return tokens.filter((token) => token !== "WHITESPACE");
   }
 
@@ -53,7 +56,7 @@ class Tokenizer {
     const substr = this.formula.substring(this.index);
     for (const [type, regex] of Tokenizer.tokenSpec) {
       const match = regex.exec(substr);
-      console.log(`type: ${type} match: ${match}`);
+      console.log(`type ${type} match ${match}`);
       if (match) {
         this.index += match[0].length;
         if (type !== "WHITESPACE") {
