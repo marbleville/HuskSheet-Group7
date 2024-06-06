@@ -28,12 +28,36 @@ class Tokenizer {
   }
 
   tokenize(formula: string): string[] {
-    
+    this.formula = formula;
+    const tokens: string[] = [];
+
+    while (this.index < this.formula.length) {
+      const token = this.nextToken();
+      if (token) {
+        tokens.push(token);
+      } else {
+        throw new Error(
+          `Unexpected token at index ${this.index} in formula: ${this.formula}`
+        );
+      }
     }
 
     return tokens.filter((token) => !/^WHITESPACE$/.test(token));
   }
-
+  nextToken(): string | null {
+    const substr = this.formula.slice(this.index);
+    for (const [type, regex] of Tokenizer.tokenSpec) {
+      const match = regex.exec(substr);
+      if (match) {
+        this.index += match[0].length;
+        if (type !== "WHITESPACE") {
+          return match[0];
+        }
+        return null;
+      }
+    }
+    return null;
+  }
 }
 
 export default Tokenizer;
