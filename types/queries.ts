@@ -104,13 +104,11 @@ export default class DatabaseQueries {
 	 * @author hunterbrodie
 	 */
 	static updatePublished(
-		id: number,
 		sheetName: string,
 		publisher: string,
 		payload: string
 	) {
 		return DatabaseQueries.updateHelper(
-			id,
 			sheetName,
 			publisher,
 			payload,
@@ -124,13 +122,11 @@ export default class DatabaseQueries {
 	 * @author hunterbrodie
 	 */
 	static updateSubscription(
-		id: number,
 		sheetName: string,
 		publisher: string,
 		payload: string
 	) {
 		return DatabaseQueries.updateHelper(
-			id,
 			sheetName,
 			publisher,
 			payload,
@@ -144,17 +140,16 @@ export default class DatabaseQueries {
 	 * @author hunterbrodie
 	 */
 	static updateHelper(
-		id: number,
 		sheetName: string,
 		publisher: string,
 		payload: string,
 		accepted: string
 	) {
 		return `INSERT INTO updates 
-      (updateid, updatetime, sheet, owner, changes, accepted) 
-      VALUES (${id}, ${Date.now()}, (SELECT sheetid FROM sheets 
-      WHERE sheetname = ${sheetName}), (SELECT userid FROM publishers 
-      WHERE username = '${publisher}'), ${payload}, ${accepted});`;
+      (updatetime, sheet, owner, changes, accepted)
+      SELECT '${Date.now()}', sheets.sheetid, publishers.userid, '${payload}', ${accepted}
+      FROM sheets INNER JOIN publishers on sheets.owner=publishers.userid
+      WHERE sheets.sheetname='${sheetName}' AND publishers.username='${publisher}';`;
 	}
 
 	static getSheetID(sheetName: string, publisher: string): string {
