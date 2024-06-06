@@ -141,7 +141,8 @@ export default class DatabaseQueries {
 			sheetName,
 			publisher,
 			payload,
-			"NULL"
+			"NULL",
+			updatePublisher
 		);
 	}
 

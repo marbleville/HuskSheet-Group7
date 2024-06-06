@@ -27,8 +27,11 @@ async function updatePublished(argument: Argument): Promise<void> {
 	);
 
 	try {
+		await database.query<GetUpdateRow>(queryString);
+
+		// gets the updates for the subscription so we can greab ids
 		let updates: GetUpdateRow[] = await database.query<GetUpdateRow>(
-			queryString
+			DatabaseQueries.getUpdatesForSubscription(publisher, sheetName, 0)
 		);
 
 		let lastID =
