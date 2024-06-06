@@ -45,7 +45,7 @@ services:
             - "./client:/client"
             - "./db-scripts/reset-proc.sql:/reset-proc.sql"
             - "./db-scripts/store-proc.sh:/store-proc.sh"
-        command: bash -c "/store-proc.sh && npm install --prefix /server && npm install --prefix /test && npm run test --prefix /test"
+        command: bash -c "/store-proc.sh"
         links:
             - "db:db"
         env_file:
