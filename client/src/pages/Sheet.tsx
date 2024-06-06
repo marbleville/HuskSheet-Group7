@@ -64,6 +64,7 @@ const getHeaderLetter = (curr: number): string => {
  */
 const Sheet: React.FC = () => {
   useEffect(() => {
+    console.log("SHEET DATA")
     console.log(sheetData)
   })
 
@@ -123,12 +124,14 @@ const Sheet: React.FC = () => {
       return payload.join("\n");
     };
 
+    const payload = getAllCellUpdates();
+
     // Argument object of all updates to a sheet
     const allUpdates: Argument = {
+      id: "",
       publisher: sheetInfo.publisher,
       sheet: sheetInfo.sheet,
-      id: "",
-      payload: getAllCellUpdates(),
+      payload: payload,
     };
 
     console.log(allUpdates.payload);
@@ -299,7 +302,7 @@ const Sheet: React.FC = () => {
           const update = data.value[0];
           const sheetUpdateHandler = SheetUpdateHandler.getInstance();
           const updates = await sheetUpdateHandler.applyUpdates(update);
-  
+
           // Check if payload is not empty before updating the sheetData
           if (update.payload !== "") {
             setSheetData(prevSheetData => ({

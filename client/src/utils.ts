@@ -56,14 +56,3 @@ export const fetchWithAuth = async (
     }
   }
 };
-
-/**
- * @author kris-amerman
- */
-
-export const fetchUpdates = async (
-  id: number,
-
-) => {
-  
-}

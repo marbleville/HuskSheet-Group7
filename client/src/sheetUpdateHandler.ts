@@ -16,37 +16,37 @@ interface SheetUpdateMap {
  * @author rishavsarma5
  */
 class SheetUpdateHandler {
-	private static instance: SheetUpdateHandler;
-
-	/**
-	 * Creates a new instance of SheetUpdateHandler.
-	 *
-	 * @author rishavsarma5
-	 */
-	public constructor() {}
-
-	/**
-	 * Returns the instance of the SheetUpdateHandler class.
-	 *
-	 * @returns Creates or returns the single SheetUpdateHandler instance
-	 *
-	 * @author rishavsarma5
-	 */
-	public static getInstance() {
-		if (SheetUpdateHandler.instance == null) {
-			SheetUpdateHandler.instance = new SheetUpdateHandler();
-		}
-
-		return SheetUpdateHandler.instance;
-	}
+    private static instance: SheetUpdateHandler;
 
     /**
-	 * Helper that initializes the HashMap table with keys set to refs and values set to ''.
-	 *
-	 * @returns Initialized sheet update HashMap
-	 *
-	 * @author rishavsarma5
-	 */
+     * Creates a new instance of SheetUpdateHandler.
+     *
+     * @author rishavsarma5
+     */
+    public constructor() { }
+
+    /**
+     * Returns the instance of the SheetUpdateHandler class.
+     *
+     * @returns Creates or returns the single SheetUpdateHandler instance
+     *
+     * @author rishavsarma5
+     */
+    public static getInstance() {
+        if (SheetUpdateHandler.instance == null) {
+            SheetUpdateHandler.instance = new SheetUpdateHandler();
+        }
+
+        return SheetUpdateHandler.instance;
+    }
+
+    /**
+     * Helper that initializes the HashMap table with keys set to refs and values set to ''.
+     *
+     * @returns Initialized sheet update HashMap
+     *
+     * @author rishavsarma5
+     */
     private initializeSheetMap(sheetMap: SheetUpdateMap, size: number): SheetUpdateMap {
         // goes through each row and column and creates ref values
         // ex: $A1, $j52
@@ -54,7 +54,7 @@ class SheetUpdateHandler {
             for (let col = 0; col < size; col++) {
                 const columnLetter = this.getColumnLetter(col);
                 const key = `$${columnLetter}${row}`;
-                sheetMap[key] = ""; 
+                sheetMap[key] = "";
             }
         }
 
@@ -62,12 +62,12 @@ class SheetUpdateHandler {
     }
 
     /**
-	 * Helper that retrieves correct letter for ref value based on given number.
-	 *
-	 * @returns returns letter for row ref value
-	 *
-	 * @author rishavsarma5
-	 */
+     * Helper that retrieves correct letter for ref value based on given number.
+     *
+     * @returns returns letter for row ref value
+     *
+     * @author rishavsarma5
+     */
     private getColumnLetter(col: number): string {
         let result = "";
         // finds the next letter to return as the column value
@@ -79,30 +79,36 @@ class SheetUpdateHandler {
     }
 
     /**
-	 * Gets an Argument type from a publisher of all updates for a sheet and parses the updates into a SheetUpdateMap HashMap,
+     * Gets an Argument type from a publisher of all updates for a sheet and parses the updates into a SheetUpdateMap HashMap,
      * that has ref, term references that will be individually updated. 
-	 *
-	 * @returns returns SheetUpdateMap HashMap
-	 *
-	 * @author rishavsarma5
-	 */
+     *
+     * @returns returns SheetUpdateMap HashMap
+     *
+     * @author kris-amerman, rishavsarma5
+     */
     public async applyUpdates(argument: Argument): Promise<SheetUpdateMap> {
         // parses updates list from the payload field by new-line delimiter
         const updates: string[] = argument.payload.split('\n');
-    
+
         // Initializes an empty update map
         let sheetsMap: SheetUpdateMap = {};
-    
+
         // Update each cell specified in the payload
         for (const update of updates) {
-            const [ref, term] = update.split(" ");
-            sheetsMap[ref] = term;
+            if (update.trim()) { // Check if the update string is not empty or just whitespace
+                const [ref, ...rest] = update.split(" ");
+                const term = rest.join(" "); // Join the rest of the parts to handle cases with spaces in the term
+                if (ref) {
+                    sheetsMap[ref] = term;
+                }
+            }
         }
-    
+
         return sheetsMap;
     }
-    
-    
+
+
+
 
 }
 
