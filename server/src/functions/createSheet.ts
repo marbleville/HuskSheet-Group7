@@ -14,20 +14,16 @@ import { GetSheetRow } from "../database/db";
 async function createSheet(argument: Argument): Promise<void> {
 	let publisher: Publisher = argument.publisher;
 	let sheetName: Sheet = argument.sheet;
-	/**
-	 * argument.publisher is the publisher to create the sheet for
-	 * argument.sheet is the name of the sheet to create
-	 *
-	 * Insert the sheet into the Sheets table with the owner as the
-	 * argument.publisher
-	 */
 
 	const database = DatabaseInstance.getInstance();
 	let newSheetName = sheetName;
 
 	try {
 		// Query to fetch all sheet names that share the same base name
-		let querySameBaseName = DatabaseQueries.createSheetNewName(sheetName, publisher);
+		let querySameBaseName = DatabaseQueries.createSheetNewName(
+			sheetName,
+			publisher
+		);
 
 		let existingSheetsResult = await database.query<GetSheetRow>(
 			querySameBaseName
@@ -56,7 +52,10 @@ async function createSheet(argument: Argument): Promise<void> {
 			newSheetName = `${sheetName} (${maxAppended + 1})`;
 		}
 
-		let queryInsertNewSheet = DatabaseQueries.createSheet(newSheetName, publisher);
+		let queryInsertNewSheet = DatabaseQueries.createSheet(
+			newSheetName,
+			publisher
+		);
 
 		await database.query(queryInsertNewSheet);
 	} catch (error) {

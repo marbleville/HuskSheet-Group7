@@ -22,6 +22,7 @@ export default class HashStore {
 	 * @author marbleville, huntebrodie
 	 */
 	public static async initHash(): Promise<void> {
+		// singleton
 		if (HashStore.sheets != null) {
 			return;
 		}
@@ -37,32 +38,35 @@ export default class HashStore {
 			let sheetID = sheet.sheet;
 			let payload: Payload = sheet.changes;
 
+			// Array containing each update on the sheet
 			let payloadArr = payload.split("\n");
 
-			// conctols for an update in the db that ends with \n
+			// controls for an update in the db that ends with \n
 			if (payloadArr[payloadArr.length - 1] == "") {
 				payloadArr.pop();
 			}
 
-			if (payloadArr.length == 0) {
+			// Initialize the sheet hash is the sheet has no updates
+			if (
+				payloadArr.length == 0 ||
+				HashStore.sheets[sheetID] == undefined
+			) {
 				HashStore.sheets[sheetID] = [new Map<Ref, Term>(), "0"];
 			}
 
 			payloadArr.forEach((updatePerSheet) => {
+				// Grabs "$A1" e.g.
 				let ref = updatePerSheet.substring(
 					0,
 					updatePerSheet.indexOf(" ")
 				);
 
+				// Grabs "value" e.g.
 				let value = updatePerSheet.substring(
 					updatePerSheet.indexOf(" ") + 1
 				);
 
 				let refObj = HashStore.getRefFromString(ref, sheetID);
-
-				if (HashStore.sheets[sheetID] == undefined) {
-					HashStore.sheets[sheetID] = [new Map<Ref, Term>(), "0"];
-				}
 
 				HashStore.sheets[sheetID][accessSheetMap].set(refObj, value);
 
@@ -121,6 +125,11 @@ export default class HashStore {
 
 		let updates = payload.split("\n");
 
+		// controls for an update in the db that ends with \n
+		if (updates[updates.length - 1] == "") {
+			updates.pop();
+		}
+
 		for (let update of updates) {
 			let [ref, value] = update.split(" ");
 
@@ -128,7 +137,6 @@ export default class HashStore {
 
 			sheetMap.set(refObj, value);
 
-			// TODO: Must use DB ID here
 			HashStore.sheets[sheetID][accessUpdateID] = lastID.toString();
 		}
 	}
@@ -147,6 +155,7 @@ export default class HashStore {
 		publisher: string,
 		sheetName: string
 	): Promise<number> {
+		// Returns an array of length 1 with the sheet ID
 		let sheetIDArr = await DatabaseInstance.getInstance().query<GetSheetID>(
 			DatabaseQueries.getSheetID(sheetName, publisher)
 		);
@@ -175,19 +184,18 @@ export default class HashStore {
 		let mapHasRef = false;
 		let refInMap = null;
 
-		if (HashStore.sheets[sheetID] != undefined) {
-			HashStore.sheets[sheetID][accessSheetMap].forEach((value, key) => {
-				if (
-					column &&
-					key.column == column.join("") &&
-					row &&
-					key.row == parseInt(row.join(""))
-				) {
-					mapHasRef = true;
-					refInMap = key;
-				}
-			});
-		}
+		// looks if the ref is already in the map
+		HashStore.sheets[sheetID][accessSheetMap].forEach((value, key) => {
+			if (
+				column &&
+				key.column == column.join("") &&
+				row &&
+				key.row == parseInt(row.join(""))
+			) {
+				mapHasRef = true;
+				refInMap = key;
+			}
+		});
 
 		if (mapHasRef && refInMap) {
 			return refInMap;

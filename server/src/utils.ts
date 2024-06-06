@@ -7,7 +7,6 @@ import {
 	Payload,
 } from "../../types/types";
 import DatabaseInstance from "./database/databaseInstance";
-import HashStore from "./database/HashStore";
 import { Request, Response } from "express";
 import { GetUpdateRow } from "./database/db";
 

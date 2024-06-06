@@ -11,10 +11,7 @@ import DatabaseQueries from "../../../types/queries";
  */
 async function register(username: string, password: string): Promise<void> {
 	const database = DatabaseInstance.getInstance();
-	let queryString = `
-      INSERT INTO publishers (username, pass)
-      VALUES ('${username}', '${password}');
-  `;
+	let queryString = DatabaseQueries.register(username, password);
 
 	try {
 		await database.query(queryString);
