@@ -60,15 +60,11 @@ export default class DatabaseQueries {
 	 *
 	 * @author hunterbrodie
 	 */
-	static getUpdatesForPublished(
-		publisher: string,
-		sheetName: string,
-		id: number
-	): string {
+	static getUpdatesForPublished(sheetName: string, id: number): string {
 		return `SELECT updates.* FROM updates
       INNER JOIN sheets ON updates.sheet=sheets.sheetid 
       INNER JOIN publishers ON sheets.owner=publishers.userid
-      WHERE publishers.username='${publisher}' AND sheets.sheetname='${sheetName}' AND updates.updateid>${id};`;
+      WHERE updates.owner!=sheets.owner AND sheets.sheetname='${sheetName}' AND updates.updateid>${id};`;
 	}
 
 	/**
@@ -104,13 +100,11 @@ export default class DatabaseQueries {
 	 * @author hunterbrodie
 	 */
 	static updatePublished(
-		id: number,
 		sheetName: string,
 		publisher: string,
 		payload: string
 	) {
 		return DatabaseQueries.updateHelper(
-			id,
 			sheetName,
 			publisher,
 			payload,
@@ -124,13 +118,11 @@ export default class DatabaseQueries {
 	 * @author hunterbrodie
 	 */
 	static updateSubscription(
-		id: number,
 		sheetName: string,
 		publisher: string,
 		payload: string
 	) {
 		return DatabaseQueries.updateHelper(
-			id,
 			sheetName,
 			publisher,
 			payload,
@@ -144,17 +136,16 @@ export default class DatabaseQueries {
 	 * @author hunterbrodie
 	 */
 	static updateHelper(
-		id: number,
 		sheetName: string,
 		publisher: string,
 		payload: string,
 		accepted: string
 	) {
 		return `INSERT INTO updates 
-      (updateid, updatetime, sheet, owner, changes, accepted) 
-      VALUES (${id}, ${Date.now()}, (SELECT sheetid FROM sheets 
-      WHERE sheetname = ${sheetName}), (SELECT userid FROM publishers 
-      WHERE username = '${publisher}'), ${payload}, ${accepted});`;
+      (updatetime, sheet, owner, changes, accepted)
+      SELECT '${Date.now()}', sheets.sheetid, publishers.userid, '${payload}', ${accepted}
+      FROM sheets INNER JOIN publishers on sheets.owner=publishers.userid
+      WHERE sheets.sheetname='${sheetName}' AND publishers.username='${publisher}';`;
 	}
 
 	static getSheetID(sheetName: string, publisher: string): string {
@@ -168,4 +159,9 @@ export default class DatabaseQueries {
 		INNER JOIN sheets ON updates.sheet=sheets.sheetid WHERE 
 		sheets.owner=updates.owner;`;
 	}
+
+  
+  static setUpTesting(): string {
+    return `CALL resetdata();`;
+  }
 }

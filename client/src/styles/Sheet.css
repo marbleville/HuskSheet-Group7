@@ -37,11 +37,17 @@
   border: 1px solid #d2d6dc;
 }
 
+.button-header {
+  background-color: #c6f6d5;
+  padding: 8px;
+  text-align: center;
+}
+
 .row {
   background-color: #ffffff;
 }
 
-.add-column-button, .add-row-button {
+.add-column-button, .add-row-button, .delete-column-button, .delete-row-button {
   background-color: #108550;
   color: white;
   padding: 12px 24px;
@@ -50,6 +56,7 @@
   font-size: 18px;
   font-weight: bold;
   cursor: pointer;
+  margin: 2px;
 }
 
 .info-section {

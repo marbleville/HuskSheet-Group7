@@ -6,6 +6,7 @@ import {
 } from "../server/src/database/db";
 import { RowDataPacket } from "mysql2";
 import DatabaseInstance from "../server/src/database/databaseInstance";
+import DatabaseQueries from "../types/queries"
 
 /**
  * Returns an argument object with the given parameters.
@@ -33,4 +34,14 @@ function assembleTestArgumentObject(
 	} as Argument;
 }
 
-export { assembleTestArgumentObject };
+/**
+ * Sets up the database to the original testing data.
+ *
+ * @author hunterbrodie
+ */
+async function setupDB(): Promise<void> {
+	const database = DatabaseInstance.getInstance();
+  await database.query(DatabaseQueries.setUpTesting());
+}
+
+export { assembleTestArgumentObject, setupDB };

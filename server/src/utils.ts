@@ -38,14 +38,6 @@ async function getUpdatesHelper(
 	let sheetName: Sheet = argument.sheet;
 	let id: ID = argument.id;
 
-	if (parseInt(id) == 0) {
-		await HashStore.initHash();
-		let payload = await HashStore.getSheetPayload(publisher, sheetName);
-		updates.payload = payload[0];
-		updates.id = payload[1];
-		return updates;
-	}
-
 	const database = DatabaseInstance.getInstance();
 
 	let result = await database.query<GetUpdateRow>(query);
