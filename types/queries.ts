@@ -68,7 +68,7 @@ export default class DatabaseQueries {
 		return `SELECT updates.* FROM updates
       INNER JOIN sheets ON updates.sheet=sheets.sheetid 
       INNER JOIN publishers ON sheets.owner=publishers.userid
-      WHERE publishers.username='${publisher}' AND sheets.sheetname='${sheetName}' AND updates.updateid>${id};`;
+      WHERE updates.owner!=sheets.owner AND sheets.sheetname='${sheetName}' AND updates.updateid>${id};`;
 	}
 
 	/**

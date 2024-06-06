@@ -5,7 +5,7 @@ import HashStore from "../database/HashStore";
 
 /**
  * Returns the updates for the given subscription occuring after the given
- * update ID. Sheet must not be owned by the publisher.
+ * update IDthat have been accepted by the publisher.
  *
  * @param argument Argument object containing the publisher, sheet, and update
  *                 id to get updates for

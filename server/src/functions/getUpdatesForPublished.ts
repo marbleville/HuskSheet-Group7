@@ -3,8 +3,8 @@ import DatabaseQueries from "../../../types/queries";
 import { getUpdatesHelper } from "../utils";
 
 /**
- * Returns the updates for the given published sheet occuring after the given
- * update ID. Sheet must be owned by the publisher.
+ * Returns only the updates owned by clients other than the publisher of the
+ * sheet for the given published sheet occuring after the given update ID.
  *
  * @param argument Argument object containing the publisher, sheet, and update
  *                 id to get updates for
