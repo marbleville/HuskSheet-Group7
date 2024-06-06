@@ -14,6 +14,10 @@ services:
             - "./db-scripts/testing.sql:/docker-entrypoint-initdb.d/3.sql"
         environment:
             - MYSQL_ROOT_PASSWORD=password
+        healthcheck:
+            test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+            timeout: 5s
+            retries: 10
 
     express:
         image: node
@@ -31,7 +35,7 @@ services:
             - "./config/db.dev.env"
 
     testing:
-        image: node
+        build: .
         container_name: testing
         volumes:
             - "./server:/server"
@@ -39,11 +43,16 @@ services:
             - "./types:/types"
             - "./test:/test"
             - "./client:/client"
-        command: bash -c "npm install --prefix /server && npm install --prefix /test && npm run test --prefix /test"
+            - "./db-scripts/reset-proc.sql:/reset-proc.sql"
+            - "./db-scripts/store-proc.sh:/store-proc.sh"
+        command: bash -c "/store-proc.sh && npm install --prefix /server && npm install --prefix /test && npm run test --prefix /test"
         links:
             - "db:db"
         env_file:
             - "./config/db.test.env"
+        depends_on:
+            db:
+                condition: service_healthy
 
     frontend:
         image: node
