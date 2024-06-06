@@ -112,7 +112,8 @@ export default class HashStore {
 	public static async updateSheetPayload(
 		sheetName: string,
 		publisher: string,
-		payload: Payload
+		payload: Payload,
+		lastID: number
 	): Promise<void> {
 		let sheetID = await HashStore.getSheetID(publisher, sheetName);
 
@@ -127,8 +128,8 @@ export default class HashStore {
 
 			sheetMap.set(refObj, value);
 
-			HashStore.sheets[sheetID][accessUpdateID] =
-				HashStore.sheets[sheetID][accessUpdateID] + 1;
+			// TODO: Must use DB ID here
+			HashStore.sheets[sheetID][accessUpdateID] = lastID.toString();
 		}
 	}
 

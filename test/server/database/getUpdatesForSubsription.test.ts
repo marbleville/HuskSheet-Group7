@@ -1,9 +1,10 @@
 import { getUpdatesForSubscription } from "../../../server/src/functions/getUpdatesForSubscription";
 import { Argument } from "../../../types/types";
-import { assembleTestArgumentObject } from "../../utils";
+import { assembleTestArgumentObject, setupDB } from "../../utils";
 
 describe("getUpdatesForSubscription", () => {
 	it("should return an argument object containing the updates stored in the updates table with multiple accepted updates", async () => {
+    await setupDB();
 		const testArg: Argument = assembleTestArgumentObject(
 			"hunter",
 			"test3",
@@ -22,6 +23,7 @@ describe("getUpdatesForSubscription", () => {
 	});
 
 	it("should return an argument object containing the updates stored in the updates table with one update", async () => {
+    await setupDB();
 		const testArg: Argument = assembleTestArgumentObject(
 			"rishav",
 			"test1",
@@ -40,6 +42,7 @@ describe("getUpdatesForSubscription", () => {
 	});
 
 	it("should return an argument object containing the updates stored in the updates table with multiple updates and id > 0", async () => {
+    await setupDB();
 		const testArg: Argument = assembleTestArgumentObject(
 			"hunter",
 			"test3",
@@ -58,6 +61,7 @@ describe("getUpdatesForSubscription", () => {
 	});
 
 	it("should return an argument object containing the updates stored in the updates table with no updates", async () => {
+    await setupDB();
 		const testArg: Argument = assembleTestArgumentObject(
 			"laurence",
 			"test2",
@@ -71,6 +75,7 @@ describe("getUpdatesForSubscription", () => {
 	});
 
 	it("should return an argument object containing the updates stored in the updates table with no updates and id too high", async () => {
+    await setupDB();
 		const testArg: Argument = assembleTestArgumentObject(
 			"laurence",
 			"test2",
