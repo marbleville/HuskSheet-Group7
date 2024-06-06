@@ -33,8 +33,13 @@ async function updatePublished(argument: Argument): Promise<void> {
 
 		let lastID =
 			updates.length > 0 ? updates[updates.length - 1].updateid : 0;
-		HashStore.initHash();
-		HashStore.updateSheetPayload(sheetName, publisher, payload, lastID);
+		await HashStore.initHash();
+		await HashStore.updateSheetPayload(
+			sheetName,
+			publisher,
+			payload,
+			lastID
+		);
 
 		// now we need to update the latest accepted version of the sheet
 	} catch (error) {
