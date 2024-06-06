@@ -7,22 +7,36 @@ describe("updatePublished", () => {
 	it("checks to see if updatePublished inserts in DB", async () => {
     await setupDB();
     
-    const data: string = "$A1 helloworld";
+    let data: string = "$A1 helloworld";
     await updatePublished(assembleTestArgumentObject("rishav", "test1", "", data));
+    let updates = await getUpdatesForSubscription(assembleTestArgumentObject("rishav", "test1", "1", ""));
+    expect(updates.payload.split('\n').includes(data)).toEqual(true);
+  });
+    
+	it("checks to see if updatePublished inserts in DB", async () => {
+    await setupDB();
 
-    //const updates = (await getUpdatesForSubscription(assembleTestArgumentObject("rishav", "test1", "0", ""))).payload.split('\n');
-    //expect(updates[updates.length - 2]).toEqual("$A1 hellworld");
-    const updates = await getUpdatesForSubscription(assembleTestArgumentObject("rishav", "test1", "1", ""));
+    let data: string = "$A8 =dsadsa + 3213";
+    await updatePublished(assembleTestArgumentObject("hunter", "test3", "", data));
+    let updates = await getUpdatesForSubscription(assembleTestArgumentObject("hunter", "test3", "1", ""));
     expect(updates.payload.split('\n').includes(data)).toEqual(true);
   });
 
 	it("checks to see if updatePublished inserts in HashStore", async () => {
     await setupDB();
 
-    const data: string = "$A1 helloworld";
+    let data: string = "$A1 helloworld";
     await updatePublished(assembleTestArgumentObject("rishav", "test1", "", data));
+    let updates = await getUpdatesForSubscription(assembleTestArgumentObject("rishav", "test1", "0", ""));
+    expect(updates.payload.split('\n').includes(data)).toEqual(true);
+  });
+    
+	it("checks to see if updatePublished inserts in DB", async () => {
+    await setupDB();
 
-    const updates = await getUpdatesForSubscription(assembleTestArgumentObject("rishav", "test1", "0", ""));
+    let data: string = "$A8 =dsadsa + 3213";
+    await updatePublished(assembleTestArgumentObject("hunter", "test3", "", data));
+    let updates = await getUpdatesForSubscription(assembleTestArgumentObject("hunter", "test3", "1", ""));
     expect(updates.payload.split('\n').includes(data)).toEqual(true);
   });
 });
