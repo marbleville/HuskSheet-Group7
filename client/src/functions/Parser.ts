@@ -1,4 +1,4 @@
-import { FormulaNode, FunctionCallNode, INode, OperationNode, ReferenceNode, StringNode } from "./Nodes";
+import { FormulaNode, FunctionCallNode, INode, NumberNode, OperationNode, ReferenceNode, StringNode } from "./Nodes";
 import Tokenizer from "./Tokenizer";
 
 class Parser {
