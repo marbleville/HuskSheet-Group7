@@ -22,6 +22,7 @@ import {
 import HashStore from "./database/HashStore";
 
 import DatabaseInstance from "./database/databaseInstance";
+import DatabaseQueries from "../../types/queries";
 
 const app: Application = express();
 const PORT: Number = 3000;
@@ -50,32 +51,20 @@ app.use(express.json());
  * @author kris-amerman
  */
 app.get("/api/v1/register", async (req: Request, res: Response) => {
-	let result: Result;
-
 	const database = DatabaseInstance.getInstance();
 	const authHeader = req.headers.authorization;
 
-	// Invalid Authorization header provided
-	if (authHeader === undefined) {
-		result = {
-			success: false,
-			message: "No Authorization header provided.",
-			value: [],
-		};
-		res.send(JSON.stringify(result));
-		return;
-	}
+	let [username, password] = ["", ""];
 
-	const [username, password] = parseAuthHeader(authHeader);
-
-	let queryString = `SELECT * FROM publishers WHERE username = '${username}';`;
 	let queryResult = null;
 	let userExists = false;
 	let isAuthenticated = false;
 
 	// Check if a publisher exists (could be in separate function)
 	try {
-		queryResult = await database.query(queryString);
+		[username, password] = parseAuthHeader(authHeader);
+
+		queryResult = await database.query(DatabaseQueries.getUser(username));
 	} catch (error) {
 		console.error("An error happened in register", error);
 	}
@@ -93,13 +82,16 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 	if (isAuthenticated) {
 		success = true;
 	}
-
-	result = {
-		success: success,
-		message: "",
-		value: [],
-	};
-	res.send(JSON.stringify(result));
+	if (success) {
+		let result = {
+			success: success,
+			message: "",
+			value: [],
+		} as Result;
+		res.send(JSON.stringify(result));
+	} else {
+		res.status(401).send("Unauthorized");
+	}
 });
 
 /**
@@ -190,28 +182,18 @@ app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 	}
 
 	try {
+		if (req.body === undefined) {
+			throw new Error("No body provided.");
+		}
+
 		let argument = req.body as Argument;
 		const authHeader = req.headers.authorization;
 
-		// Invalid Authorization header provided
-		if (authHeader === undefined) {
-			result = {
-				success: false,
-				message: "No Authorization header provided.",
-				value: [],
-			};
-			res.send(JSON.stringify(result));
-			return;
-		}
-
 		const [username, password] = parseAuthHeader(authHeader);
 
-		let value: Argument[] | Argument | void = await updateSubscription(
-			argument,
-			username
-		);
+		await updateSubscription(argument, username);
 
-		result = assembleResultObject(true, `updateSubscription: `, value);
+		result = assembleResultObject(true, `updateSubscription: `, []);
 		res.send(JSON.stringify(result));
 	} catch (error) {
 		const err: Error = error as Error;

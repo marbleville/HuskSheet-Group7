@@ -85,6 +85,10 @@ async function runEndpointFuntion(
 	}
 
 	try {
+		if (req.body === undefined) {
+			throw new Error("No body provided.");
+		}
+
 		let argument = req.body as Argument;
 		let value: Argument[] | Argument | void = await func(argument);
 
@@ -112,7 +116,11 @@ async function runEndpointFuntion(
  *
  * @author kris-amerman, eduardo-ruiz-garay
  */
-function parseAuthHeader(authHeader: string): string[] {
+function parseAuthHeader(authHeader: string | undefined): string[] {
+	if (authHeader === undefined) {
+		throw new Error("No Authorization header provided.");
+	}
+
 	const base64 = authHeader.split(" ")[1];
 	// Decodes to binary
 	const decodedAuthHeader = Buffer.from(base64, "base64").toString("utf-8");
