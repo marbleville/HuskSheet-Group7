@@ -1,5 +1,9 @@
 import Evaluator from "../../../client/src/functions/Evaluator";
-import { FunctionCallNode, INode, NumberNode } from "../../../client/src/functions/Nodes";
+import {
+  FunctionCallNode,
+  INode,
+  NumberNode,
+} from "../../../client/src/functions/Nodes";
 import Parser from "../../../client/src/functions/Parser";
 
 describe("Evaluator Test", () => {
@@ -12,7 +16,7 @@ describe("Evaluator Test", () => {
       new NumberNode(3),
     ]);
     expect(res).toEqual(expected);
-    const evaluator: string | number = Evaluator.getInstance().evaluate(res);
+    const evaluator: string = Evaluator.getInstance().evaluate(res);
     const expected1: string = "2";
     expect(evaluator).toStrictEqual(expected1);
   });

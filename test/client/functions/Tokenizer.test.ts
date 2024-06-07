@@ -23,4 +23,11 @@ describe("Tokenizer tests", () => {
     const expected = ["=SUM", "(", "A1", ",", "A2", ")"];
     expect(res).toEqual(expected);
   });
+
+  it("Checks that tokenizer for expression for (", () => {
+    const func: string = "=SUM(A1, A2)";
+    const res: string[] = Tokenizer.getInstance().tokenize(func);
+    const expected = ["=SUM", "(", "A1", ",", "A2", ")"];
+    expect(res).toEqual(expected);
+  });
 });
