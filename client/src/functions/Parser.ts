@@ -68,6 +68,9 @@ class Parser {
     } else if (this.isReference(token)) {
       this.index++;
       return new ReferenceNode(token);
+    } else if (token === "(") {
+        console.log("is paren");
+        return this.parseNestedExpression();
     } else if (this.isString(token)) {
       this.index++;
       return new StringNode(token);
@@ -88,6 +91,11 @@ class Parser {
       node = new OperationNode(node, operator, rightNode);
     }
     return node;
+  }
+
+  private parseNestedExpression(): INode {
+    this.consume("(");
+    return this.parseExpression();
   }
 
   private parseFunction(): INode {

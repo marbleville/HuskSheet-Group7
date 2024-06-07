@@ -54,13 +54,7 @@ class Tokenizer {
     const substr = this.formula.substring(this.index);
     for (const [type, regex] of Tokenizer.tokenSpec) {
       const match = regex.exec(substr);
-      //console.log(`type ${type} match ${match}`);
       if (match) {
-        /*
-        for (const m of match) {
-          console.log(`part of match: ${m}`);
-        }
-        */
         this.index += match[0].length;
         if (type !== "WHITESPACE") {
           return match[0];
