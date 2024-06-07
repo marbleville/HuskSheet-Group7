@@ -351,6 +351,7 @@ const Sheet: React.FC = () => {
             initialValue={sheetData[cellId]}
             onUpdate={handleCellUpdate}
             cellValue={sheetData[cellId]}
+            sheetData={sheetData}
           />
         );
       }

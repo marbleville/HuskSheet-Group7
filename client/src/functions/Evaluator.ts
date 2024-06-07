@@ -8,18 +8,22 @@ import {
   StringNode,
 } from "./Nodes";
 
-type Context = { [key: string]: number | string };
-
 class Evaluator {
   private static instance: Evaluator;
-  constructor(private context: Context) {}
+  private context: { [key: string]: string } = {};
+
+  constructor() {}
 
   public static getInstance() {
     if (Evaluator.instance == null) {
-      Evaluator.instance = new Evaluator({});
+      Evaluator.instance = new Evaluator();
     }
 
     return Evaluator.instance;
+  }
+
+  public setContext(context: { [key: string]: string }) {
+    this.context = context;
   }
 
   evaluate(node: INode): number | string {
@@ -28,7 +32,7 @@ class Evaluator {
     } else if (node instanceof StringNode) {
       return node.value;
     } else if (node instanceof ReferenceNode) {
-      return this.context[node.ref];
+      return this.context[node.ref] ?? "";
     } else if (node instanceof OperationNode) {
       const left = this.evaluate(node.left);
       const right = this.evaluate(node.right);
@@ -48,24 +52,44 @@ class Evaluator {
     left: number | string,
     right: number | string
   ): number | string {
+
     switch (op) {
       case "+":
-        return (left as number) + (right as number);
+        return this.toNumber(left) + this.toNumber(right);
       case "-":
-        return (left as number) - (right as number);
+        return this.toNumber(left) - this.toNumber(right);
       case "*":
-        return (left as number) * (right as number);
+        return this.toNumber(left) * this.toNumber(right);
       case "/":
-        if (right === 0) throw new Error("Division by zero");
-        return (left as number) / (right as number);
+        if (this.toNumber(right) === 0) throw new Error("Division by zero");
+        return this.toNumber(left) / this.toNumber(right);
       case "<":
-        return (left as number) < (right as number) ? 1 : 0;
+        return this.toNumber(left) < this.toNumber(right) ? 1 : 0;
       case ">":
-        return (left as number) > (right as number) ? 1 : 0;
+        return this.toNumber(left) > this.toNumber(right) ? 1 : 0;
       case "=":
         return left === right ? 1 : 0;
+      case "<>":
+        return left === right ? 0 : 1;
+      case "&":
+        return (this.toNumber(left) & this.toNumber(right)) !== 0 ? 1 : 0;
+      case "|":
+        return (this.toNumber(left) | this.toNumber(right)) === 1 ? 1 : 0;
       default:
         throw new Error(`Unknown operator: ${op}`);
+    }
+  }
+
+  private toNumber(value: number | string): number {
+    if (typeof value === "number") {
+      return value;
+    } else {
+      const num = parseFloat(value);
+      if (!isNaN(num)) {
+        return num;
+      } else {
+        throw new Error(`Value cannot be converted to a number: ${value}`);
+      }
     }
   }
 
@@ -92,6 +116,7 @@ class Evaluator {
       case "CONCAT":
         return args.join("");
       case "DEBUG":
+        console.log(args[0]);
         return args[0];
       default:
         throw new Error(`Unknown function: ${func}`);

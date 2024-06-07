@@ -8,6 +8,7 @@ interface CellProps {
   initialValue: string;
   onUpdate: (value: string, cellId: string) => void;
   cellValue: string; // New prop to pass the value of the cell
+  sheetData: { [key: string]: string };
 }
 
 const Cell: React.FC<CellProps> = ({
@@ -15,6 +16,7 @@ const Cell: React.FC<CellProps> = ({
   initialValue,
   onUpdate,
   cellValue, // Use cellValue instead of sheetData
+  sheetData,
 }) => {
   const [value, setValue] = useState(initialValue);
 
@@ -31,7 +33,9 @@ const Cell: React.FC<CellProps> = ({
   const handleBlur = () => {
     const parsedNode = Parser.getInstance().parse(value);
     console.log(`parser result: ${parsedNode}`);
-    const result = Evaluator.getInstance().evaluate(parsedNode);
+    const evaluator = Evaluator.getInstance();
+    evaluator.setContext(sheetData);
+    const result = evaluator.evaluate(parsedNode);
     console.log('Evaluation Result:', result);
     onUpdate(result.toString(), cellId);
   };

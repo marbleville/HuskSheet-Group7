@@ -95,7 +95,9 @@ class Parser {
 
   private parseNestedExpression(): INode {
     this.consume("(");
-    return this.parseExpression();
+    const nestedNode: INode = this.parseExpression();
+    this.consume(")");
+    return nestedNode;
   }
 
   private parseFunction(): INode {
@@ -127,7 +129,7 @@ class Parser {
   }
 
   private isOperator(token: string): boolean {
-    return /^[+\-*/<>=&|:]$/.test(token);
+    return /^[+\-*/<>=&|:]+$/.test(token);
   }
 
   private isFunction(token: string): boolean {
