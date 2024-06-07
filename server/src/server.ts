@@ -186,12 +186,9 @@ app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 
 		const [username, password] = parseAuthHeader(authHeader);
 
-		let value: Argument[] | Argument | void = await updateSubscription(
-			argument,
-			username
-		);
+		await updateSubscription(argument, username);
 
-		result = assembleResultObject(true, `updateSubscription: `, value);
+		result = assembleResultObject(true, `updateSubscription: `, []);
 		res.send(JSON.stringify(result));
 	} catch (error) {
 		const err: Error = error as Error;
