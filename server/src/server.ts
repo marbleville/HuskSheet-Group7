@@ -51,8 +51,6 @@ app.use(express.json());
  * @author kris-amerman
  */
 app.get("/api/v1/register", async (req: Request, res: Response) => {
-	let result: Result;
-
 	const database = DatabaseInstance.getInstance();
 	const authHeader = req.headers.authorization;
 
@@ -84,13 +82,16 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 	if (isAuthenticated) {
 		success = true;
 	}
-
-	result = {
-		success: success,
-		message: "",
-		value: [],
-	};
-	res.send(JSON.stringify(result));
+	if (success) {
+		let result = {
+			success: success,
+			message: "",
+			value: [],
+		} as Result;
+		res.send(JSON.stringify(result));
+	} else {
+		res.status(401).send("Unauthorized");
+	}
 });
 
 /**
