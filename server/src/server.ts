@@ -55,26 +55,17 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 	const database = DatabaseInstance.getInstance();
 	const authHeader = req.headers.authorization;
 
-	// Invalid Authorization header provided
-	if (authHeader === undefined) {
-		result = {
-			success: false,
-			message: "No Authorization header provided.",
-			value: [],
-		};
-		res.send(JSON.stringify(result));
-		return;
-	}
+	let [username, password] = ["", ""];
 
-	const [username, password] = parseAuthHeader(authHeader);
-
-	let queryString = `SELECT * FROM publishers WHERE username = '${username}';`;
 	let queryResult = null;
 	let userExists = false;
 	let isAuthenticated = false;
 
 	// Check if a publisher exists (could be in separate function)
 	try {
+		[username, password] = parseAuthHeader(authHeader);
+		let queryString = `SELECT * FROM publishers WHERE username = '${username}';`;
+
 		queryResult = await database.query(queryString);
 	} catch (error) {
 		console.error("An error happened in register", error);
@@ -192,17 +183,6 @@ app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 	try {
 		let argument = req.body as Argument;
 		const authHeader = req.headers.authorization;
-
-		// Invalid Authorization header provided
-		if (authHeader === undefined) {
-			result = {
-				success: false,
-				message: "No Authorization header provided.",
-				value: [],
-			};
-			res.send(JSON.stringify(result));
-			return;
-		}
 
 		const [username, password] = parseAuthHeader(authHeader);
 
