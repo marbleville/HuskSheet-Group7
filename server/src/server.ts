@@ -181,6 +181,10 @@ app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 	}
 
 	try {
+		if (req.body === undefined) {
+			throw new Error("No body provided.");
+		}
+
 		let argument = req.body as Argument;
 		const authHeader = req.headers.authorization;
 

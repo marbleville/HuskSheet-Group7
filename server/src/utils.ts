@@ -85,6 +85,10 @@ async function runEndpointFuntion(
 	}
 
 	try {
+		if (req.body === undefined) {
+			throw new Error("No body provided.");
+		}
+
 		let argument = req.body as Argument;
 		let value: Argument[] | Argument | void = await func(argument);
 
