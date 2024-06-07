@@ -1,4 +1,12 @@
-import { FormulaNode, FunctionCallNode, INode, NumberNode, OperationNode, ReferenceNode, StringNode } from "./Nodes";
+import {
+  FormulaNode,
+  FunctionCallNode,
+  INode,
+  NumberNode,
+  OperationNode,
+  ReferenceNode,
+  StringNode,
+} from "./Nodes";
 
 type Context = { [key: string]: number | string };
 
@@ -14,7 +22,7 @@ class Evaluator {
     return Evaluator.instance;
   }
 
-  evaluate(node: INode): number | string  {
+  evaluate(node: INode): number | string {
     if (node instanceof NumberNode) {
       return node.value;
     } else if (node instanceof StringNode) {
@@ -35,7 +43,11 @@ class Evaluator {
     }
   }
 
-  private applyOp(op: string, left: number | string, right: number | string): number | string {
+  private applyOp(
+    op: string,
+    left: number | string,
+    right: number | string
+  ): number | string {
     switch (op) {
       case "+":
         return (left as number) + (right as number);
@@ -62,7 +74,7 @@ class Evaluator {
       case "IF":
         return args[0] !== 0 ? args[1] : args[2];
       case "SUM":
-        if (args.every(arg => typeof arg === 'number')) {
+        if (args.every((arg) => typeof arg === "number")) {
           return this.sum(args as number[]);
         } else {
           throw new Error(`SUM function requires numeric arguments`);
@@ -72,7 +84,7 @@ class Evaluator {
       case "MAX":
         return Math.max(...this.toNumbers(args));
       case "AVG":
-        if (args.every(arg => typeof arg === 'number')) {
+        if (args.every((arg) => typeof arg === "number")) {
           return this.average(args as number[]);
         } else {
           throw new Error(`AVG function requires numeric arguments`);
@@ -85,39 +97,41 @@ class Evaluator {
         throw new Error(`Unknown function: ${func}`);
     }
   }
-  
+
   private sum(args: number[]): number {
     return args.reduce((acc, val) => {
-      if (typeof val === 'number') {
+      if (typeof val === "number") {
         return acc + val;
       } else {
-        throw new Error(`SUM function requires numeric arguments, but found: ${val}`);
+        throw new Error(
+          `SUM function requires numeric arguments, but found: ${val}`
+        );
       }
     }, 0);
   }
-  
+
   private average(args: (number | string)[]): number {
     const numbers = this.toNumbers(args);
     const total = numbers.reduce((acc, val) => acc + val, 0);
     return total / numbers.length;
   }
-  
+
   private toNumbers(args: (number | string)[]): number[] {
-    return args.map(arg => {
-      if (typeof arg === 'number') {
+    return args.map((arg) => {
+      if (typeof arg === "number") {
         return arg;
       } else {
         const num = parseFloat(arg);
         if (!isNaN(num)) {
           return num;
         } else {
-          throw new Error(`Function requires numeric arguments, but found: ${arg}`);
+          throw new Error(
+            `Function requires numeric arguments, but found: ${arg}`
+          );
         }
       }
     });
   }
-  
-  
 }
 
 export default Evaluator;

@@ -1,4 +1,12 @@
-import { INode, FormulaNode, NumberNode, StringNode, ReferenceNode, OperationNode, FunctionCallNode } from "./Nodes";
+import {
+  INode,
+  FormulaNode,
+  NumberNode,
+  StringNode,
+  ReferenceNode,
+  OperationNode,
+  FunctionCallNode,
+} from "./Nodes";
 import Tokenizer from "./Tokenizer";
 
 class Parser {
@@ -25,8 +33,11 @@ class Parser {
     for (const token of this.tokens) {
       console.log(`token: ${token}`);
     }
-    const resultNode = (this.tokens.length > 0 && this.tokens[0] === "=") ? this.parseFormula() : this.parseTerm();
-    console.log('Parsed INode:', JSON.stringify(resultNode, null, 2));
+    const resultNode =
+      this.tokens.length > 0 && this.tokens[0] === "="
+        ? this.parseFormula()
+        : this.parseTerm();
+    console.log("Parsed INode:", JSON.stringify(resultNode, null, 2));
     return resultNode;
   }
 
@@ -47,7 +58,7 @@ class Parser {
 
   private parseTerm(): INode {
     const token = this.tokens[this.index];
-    console.log(`first token ${token}`)
+    console.log(`first token ${token}`);
     if (this.isFunction(token)) {
       console.log("is a func");
       return this.parseFunction();
@@ -55,8 +66,8 @@ class Parser {
       this.index++;
       return new NumberNode(parseFloat(token));
     } else if (this.isReference(token)) {
-        this.index++;
-        return new ReferenceNode(token);
+      this.index++;
+      return new ReferenceNode(token);
     } else if (this.isString(token)) {
       this.index++;
       return new StringNode(token);
@@ -67,7 +78,10 @@ class Parser {
 
   private parseExpression(): INode {
     let node = this.parseTerm();
-    while (this.index < this.tokens.length && this.isOperator(this.tokens[this.index])) {
+    while (
+      this.index < this.tokens.length &&
+      this.isOperator(this.tokens[this.index])
+    ) {
       const operator = this.tokens[this.index];
       this.index++;
       const rightNode = this.parseTerm();
@@ -77,7 +91,7 @@ class Parser {
   }
 
   private parseFunction(): INode {
-    const func = this.tokens[this.index].replace(/^=/, '');
+    const func = this.tokens[this.index].replace(/^=/, "");
     console.log(`func: ${func}`);
     this.index++;
     this.consume("(");
@@ -105,7 +119,7 @@ class Parser {
   }
 
   private isOperator(token: string): boolean {
-    return /^[+\-*/<>=&|,:]$/.test(token);
+    return /^[+\-*/<>=&|:]$/.test(token);
   }
 
   private isFunction(token: string): boolean {
