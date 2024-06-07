@@ -20,7 +20,7 @@ class Parser {
   }
 
   parse(formula: string): INode {
-    this.index = 0; // Reset index for new parsing
+    this.index = 0;
     this.tokens = Tokenizer.getInstance().tokenize(formula);
     for (const token of this.tokens) {
       console.log(`token: ${token}`);
@@ -47,17 +47,19 @@ class Parser {
 
   private parseTerm(): INode {
     const token = this.tokens[this.index];
-    if (this.isNumber(token)) {
+    console.log(`first token ${token}`)
+    if (this.isFunction(token)) {
+      console.log("is a func");
+      return this.parseFunction();
+    } else if (this.isNumber(token)) {
       this.index++;
       return new NumberNode(parseFloat(token));
+    } else if (this.isReference(token)) {
+        this.index++;
+        return new ReferenceNode(token);
     } else if (this.isString(token)) {
       this.index++;
       return new StringNode(token);
-    } else if (this.isReference(token)) {
-      this.index++;
-      return new ReferenceNode(token);
-    } else if (this.isFunction(token)) {
-      return this.parseFunction();
     } else {
       throw new Error(`Unexpected token: ${token}`);
     }
@@ -75,8 +77,10 @@ class Parser {
   }
 
   private parseFunction(): INode {
-    const func = this.tokens[this.index].slice(0, -1); 
+    const func = this.tokens[this.index].replace(/^=/, '');
+    console.log(`func: ${func}`);
     this.index++;
+    this.consume("(");
     const args = [];
     while (this.tokens[this.index] !== ")") {
       args.push(this.parseExpression());

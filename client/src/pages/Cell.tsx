@@ -31,8 +31,9 @@ const Cell: React.FC<CellProps> = ({
   const handleBlur = () => {
     const parsedNode = Parser.getInstance().parse(value);
     console.log(`parser result: ${parsedNode}`);
-    const evalautedValue = Evaluator.getInstance().evaluate(parsedNode);
-    onUpdate(value, cellId);
+    const result = Evaluator.getInstance().evaluate(parsedNode);
+    console.log('Evaluation Result:', result);
+    onUpdate(result.toString(), cellId);
   };
 
   return (
