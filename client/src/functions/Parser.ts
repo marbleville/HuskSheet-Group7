@@ -22,16 +22,17 @@ class Parser {
   parse(formula: string): INode {
     this.index = 0; // Reset index for new parsing
     this.tokens = Tokenizer.getInstance().tokenize(formula);
-    console.log(`${this.tokens}`)
     for (const token of this.tokens) {
       console.log(`token: ${token}`);
     }
-    if (this.tokens.length > 0 && this.tokens[0] === "=") {
-      this.consume("=");
-      return new FormulaNode(this.parseExpression());
-    } else {
-      return this.parseTerm();
-    }
+    const resultNode = (this.tokens.length > 0 && this.tokens[0] === "=") ? this.parseFormula() : this.parseTerm();
+    console.log('Parsed INode:', JSON.stringify(resultNode, null, 2));
+    return resultNode;
+  }
+
+  private parseFormula(): INode {
+    this.consume("=");
+    return new FormulaNode(this.parseExpression());
   }
 
   private consume(expected: string): void {

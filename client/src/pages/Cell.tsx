@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../styles/Cell.css";
 import Parser from "../functions/Parser";
+import Evaluator from "../functions/Evaluator";
 
 interface CellProps {
   cellId: string;
@@ -29,6 +30,8 @@ const Cell: React.FC<CellProps> = ({
 
   const handleBlur = () => {
     const parsedNode = Parser.getInstance().parse(value);
+    console.log(`parser result: ${parsedNode}`);
+    const evalautedValue = Evaluator.getInstance().evaluate(parsedNode);
     onUpdate(value, cellId);
   };
 
