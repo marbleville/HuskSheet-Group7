@@ -88,7 +88,7 @@ class Parser {
   }
 
   private isNumber(token: string): boolean {
-    return /^\d+(\.\d+)?$/.test(token);
+    return /^-?\d+(\.\d+)?$/.test(token);
   }
 
   private isString(token: string): boolean {

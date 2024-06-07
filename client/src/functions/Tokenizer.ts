@@ -4,11 +4,11 @@ class Tokenizer {
   //Creates a mapping with the type and the regex that accompanies it.
   private static tokenSpec: [string, RegExp][] = [
     ["FUNCTION", /^=(IF|SUM|MIN|AVG|MAX|CONCAT|DEBUG)/], // Matches functions
+    ["NUMBER", /^-?\d+(\.\d+)?/], // Matches numbers
     ["OPERATOR", /^[+\-*/<>=&|:]/], // Matches operators
     ["LPAREN", /^\(/], // Matches left parenthesis
     ["RPAREN", /^\)/], // Matches right parenthesis
     ["REFERENCE", /^\$[A-Z]+\d+(:\$[A-Z]+\d+)?/], // Matches cell references and ranges
-    ["NUMBER", /^-?\d+(\.\d+)?/], // Matches numbers
     ["STRING", /^[^()\s,]+/], // Matches strings
     ["COMMA", /^,/], // Matches commas
     ["WHITESPACE", /^\s+/], // Matches whitespace
