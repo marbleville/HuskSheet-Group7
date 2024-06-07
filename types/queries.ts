@@ -16,6 +16,17 @@ export default class DatabaseQueries {
 			(SELECT userid FROM publishers WHERE username = '${publisher}');`;
 	}
 
+	static getUser(username: string) {
+		return `SELECT * FROM publishers WHERE username = '${username}';`;
+	}
+
+	/**
+	 * Returns the query needed for createSheet.
+	 *
+	 * @param newSheetName The name of the new sheet
+	 * @param publisher The publisher of the new sheet
+	 * @returns The query needed to create the new sheet
+	 */
 	static createSheet(newSheetName: string, publisher: string): string {
 		return `INSERT INTO sheets (sheetname, owner, latest) 
       VALUES ('${newSheetName}', 
@@ -60,8 +71,12 @@ export default class DatabaseQueries {
 	 *
 	 * @author hunterbrodie
 	 */
-	static getUpdatesForPublished(publisher: string, sheetName: string, id: number): string {
-    return DatabaseQueries.getUpdatesHelper(publisher, sheetName, id, "<>");
+	static getUpdatesForPublished(
+		publisher: string,
+		sheetName: string,
+		id: number
+	): string {
+		return DatabaseQueries.getUpdatesHelper(publisher, sheetName, id, "<>");
 	}
 
 	/**
@@ -74,21 +89,26 @@ export default class DatabaseQueries {
 		sheetName: string,
 		id: number
 	): string {
-    return DatabaseQueries.getUpdatesHelper(publisher, sheetName, id, "=");
+		return DatabaseQueries.getUpdatesHelper(publisher, sheetName, id, "=");
 	}
 
-  /**
-   * Helps the getUpdate functions.
-   *
-   * @author hunterbrodie
-   */
-  static getUpdatesHelper(publisher: string, sheetName: string, id: number, operator: string): string {
+	/**
+	 * Helps the getUpdate functions.
+	 *
+	 * @author hunterbrodie
+	 */
+	static getUpdatesHelper(
+		publisher: string,
+		sheetName: string,
+		id: number,
+		operator: string
+	): string {
 		return `SELECT updates.* FROM updates
       INNER JOIN sheets ON updates.sheet=sheets.sheetid 
       INNER JOIN publishers ON sheets.owner=publishers.userid
       WHERE publishers.username='${publisher}' AND sheets.sheetname='${sheetName}'
       AND updates.owner${operator}sheets.owner AND updates.updateid>${id};`;
-  }
+	}
 
 	/**
 	 * Returns the query for register.
@@ -125,13 +145,15 @@ export default class DatabaseQueries {
 	static updateSubscription(
 		sheetName: string,
 		publisher: string,
-		payload: string
+		payload: string,
+		updatePublisher: string
 	) {
 		return DatabaseQueries.updateHelper(
 			sheetName,
 			publisher,
 			payload,
-			"NULL"
+			"NULL",
+			updatePublisher
 		);
 	}
 
@@ -142,15 +164,18 @@ export default class DatabaseQueries {
 	 */
 	static updateHelper(
 		sheetName: string,
-		publisher: string,
+		sheetPublisher: string,
 		payload: string,
-		accepted: string
+		accepted: string,
+		updatePublisher: string = sheetPublisher
 	) {
 		return `INSERT INTO updates 
       (updatetime, sheet, owner, changes, accepted)
-      SELECT '${Date.now()}', sheets.sheetid, publishers.userid, '${payload}', ${accepted}
+      SELECT '${Date.now()}', sheets.sheetid, 
+	  (SELECT publishers.userid FROM publishers 
+	  WHERE publishers.username='${updatePublisher}'), '${payload}', ${accepted}
       FROM sheets INNER JOIN publishers on sheets.owner=publishers.userid
-      WHERE sheets.sheetname='${sheetName}' AND publishers.username='${publisher}';`;
+      WHERE sheets.sheetname='${sheetName}' AND publishers.username='${sheetPublisher}';`;
 	}
 
 	static getSheetID(sheetName: string, publisher: string): string {
@@ -165,8 +190,7 @@ export default class DatabaseQueries {
 		sheets.owner=updates.owner;`;
 	}
 
-  
-  static setUpTesting(): string {
-    return `CALL resetdata();`;
-  }
+	static setUpTesting(): string {
+		return `CALL resetdata();`;
+	}
 }

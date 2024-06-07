@@ -1,7 +1,7 @@
 import { Argument } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
 import DatabaseQueries from "../../../types/queries";
-import { GetSheetRow, GetUserRow } from "../database/db";
+import { GetUserRow } from "../database/db";
 
 /**
  * @returns An array of arguments containing all registered publishers
