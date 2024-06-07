@@ -22,6 +22,7 @@ import {
 import HashStore from "./database/HashStore";
 
 import DatabaseInstance from "./database/databaseInstance";
+import DatabaseQueries from "../../types/queries";
 
 const app: Application = express();
 const PORT: Number = 3000;
@@ -64,9 +65,8 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 	// Check if a publisher exists (could be in separate function)
 	try {
 		[username, password] = parseAuthHeader(authHeader);
-		let queryString = `SELECT * FROM publishers WHERE username = '${username}';`;
 
-		queryResult = await database.query(queryString);
+		queryResult = await database.query(DatabaseQueries.getUser(username));
 	} catch (error) {
 		console.error("An error happened in register", error);
 	}

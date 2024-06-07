@@ -16,6 +16,17 @@ export default class DatabaseQueries {
 			(SELECT userid FROM publishers WHERE username = '${publisher}');`;
 	}
 
+	static getUser(username: string) {
+		return `SELECT * FROM publishers WHERE username = '${username}';`;
+	}
+
+	/**
+	 * Returns the query needed for createSheet.
+	 *
+	 * @param newSheetName The name of the new sheet
+	 * @param publisher The publisher of the new sheet
+	 * @returns The query needed to create the new sheet
+	 */
 	static createSheet(newSheetName: string, publisher: string): string {
 		return `INSERT INTO sheets (sheetname, owner, latest) 
       VALUES ('${newSheetName}', 
@@ -160,7 +171,9 @@ export default class DatabaseQueries {
 	) {
 		return `INSERT INTO updates 
       (updatetime, sheet, owner, changes, accepted)
-      SELECT '${Date.now()}', sheets.sheetid, (SELECT publishers.userid FROM publishers WHERE publishers.username='${updatePublisher}'), '${payload}', ${accepted}
+      SELECT '${Date.now()}', sheets.sheetid, 
+	  (SELECT publishers.userid FROM publishers 
+	  WHERE publishers.username='${updatePublisher}'), '${payload}', ${accepted}
       FROM sheets INNER JOIN publishers on sheets.owner=publishers.userid
       WHERE sheets.sheetname='${sheetName}' AND publishers.username='${sheetPublisher}';`;
 	}
