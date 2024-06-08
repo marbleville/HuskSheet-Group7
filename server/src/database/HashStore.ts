@@ -13,7 +13,7 @@ const accessUpdateID = 1;
 export default class HashStore {
 	private static sheets: Array<[Map<Ref, Term>, ID]>;
 
-	constructor() {}
+	constructor() { }
 
 	/**
 	 * Initializes the HashStore with the current state of the database.
@@ -97,12 +97,14 @@ export default class HashStore {
 		}
 
 		let sheetMap = HashStore.sheets[sheetID][accessSheetMap];
+		console.log(sheetMap)
 
 		let payload = "";
 
 		for (let [key, value] of sheetMap) {
 			// Would be possible to add support for getting updates during
 			// runtime with IDs here
+			console.log(`$ + ${key.column} + ${key.row} + ${value}`)
 			payload += "$" + key.column + key.row + " " + value + "\n";
 		}
 
@@ -136,7 +138,9 @@ export default class HashStore {
 		}
 
 		for (let update of updates) {
-			let [ref, value] = update.split(" ");
+			let refEndIndex = update.indexOf(" ");
+			let ref = update.substring(0, refEndIndex);
+			let value = update.substring(refEndIndex + 1);
 
 			let refObj = HashStore.getRefFromString(ref, sheetID);
 
@@ -145,6 +149,7 @@ export default class HashStore {
 			HashStore.sheets[sheetID][accessUpdateID] = lastID.toString();
 		}
 	}
+
 
 	/**
 	 * Returns the ID of the sheet with the given name and publisher.

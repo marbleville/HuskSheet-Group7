@@ -9,22 +9,24 @@ interface CellProps {
   onUpdate: (value: string, cellId: string) => void;
   cellValue: string; // New prop to pass the value of the cell
   sheetData: { [key: string]: string };
+  isUpdated: boolean;
 }
 
 const ERROR_TIMEOUT = 1500;
 
+// Inside the Cell component
 const Cell: React.FC<CellProps> = ({
   cellId,
   initialValue,
   onUpdate,
   cellValue, // Use cellValue instead of sheetData
   sheetData,
+  isUpdated
 }) => {
   const [value, setValue] = useState(initialValue);
   const [prevValue, setPrevValue] = useState(initialValue);
   const [error, setError] = useState(false);
 
-  // Update the value when the cellValue prop changes
   useEffect(() => {
     setValue(cellValue);
   }, [cellValue]);
@@ -75,7 +77,7 @@ const Cell: React.FC<CellProps> = ({
   };
 
   return (
-    <td key={cellId} className={`cell ${error ? 'error' : ''}`}>
+    <td key={cellId} className={`cell ${error ? 'error' : ''} ${isUpdated ? 'updated-cell' : ''}`}>
       <input
         type="text"
         value={value ?? ""}
@@ -83,9 +85,11 @@ const Cell: React.FC<CellProps> = ({
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         className="cell-input"
+        style={{ color: isUpdated ? 'blue' : 'inherit' }}
       />
     </td>
   );
 };
+
 
 export default Cell;
