@@ -32,6 +32,10 @@ class Tokenizer {
     this.formula = "";
   }
 
+  setIndex(index: number): void {
+    this.index = index;
+  }
+
   tokenize(formula: string): string[] {
     this.index = 0; // Reset index for new tokenization
     this.formula = formula;
@@ -80,6 +84,7 @@ class Tokenizer {
     }
     return null;
   }
+
 }
 
 export default Tokenizer;

@@ -50,7 +50,7 @@ describe('Tokenizer', () => {
   describe('nextToken', () => {
     test('Returns null for invalid token', () => {
       tokenizer.tokenize('=INVALID$A1');
-      tokenizer.index = 7; // Pointing to 'I' in INVALID
+      tokenizer.setIndex(7); // Pointing to 'I' in INVALID
       const token = tokenizer.nextToken();
       expect(token).toBeNull();
     });
