@@ -80,4 +80,49 @@ describe("updatePublished", () => {
 		);
 		expect(updates.payload.split("\n").includes(data)).toEqual(true);
 	});
+
+	it("checks to see if updateSubscription thorws an error with malformed data", async () => {
+		await setupDB();
+
+		let data: string = "A8 =dsadsa + 3213";
+
+		try {
+			await updateSubscription(
+				assembleTestArgumentObject("hunter", "test3", "", data),
+				"laurence"
+			);
+		} catch (error) {
+			expect(error).toMatch("Invalid payload format");
+		}
+	});
+
+	it("checks to see if updateSubscription thorws an error with malformed data", async () => {
+		await setupDB();
+
+		let data: string = "$A =dsadsa + 3213";
+
+		try {
+			await updateSubscription(
+				assembleTestArgumentObject("hunter", "test3", "", data),
+				"laurence"
+			);
+		} catch (error) {
+			expect(error).toMatch("Invalid payload format");
+		}
+	});
+
+	it("checks to see if updateSubscription thorws an error with malformed data", async () => {
+		await setupDB();
+
+		let data: string = "$8 =dsadsa + 3213";
+
+		try {
+			await updateSubscription(
+				assembleTestArgumentObject("hunter", "test3", "", data),
+				"laurence"
+			);
+		} catch (error) {
+			expect(error).toMatch("Invalid payload format");
+		}
+	});
 });

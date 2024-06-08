@@ -60,10 +60,41 @@ describe("updatePublished", () => {
 		await setupDB();
 
 		let data: string = "A8 =dsadsa + 3213";
-		expect(
+
+		try {
 			await updatePublished(
 				assembleTestArgumentObject("hunter", "test3", "", data)
-			)
-		).toThrow("Invalid payload format");
+			);
+		} catch (error) {
+			expect(error).toMatch("Invalid payload format");
+		}
+	});
+
+	it("checks to see if updatePublished thorws an error with malformed data", async () => {
+		await setupDB();
+
+		let data: string = "$A =dsadsa + 3213";
+
+		try {
+			await updatePublished(
+				assembleTestArgumentObject("hunter", "test3", "", data)
+			);
+		} catch (error) {
+			expect(error).toMatch("Invalid payload format");
+		}
+	});
+
+	it("checks to see if updatePublished thorws an error with malformed data", async () => {
+		await setupDB();
+
+		let data: string = "$8 =dsadsa + 3213";
+
+		try {
+			await updatePublished(
+				assembleTestArgumentObject("hunter", "test3", "", data)
+			);
+		} catch (error) {
+			expect(error).toMatch("Invalid payload format");
+		}
 	});
 });

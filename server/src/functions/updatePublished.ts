@@ -27,11 +27,12 @@ async function updatePublished(argument: Argument): Promise<void> {
 		payload
 	);
 
-	try {
-		if (checkPayloadFormat(payload) === false) {
-			throw new Error("Invalid payload format");
-		}
+	if (checkPayloadFormat(payload) === false) {
+		console.log(payload);
+		throw new Error("Invalid payload format");
+	}
 
+	try {
 		await database.query<GetUpdateRow>(queryString);
 
 		// gets the updates for the subscription so we can greab ids
