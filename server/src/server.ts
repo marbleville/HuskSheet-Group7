@@ -165,7 +165,11 @@ app.post(
  * @author marbleville
  */
 app.post("/api/v1/updatePublished", async (req: Request, res: Response) => {
-	runEndpointFuntion(req, res, updatePublished);
+	if (clientAndPublisherMatch(req, req.headers.authorization)) {
+		runEndpointFuntion(req, res, updatePublished);
+	} else {
+		res.status(401).send("Unauthorized");
+	}
 });
 
 /**
@@ -176,7 +180,10 @@ app.post("/api/v1/updatePublished", async (req: Request, res: Response) => {
 app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 	let result: Result;
 
-	if (!(await authenticate(req.headers.authorization))) {
+	if (
+		!(await authenticate(req.headers.authorization)) ||
+		clientAndPublisherMatch(req, req.headers.authorization)
+	) {
 		result = assembleResultObject(
 			false,
 			`updateSubscription: Unauthorized`,
