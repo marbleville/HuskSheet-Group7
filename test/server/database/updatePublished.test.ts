@@ -61,7 +61,7 @@ describe("updatePublished", () => {
 
 		let data: string = "A8 =dsadsa + 3213";
 		expect(
-			updatePublished(
+			await updatePublished(
 				assembleTestArgumentObject("hunter", "test3", "", data)
 			)
 		).toThrow("Invalid payload format");

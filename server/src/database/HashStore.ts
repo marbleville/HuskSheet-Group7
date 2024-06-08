@@ -93,7 +93,6 @@ export default class HashStore {
 		for (let [key, value] of sheetMap) {
 			// Would be possible to add support for getting updates during
 			// runtime with IDs here
-			console.log(`$ + ${key.column} + ${key.row} + ${value}`);
 			payload += "$" + key.column + key.row + " " + value + "\n";
 		}
 
