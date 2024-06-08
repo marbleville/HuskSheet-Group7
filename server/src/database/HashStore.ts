@@ -13,7 +13,7 @@ const accessUpdateID = 1;
 export default class HashStore {
 	private static sheets: Array<[Map<Ref, Term>, ID]>;
 
-	constructor() { }
+	constructor() {}
 
 	/**
 	 * Initializes the HashStore with the current state of the database.
@@ -55,18 +55,8 @@ export default class HashStore {
 			}
 
 			payloadArr.forEach((updatePerSheet) => {
-				// Grabs "$A1" e.g.
-				let ref = updatePerSheet.substring(
-					0,
-					updatePerSheet.indexOf(" ")
-				);
-
-				// Grabs "value" e.g.
-				let value = updatePerSheet.substring(
-					updatePerSheet.indexOf(" ") + 1
-				);
-
-				let refObj = HashStore.getRefFromString(ref, sheetID);
+				let [refObj, value] =
+					HashStore.getRefObjAndValue(updatePerSheet);
 
 				HashStore.sheets[sheetID][accessSheetMap].set(refObj, value);
 
@@ -97,14 +87,14 @@ export default class HashStore {
 		}
 
 		let sheetMap = HashStore.sheets[sheetID][accessSheetMap];
-		console.log(sheetMap)
+		console.log(sheetMap);
 
 		let payload = "";
 
 		for (let [key, value] of sheetMap) {
 			// Would be possible to add support for getting updates during
 			// runtime with IDs here
-			console.log(`$ + ${key.column} + ${key.row} + ${value}`)
+			console.log(`$ + ${key.column} + ${key.row} + ${value}`);
 			payload += "$" + key.column + key.row + " " + value + "\n";
 		}
 
@@ -143,11 +133,7 @@ export default class HashStore {
 		}
 
 		for (let update of updates) {
-			let refEndIndex = update.indexOf(" ");
-			let ref = update.substring(0, refEndIndex);
-			let value = update.substring(refEndIndex + 1);
-
-			let refObj = HashStore.getRefFromString(ref, sheetID);
+			let [refObj, value] = HashStore.getRefObjAndValue(update);
 
 			sheetMap.set(refObj, value);
 
@@ -155,6 +141,15 @@ export default class HashStore {
 		}
 	}
 
+	private static getRefObjAndValue(update: string): [Ref, Term] {
+		let refEndIndex = update.indexOf(" ");
+		let ref = update.substring(0, refEndIndex);
+		let value = update.substring(refEndIndex + 1);
+
+		let refObj = HashStore.getRefFromString(ref, 0);
+
+		return [refObj, value];
+	}
 
 	/**
 	 * Returns the ID of the sheet with the given name and publisher.
