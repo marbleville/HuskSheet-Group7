@@ -16,8 +16,24 @@ export default class DatabaseQueries {
 			(SELECT userid FROM publishers WHERE username = '${publisher}');`;
 	}
 
+	/**
+	 * Returns the query needed to get a user
+	 *
+	 * @param username The username of the publisher
+	 * @returns The query needed to get a user
+	 */
 	static getUser(username: string) {
 		return `SELECT * FROM publishers WHERE username = '${username}';`;
+	}
+
+	/**
+	 * Returns the query needed to check if a user is a publisher
+	 *
+	 * @param username The username of the publisher
+	 * @returns The query needed to check if a user is a publisher
+	 */
+	static isPublisher(username: string) {
+		return `SELECT isPublisher FROM publishers WHERE username = '${username}';`;
 	}
 
 	/**
