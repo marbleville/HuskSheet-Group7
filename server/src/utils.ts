@@ -120,7 +120,7 @@ async function runEndpointFuntion(
 		let argument = req.body as Argument;
 		let value: Argument[] | Argument | void = await func(argument);
 
-		result = assembleResultObject(true, `${func.name}: `, value);
+		result = assembleResultObject(true, null, value);
 		res.send(JSON.stringify(result));
 	} catch (error) {
 		const err: Error = error as Error;
@@ -209,7 +209,7 @@ async function authenticate(authHeader: string | undefined): Promise<boolean> {
  */
 function assembleResultObject(
 	success: boolean,
-	message: string,
+	message: string | null,
 	value: Argument[] | Argument | void
 ): Result {
 	if (!(value instanceof Array) && value !== undefined) {

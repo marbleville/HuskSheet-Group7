@@ -86,7 +86,7 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 	if (success) {
 		let result = {
 			success: success,
-			message: "",
+			message: null,
 			value: [],
 		} as Result;
 		res.send(JSON.stringify(result));
@@ -198,7 +198,7 @@ app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 
 		await updateSubscription(argument, username);
 
-		result = assembleResultObject(true, `updateSubscription: `, []);
+		result = assembleResultObject(true, null, []);
 		res.send(JSON.stringify(result));
 	} catch (error) {
 		const err: Error = error as Error;
