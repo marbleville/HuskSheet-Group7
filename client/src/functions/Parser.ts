@@ -58,9 +58,7 @@ class Parser {
 
   private parseTerm(): INode {
     const token = this.tokens[this.index];
-    console.log(`first token ${token}`);
     if (this.isFunction(token)) {
-      console.log("is a func");
       return this.parseFunction();
     } else if (this.isNumber(token)) {
       this.index++;
@@ -69,8 +67,7 @@ class Parser {
       this.index++;
       return new ReferenceNode(token);
     } else if (token === "(") {
-        console.log("is paren");
-        return this.parseNestedExpression();
+      return this.parseNestedExpression();
     } else if (this.isString(token)) {
       this.index++;
       return new StringNode(token);
@@ -102,7 +99,6 @@ class Parser {
 
   private parseFunction(): INode {
     const func = this.tokens[this.index].replace(/^=/, "");
-    console.log(`func: ${func}`);
     this.index++;
     this.consume("(");
     const args = [];

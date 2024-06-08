@@ -26,9 +26,9 @@ class Evaluator {
     this.context = context;
   }
 
-  evaluate(node: INode): number | string {
+  evaluate(node: INode): string {
     if (node instanceof NumberNode) {
-      return node.value;
+      return node.value.toString();
     } else if (node instanceof StringNode) {
       return node.value;
     } else if (node instanceof ReferenceNode) {
@@ -36,10 +36,12 @@ class Evaluator {
     } else if (node instanceof OperationNode) {
       const left = this.evaluate(node.left);
       const right = this.evaluate(node.right);
-      return this.applyOp(node.op, left, right);
+      const result = this.applyOp(node.op, left, right);
+      return typeof result === "number" ? result.toString() : result;
     } else if (node instanceof FunctionCallNode) {
       const args = node.args.map((arg: INode) => this.evaluate(arg));
-      return this.applyFunc(node.func, args);
+      const result = this.applyFunc(node.func, args);
+      return typeof result === "number" ? result.toString() : result;
     } else if (node instanceof FormulaNode) {
       return this.evaluate(node.expr);
     } else {
@@ -49,8 +51,8 @@ class Evaluator {
 
   private applyOp(
     op: string,
-    left: number | string,
-    right: number | string
+    left: string,
+    right: string
   ): number | string {
 
     switch (op) {
@@ -80,39 +82,31 @@ class Evaluator {
     }
   }
 
-  private toNumber(value: number | string): number {
-    if (typeof value === "number") {
-      return value;
+  private toNumber(value: string): number {
+    const num = parseFloat(value);
+    if (!isNaN(num)) {
+      return num;
     } else {
-      const num = parseFloat(value);
-      if (!isNaN(num)) {
-        return num;
-      } else {
-        throw new Error(`Value cannot be converted to a number: ${value}`);
-      }
+      throw new Error(`Value cannot be converted to a number: ${value}`);
     }
   }
 
-  private applyFunc(func: string, args: (number | string)[]): number | string {
+  private applyFunc(func: string, args: string[]): number | string {
+    const toNumbers = (args: string[]): number[] => {
+      return args.map(arg => this.toNumber(arg));
+    };
+
     switch (func) {
       case "IF":
-        return args[0] !== 0 ? args[1] : args[2];
+        return this.toNumber(args[0]) !== 0 ? this.toNumber(args[1]) : this.toNumber(args[2]);
       case "SUM":
-        if (args.every((arg) => typeof arg === "number")) {
-          return this.sum(args as number[]);
-        } else {
-          throw new Error(`SUM function requires numeric arguments`);
-        }
+        return this.sum(toNumbers(args));
       case "MIN":
-        return Math.min(...this.toNumbers(args));
+        return Math.min(...toNumbers(args));
       case "MAX":
-        return Math.max(...this.toNumbers(args));
+        return Math.max(...toNumbers(args));
       case "AVG":
-        if (args.every((arg) => typeof arg === "number")) {
-          return this.average(args as number[]);
-        } else {
-          throw new Error(`AVG function requires numeric arguments`);
-        }
+        return this.average(toNumbers(args));
       case "CONCAT":
         return args.join("");
       case "DEBUG":
@@ -124,38 +118,11 @@ class Evaluator {
   }
 
   private sum(args: number[]): number {
-    return args.reduce((acc, val) => {
-      if (typeof val === "number") {
-        return acc + val;
-      } else {
-        throw new Error(
-          `SUM function requires numeric arguments, but found: ${val}`
-        );
-      }
-    }, 0);
+    return args.reduce((acc, val) => acc + val, 0)
   }
 
-  private average(args: (number | string)[]): number {
-    const numbers = this.toNumbers(args);
-    const total = numbers.reduce((acc, val) => acc + val, 0);
-    return total / numbers.length;
-  }
-
-  private toNumbers(args: (number | string)[]): number[] {
-    return args.map((arg) => {
-      if (typeof arg === "number") {
-        return arg;
-      } else {
-        const num = parseFloat(arg);
-        if (!isNaN(num)) {
-          return num;
-        } else {
-          throw new Error(
-            `Function requires numeric arguments, but found: ${arg}`
-          );
-        }
-      }
-    });
+  private average(args: number[]): number {
+    return this.sum(args) / args.length;
   }
 }
 

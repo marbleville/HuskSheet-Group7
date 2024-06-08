@@ -9,7 +9,7 @@ class Tokenizer {
     ["COMBINED_OPERATOR", /^[<>]+/], // Matches combined < and > operators
     ["LPAREN", /^\(/], // Matches left parenthesis
     ["RPAREN", /^\)/], // Matches right parenthesis
-    ["REFERENCE", /^\$[A-Z]+\d+(:\$[A-Z]+\d+)?/], // Matches cell references and ranges
+    ["REFERENCE", /^\$[A-Z]+\d+/], // Matches cell references and ranges
     ["STRING", /^[^()\s,]+/], // Matches strings
     ["COMMA", /^,/], // Matches commas
     ["WHITESPACE", /^\s+/], // Matches whitespace
@@ -36,17 +36,30 @@ class Tokenizer {
     this.index = 0; // Reset index for new tokenization
     this.formula = formula;
     const tokens: string[] = [];
+    let openParenthesesCount = 0;
 
     while (this.index < this.formula.length) {
       const token = this.nextToken();
       if (token) {
         tokens.push(token);
+        if (token === "(") {
+          openParenthesesCount++;
+        } else if (token === ")") {
+          openParenthesesCount--;
+          if (openParenthesesCount < 0) {
+            throw new Error("Unmatched closing parenthesis");
+          }
+        }
       } else {
         throw new Error(
           `Unexpected token at index ${this.index} in formula: ${this.formula}`
         );
       }
     }
+
+    if (openParenthesesCount !== 0) {
+      throw new Error("Unmatched closing parenthesis");
+    } 
 
     return tokens;
   }

@@ -11,6 +11,8 @@ interface CellProps {
   sheetData: { [key: string]: string };
 }
 
+const ERROR_TIMEOUT = 1500;
+
 const Cell: React.FC<CellProps> = ({
   cellId,
   initialValue,
@@ -19,6 +21,8 @@ const Cell: React.FC<CellProps> = ({
   sheetData,
 }) => {
   const [value, setValue] = useState(initialValue);
+  const [prevValue, setPrevValue] = useState(initialValue);
+  const [error, setError] = useState(false);
 
   // Update the value when the cellValue prop changes
   useEffect(() => {
@@ -28,25 +32,56 @@ const Cell: React.FC<CellProps> = ({
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value;
     setValue(newValue);
+    setError(false);
   };
 
   const handleBlur = () => {
-    const parsedNode = Parser.getInstance().parse(value);
-    console.log(`parser result: ${parsedNode}`);
+    if (value !== prevValue) {
+      evaluateAndUpdate();
+    }
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      evaluateAndUpdate();
+    }
+  };
+
+  const evaluateAndUpdate = () => {
+    const parser = Parser.getInstance()
     const evaluator = Evaluator.getInstance();
     evaluator.setContext(sheetData);
-    const result = evaluator.evaluate(parsedNode);
-    console.log('Evaluation Result:', result);
-    onUpdate(result.toString(), cellId);
+    let result: string = "";
+    let isError = false; 
+    
+    try {
+      const parsedNode = parser.parse(value);
+      result = evaluator.evaluate(parsedNode);
+      console.log('Evaluation Result:', result);
+    } catch (error) {
+      isError = true; 
+    }
+    
+    if (isError) {
+      result = "";
+      setValue(result);
+      setError(true); 
+      setTimeout(() => {
+        setError(false); 
+      }, ERROR_TIMEOUT); 
+    }
+      onUpdate(result, cellId);
+      setPrevValue(result);
   };
 
   return (
-    <td key={cellId} className="cell">
+    <td key={cellId} className={`cell ${error ? 'error' : ''}`}>
       <input
         type="text"
         value={value ?? ""}
         onChange={handleChange}
         onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
         className="cell-input"
       />
     </td>
