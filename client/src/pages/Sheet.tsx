@@ -6,21 +6,20 @@ import "../styles/Sheet.css";
 import { Argument } from "../../../types/types";
 import SheetUpdateHandler from "../sheetUpdateHandler";
 
-/**
- * @description This is the HashMap type that represents how cell data is stored on a sheet.
- *
- * @author rishavsarma5
- */
-interface SheetDataMap {
-  [ref: string]: string;
-}
-
-// GLOBAL CONSTANTS
+// Constants
 const INITIALSHEETROWSIZE = 10;
 const INITIALSHEETCOLUMNSIZE = 10;
 
+// Represents the client's relationship to this sheet.
+type SheetRelationship = "OWNER" | "SUBSCRIBER";
+
+// Represents data stored in the sheet as a mapping of REF:TERM pairs. 
+interface SheetDataMap {
+  [ref: string]: string;
+};
+
 /**
- * @description Initializes the sheet HashMap based on given row/columns.
+ * @description Initializes the SheetDataMap based on given row/columns.
  *
  * @author rishavsarma5
  */
@@ -57,50 +56,49 @@ const getHeaderLetter = (curr: number): string => {
 };
 
 /**
- * @description Represents a Sheet that a publisher owns and Subscribers can make edits on.
- * Renders a scrollable table with cell inputs and a publish button to allow edits to be saved to the server.
+ * @description A Sheet that manages the data of its child Cells.
  *
  * @author kris-amerman, rishavsarma5, eduardo-ruiz-garay
  */
 const Sheet: React.FC = () => {
-  useEffect(() => {
-    console.log("SHEET DATA")
-    console.log(sheetData)
-  })
 
-  // receive information about sheet from dashboard page
+  // Receive contextual information about sheet from the dashboard page.
   const location = useLocation();
   const sheetInfo: Argument = location.state;
 
-  // initializes the first sheetData with 100 rows/columns
+  // Initialize the SheetDataMap.
   const initialSheetData: SheetDataMap = initializeSheet(
     INITIALSHEETROWSIZE,
     INITIALSHEETCOLUMNSIZE
   );
 
-  // sets state for sheet data
+  // Sheet state.
   const [sheetData, setSheetData] = useState<SheetDataMap>(initialSheetData);
+  const [manualUpdates, setManualUpdates] = useState<Set<string>>(new Set());
   const prevCellDataRef = useRef<SheetDataMap>({ ...sheetData });
-
   const [numRows, setNumRows] = useState(INITIALSHEETROWSIZE);
   const [numCols, setNumCols] = useState(INITIALSHEETCOLUMNSIZE);
-  const [newlyAddedCells, setNewlyAddedCells] = useState<Set<string>>(
-    new Set()
-  );
-  const [newlyDeletedCells, setNewlyDeletedCells] = useState<Set<string>>(
-    new Set()
-  );
-
-  // This is the latestUpdateID that the client has. Initialized to 0 to fetch all updates on first load.
+  const [newlyAddedCells, setNewlyAddedCells] = useState<Set<string>>(new Set());
+  const [newlyDeletedCells, setNewlyDeletedCells] = useState<Set<string>>(new Set());
+  const [sheetRelationship, setSheetRelationship] = useState<SheetRelationship>();
   const [latestUpdateID, setLatestUpdateID] = useState<string>("0");
+  const [incomingUpdates, setIncomingUpdates] = useState<SheetDataMap>({});
+
+  // Store client's relationship to this sheet based on username and sheet publisher.
+  useEffect(() => {
+    if (sheetInfo.publisher === sessionStorage.getItem("username")) {
+      setSheetRelationship("OWNER")
+    } else {
+      setSheetRelationship("SUBSCRIBER")
+    }
+  }, [])
 
   /**
    * @description Updates the sheetData when a cell's input changes.
    *
-   * @author rishavsarma5, eduardo-ruiz-garay
+   * @author rishavsarma5, eduardo-ruiz-garay, kris-amerman
    */
   const handleCellUpdate = (value: string, cellId: string) => {
-    console.log(`should be called for ${cellId} with value: ${value}`);
     if (value === "<DELETED>" || value === "<CREATED>") {
       value = "";
     }
@@ -110,67 +108,16 @@ const Sheet: React.FC = () => {
         ...prevCellDataRef.current,
         [cellId]: prevSheetData[cellId],
       };
+      setManualUpdates((prevManualUpdates) => new Set(prevManualUpdates).add(cellId));
       return updatedSheetData;
     });
   };
 
   /**
-   * @description Gets all new updates a Publisher/Subscriber makes on a sheet and pushes to server using args.
+   * @description Add a new empty row.
    *
-   * @author rishavsarma5, eduardo-ruiz-garay
+   * @author rishavsarma5
    */
-  const onPublishButtonClick = async () => {
-    // iterates through sheetData and stores updates in a new-line delimited string
-    const getAllCellUpdates = (): string => {
-      const payload: string[] = [];
-
-      for (const ref of newlyDeletedCells) {
-        payload.push(`${ref} <DELETED>`);
-      }
-
-      for (const ref of newlyAddedCells) {
-        payload.push(`${ref} <CREATED>`);
-      }
-
-      for (const [ref, valueAtCell] of Object.entries(sheetData)) {
-        const prevValueAtCell = prevCellDataRef.current[ref] || "";
-        if (valueAtCell !== prevValueAtCell) {
-          payload.push(`${ref} ${valueAtCell}`);
-        }
-      }
-
-      return payload.join("\n");
-    };
-
-    const payload = getAllCellUpdates();
-
-    // Argument object of all updates to a sheet
-    const allUpdates: Argument = {
-      id: "",
-      publisher: sheetInfo.publisher,
-      sheet: sheetInfo.sheet,
-      payload: payload,
-    };
-
-    console.log(allUpdates.payload);
-
-    // calls updatePublished or updateSubscribed depending on user and relation to sheet
-    // @TODO: call UpdateSubscribed
-
-    try {
-      await fetchWithAuth("http://localhost:3000/api/v1/updatePublished", {
-        method: "POST",
-        body: JSON.stringify(allUpdates),
-      });
-
-      // Reset newlyAddedCells and newlyDeletedCells sets to empty after successful fetch
-      //setNewlyAddedCells(new Set());
-      //setNewlyDeletedCells(new Set());
-    } catch (error) {
-      console.error("Error publishing new changes", error);
-    }
-  };
-
   const addNewRow = () => {
     setNumRows((prevNumRows) => prevNumRows + 1);
 
@@ -196,6 +143,11 @@ const Sheet: React.FC = () => {
     setNewlyAddedCells(newCells);
   };
 
+  /**
+   * @description Delete a row.
+   *
+   * @author rishavsarma5
+   */
   const deleteRow = () => {
     if (numRows === 1) {
       return;
@@ -225,6 +177,11 @@ const Sheet: React.FC = () => {
     setNewlyDeletedCells(deletedCells);
   };
 
+  /**
+   * @description Add a new empty column.
+   *
+   * @author rishavsarma5
+   */
   const addNewCol = () => {
     setNumCols((prevNumCols) => prevNumCols + 1);
 
@@ -249,6 +206,11 @@ const Sheet: React.FC = () => {
     setNewlyAddedCells(newCells);
   };
 
+  /**
+   * @description Delete a column.
+   *
+   * @author rishavsarma5
+   */
   const deleteCol = () => {
     if (numCols === 1) {
       return;
@@ -278,7 +240,7 @@ const Sheet: React.FC = () => {
   };
 
   /**
-   * Renders the headers of the columns correctly with the A then to AA by using mod 26.
+   * Renders the headers of the columns with the A ... AA by using mod 26.
    *
    * @author rishavsarma5, eduardo-ruiz-garay
    * @returns the new headers for the columns
@@ -350,7 +312,8 @@ const Sheet: React.FC = () => {
             cellId={cellId}
             initialValue={sheetData[cellId]}
             onUpdate={handleCellUpdate}
-            cellValue={sheetData[cellId]}
+            cellValue={incomingUpdates[cellId] || sheetData[cellId]}
+            isUpdated={incomingUpdates.hasOwnProperty(cellId)}
           />
         );
       }
@@ -386,44 +349,242 @@ const Sheet: React.FC = () => {
     return <>{rows}</>;
   };
 
-  const requestUpdatesHandler = () => {
+  /**
+   * @description Collects the updates made to this sheet and pushes them to server based on sheet relationship.
+   *
+   * @author kris-amerman, rishavsarma5, eduardo-ruiz-garay
+   */
+  const onPublishButtonClick = async () => {
+    // iterates through sheetData and stores updates in a new-line delimited string
+    const getAllCellUpdates = (): string => {
+      const payload: string[] = [];
+
+      for (const ref of newlyDeletedCells) {
+        payload.push(`${ref} <DELETED>`);
+      }
+
+      for (const ref of newlyAddedCells) {
+        payload.push(`${ref} <CREATED>`);
+      }
+
+      for (const [ref, valueAtCell] of Object.entries(sheetData)) {
+        const prevValueAtCell = prevCellDataRef.current[ref] || "";
+        if (valueAtCell !== prevValueAtCell && manualUpdates.has(ref)) {
+          payload.push(`${ref} ${valueAtCell}`);
+        }
+      }
+
+      return payload.join("\n");
+    };
+
+    const payload = getAllCellUpdates();
+
+    // Argument object with updates to the sheet
+    const allUpdates: Argument = {
+      id: "",
+      publisher: sheetInfo.publisher,
+      sheet: sheetInfo.sheet,
+      payload: payload,
+    };
+
+    console.log(`Role is: ${sheetRelationship}, User is: ${sessionStorage.getItem("username")}`)
+
+    console.log("PAYLOAD:")
+    console.log(allUpdates.payload);
+
+    if (sheetRelationship === "OWNER") {
+      console.log(`calling updatePublished`)
+      try {
+        await fetchWithAuth("http://localhost:3000/api/v1/updatePublished", {
+          method: "POST",
+          body: JSON.stringify(allUpdates),
+        });
+
+        // Reset newlyAddedCells and newlyDeletedCells sets to empty after successful fetch
+        setNewlyAddedCells(new Set());
+        setNewlyDeletedCells(new Set());
+        setManualUpdates(new Set());
+      } catch (error) {
+        console.error("Error publishing new changes", error);
+      }
+    } else {
+      console.log(`calling updateSubscription`)
+      try {
+        await fetchWithAuth("http://localhost:3000/api/v1/updateSubscription", {
+          method: "POST",
+          body: JSON.stringify(allUpdates),
+        });
+
+        // Reset newlyAddedCells and newlyDeletedCells sets to empty after successful fetch
+        setNewlyAddedCells(new Set());
+        setNewlyDeletedCells(new Set());
+      } catch (error) {
+        console.error("Error publishing new changes", error);
+      }
+    }
+  };
+
+  /**
+   * @description Requests updates to the sheet based on client's relationship to the sheet.
+   *
+   * @author kris-amerman
+   */
+  const requestUpdatesHandler = async () => {
     const argument: Argument = {
       publisher: sheetInfo.publisher,
       sheet: sheetInfo.sheet,
       id: latestUpdateID,
       payload: ""
     };
-  
-    fetchWithAuth(
-      "http://localhost:3000/api/v1/getUpdatesForPublished",
-      {
-        method: "POST",
-        body: JSON.stringify(argument)
-      },
-      async (data) => {
-        console.log("DATA:");
-        console.log(data);
-  
-        if (data.success && data.value && data.value.length > 0) {
-          const update = data.value[0];
-          const sheetUpdateHandler = SheetUpdateHandler.getInstance();
-          const updates = await sheetUpdateHandler.applyUpdates(update);
 
-          // Check if payload is not empty before updating the sheetData
-          if (update.payload !== "") {
-            setSheetData(prevSheetData => ({
-              ...prevSheetData,
-              ...updates
-            }));
+    if (sheetRelationship === "OWNER") {
+      console.log("ARGUMENT")
+      console.log(argument)
+      await fetchWithAuth(
+        "http://localhost:3000/api/v1/getUpdatesForSubscription",
+        {
+          method: "POST",
+          body: JSON.stringify(argument)
+        },
+        async (data) => {
+          console.log("INCOMING DATA:");
+          console.log(data);
+
+          if (data.success && data.value && data.value.length > 0) {
+            const update = data.value[0];
+            const sheetUpdateHandler = SheetUpdateHandler.getInstance();
+            const updates = await sheetUpdateHandler.applyUpdates(update);
+
+            // Check if payload is not empty before updating the sheetData
+            if (update.payload !== "") {
+              setSheetData(prevSheetData => ({
+                ...prevSheetData,
+                ...updates
+              }));
+
+            }
+            argument.id = update.id;
           }
-  
-          setLatestUpdateID(update.id);
         }
-      }
-    );
-  };
-  
+      );
+      console.log("ARGUMENT")
+      console.log(argument)
+      await fetchWithAuth(
+        "http://localhost:3000/api/v1/getUpdatesForPublished",
+        {
+          method: "POST",
+          body: JSON.stringify(argument)
+        },
+        async (data) => {
+          console.log("INCOMING DATA:");
+          console.log(data);
 
+          if (data.success && data.value && data.value.length > 0) {
+            const update = data.value[0];
+            const sheetUpdateHandler = SheetUpdateHandler.getInstance();
+            const updates = await sheetUpdateHandler.applyUpdates(update);
+
+            // Check if payload is not empty before updating the sheetData
+            if (update.payload !== "") {
+
+              // Add updated cell IDs to the incomingUpdates state
+              setIncomingUpdates(updates);
+            }
+
+            console.log(`SET NEW UPDATE ID TO ${update.id}`)
+            setLatestUpdateID(update.id);
+          }
+        }
+      );
+    } else {
+      console.log("ARGUMENT")
+      console.log(argument)
+      await fetchWithAuth(
+        "http://localhost:3000/api/v1/getUpdatesForSubscription",
+        {
+          method: "POST",
+          body: JSON.stringify(argument)
+        },
+        async (data) => {
+          console.log("INCOMING DATA:");
+          console.log(data);
+
+          if (data.success && data.value && data.value.length > 0) {
+            const update = data.value[0];
+            const sheetUpdateHandler = SheetUpdateHandler.getInstance();
+            const updates = await sheetUpdateHandler.applyUpdates(update);
+
+            // Check if payload is not empty before updating the sheetData
+            if (update.payload !== "") {
+              setSheetData(prevSheetData => ({
+                ...prevSheetData,
+                ...updates
+              }));
+            }
+
+            console.log(`SET NEW UPDATE ID TO ${update.id}`)
+            setLatestUpdateID(update.id);
+          }
+        }
+      );
+    }
+  };
+
+  /**
+   * @description Commits the `incomingUpdates` (i.e., those from `getUpdatesForPublished`) to `sheetData`. 
+   *
+   * @author kris-amerman
+   */
+  const acceptIncomingUpdates = () => {
+    setSheetData((prevSheetData) => {
+      // Merge incoming updates into the sheetData
+      const updatedSheetData = {
+        ...prevSheetData,
+        ...incomingUpdates,
+      };
+
+      return updatedSheetData;
+    });
+
+    // Include incoming updates in the manual updates
+    setManualUpdates((prevManualUpdates) => new Set([...prevManualUpdates, ...Object.keys(incomingUpdates)]));
+
+    // Clear incomingUpdates after accepting
+    setIncomingUpdates({});
+  };
+
+  /**
+   * @description Effectively ignores and erases `incomingUpdates`. 
+   *
+   * @author kris-amerman
+   */
+  const denyIncomingUpdates = () => {
+    setIncomingUpdates({});
+  };
+
+  /**
+   * @description Dynamically renders "Accept" and "Deny" buttons for incoming changes. 
+   *
+   * @author kris-amerman
+   */
+  const renderUpdateButtons = () => {
+    if (Object.keys(incomingUpdates).length > 0) {
+      return (
+        <div className="update-buttons">
+          <button onClick={acceptIncomingUpdates}>Accept</button>
+          <button onClick={denyIncomingUpdates}>Deny</button>
+        </div>
+      );
+    } else {
+      return null; // hide buttons if there are no incoming updates
+    }
+  };
+
+  /**
+   * @description Render the Sheet. 
+   *
+   * @author rishavsarma5, kris-amerman
+   */
   return (
     <div className="sheet-container">
       <div className="info-section">
@@ -439,6 +600,7 @@ const Sheet: React.FC = () => {
         </button>
       </div>
       <div className="sheet-wrapper">
+        {renderUpdateButtons()}
         <table className="sheet">
           <thead>{renderSheetHeader()}</thead>
           <tbody>{renderSheetRows()}</tbody>

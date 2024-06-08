@@ -27,4 +27,6 @@
   color: white;
 }
 
-
+.updated-cell .cell-input {
+  border: 2px solid red;
+}

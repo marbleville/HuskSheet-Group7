@@ -5,18 +5,20 @@ interface CellProps {
   cellId: string;
   initialValue: string;
   onUpdate: (value: string, cellId: string) => void;
-  cellValue: string; // New prop to pass the value of the cell
+  cellValue: string;
+  isUpdated: boolean;
 }
 
+// Inside the Cell component
 const Cell: React.FC<CellProps> = ({
   cellId,
   initialValue,
   onUpdate,
-  cellValue, // Use cellValue instead of sheetData
+  cellValue,
+  isUpdated
 }) => {
   const [value, setValue] = useState(initialValue);
 
-  // Update the value when the cellValue prop changes
   useEffect(() => {
     setValue(cellValue);
   }, [cellValue]);
@@ -31,16 +33,18 @@ const Cell: React.FC<CellProps> = ({
   };
 
   return (
-    <td key={cellId} className="cell">
+    <td key={cellId} className={`cell ${isUpdated ? 'updated-cell' : ''}`}>
       <input
         type="text"
         value={value ?? ""}
         onChange={handleChange}
         onBlur={handleBlur}
         className="cell-input"
+        style={{ color: isUpdated ? 'red' : 'inherit' }}
       />
     </td>
   );
 };
+
 
 export default Cell;
