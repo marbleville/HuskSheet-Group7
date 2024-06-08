@@ -6,6 +6,7 @@ import {
 	runEndpointFuntion,
 	parseAuthHeader,
 	assembleResultObject,
+	clientAndPublisherMatch,
 } from "./utils";
 import { Result, Argument } from "../../types/types";
 import {
@@ -150,7 +151,11 @@ app.post(
 app.post(
 	"/api/v1/getUpdatesForPublished",
 	async (req: Request, res: Response) => {
-		runEndpointFuntion(req, res, getUpdatesForPublished);
+		if (clientAndPublisherMatch(req, req.headers.authorization)) {
+			runEndpointFuntion(req, res, getUpdatesForPublished);
+		} else {
+			res.status(401).send("Unauthorized");
+		}
 	}
 );
 
@@ -189,7 +194,7 @@ app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 		let argument = req.body as Argument;
 		const authHeader = req.headers.authorization;
 
-		const [username, password] = parseAuthHeader(authHeader);
+		const [username] = parseAuthHeader(authHeader);
 
 		await updateSubscription(argument, username);
 

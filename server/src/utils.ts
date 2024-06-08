@@ -10,6 +10,24 @@ import DatabaseInstance from "./database/databaseInstance";
 import { Request, Response } from "express";
 import { GetUpdateRow } from "./database/db";
 
+function clientAndPublisherMatch(
+	req: Request,
+	authHeader: string | undefined
+): boolean {
+	if (authHeader === undefined) {
+		return false;
+	}
+
+	if (authHeader === undefined) {
+		return false;
+	}
+
+	const [username] = parseAuthHeader(authHeader);
+	const publisher = req.body.publisher;
+
+	return publisher === username;
+}
+
 /**
  * Returns the updates for the given published sheet occuring after the given
  * id in an Argument object.
@@ -201,4 +219,5 @@ export {
 	runEndpointFuntion,
 	parseAuthHeader,
 	getUpdatesHelper,
+	clientAndPublisherMatch,
 };
