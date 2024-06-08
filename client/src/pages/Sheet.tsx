@@ -16,7 +16,7 @@ type SheetRelationship = "OWNER" | "SUBSCRIBER";
 // Represents data stored in the sheet as a mapping of REF:TERM pairs. 
 interface SheetDataMap {
   [ref: string]: string;
-};
+}
 
 /**
  * @description Initializes the SheetDataMap based on given row/columns.
@@ -314,7 +314,7 @@ const Sheet: React.FC = () => {
             onUpdate={handleCellUpdate}
             sheetData={sheetData}
             cellValue={incomingUpdates[cellId] || sheetData[cellId]}
-            isUpdated={incomingUpdates.hasOwnProperty(cellId)}
+            isUpdated={Object.prototype.hasOwnProperty.call(incomingUpdates, cellId)}
           />
         );
       }
