@@ -60,12 +60,10 @@ describe("updatePublished", () => {
 		await setupDB();
 
 		let data: string = "A8 =dsadsa + 3213";
-		await updatePublished(
-			assembleTestArgumentObject("hunter", "test3", "", data)
-		);
-		let updates = await getUpdatesForSubscription(
-			assembleTestArgumentObject("hunter", "test3", "1", "")
-		);
-		expect(updates.payload.split("\n").includes(data)).toEqual(true);
+		expect(
+			updatePublished(
+				assembleTestArgumentObject("hunter", "test3", "", data)
+			)
+		).toThrow("Invalid payload format");
 	});
 });
