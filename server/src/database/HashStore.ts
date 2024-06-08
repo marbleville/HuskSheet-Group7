@@ -128,6 +128,11 @@ export default class HashStore {
 	): Promise<void> {
 		let sheetID = await HashStore.getSheetID(publisher, sheetName);
 
+		// Initialize the sheet hash is the sheet has no updates
+		if (HashStore.sheets[sheetID] == undefined) {
+			HashStore.sheets[sheetID] = [new Map<Ref, Term>(), "0"];
+		}
+
 		let sheetMap = HashStore.sheets[sheetID][accessSheetMap];
 
 		let updates = payload.split("\n");
