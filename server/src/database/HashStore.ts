@@ -13,8 +13,6 @@ const accessUpdateID = 1;
 export default class HashStore {
 	private static sheets: Array<[Map<Ref, Term>, ID]>;
 
-	constructor() {}
-
 	/**
 	 * Initializes the HashStore with the current state of the database.
 	 * Ensures the HashStore is a singleton instance.
@@ -55,8 +53,10 @@ export default class HashStore {
 			}
 
 			payloadArr.forEach((updatePerSheet) => {
-				let [refObj, value] =
-					HashStore.getRefObjAndValue(updatePerSheet);
+				let [refObj, value] = HashStore.getRefObjAndValue(
+					updatePerSheet,
+					sheetID
+				);
 
 				HashStore.sheets[sheetID][accessSheetMap].set(refObj, value);
 
@@ -87,7 +87,6 @@ export default class HashStore {
 		}
 
 		let sheetMap = HashStore.sheets[sheetID][accessSheetMap];
-		console.log(sheetMap);
 
 		let payload = "";
 
@@ -133,7 +132,7 @@ export default class HashStore {
 		}
 
 		for (let update of updates) {
-			let [refObj, value] = HashStore.getRefObjAndValue(update);
+			let [refObj, value] = HashStore.getRefObjAndValue(update, sheetID);
 
 			sheetMap.set(refObj, value);
 
@@ -141,12 +140,15 @@ export default class HashStore {
 		}
 	}
 
-	private static getRefObjAndValue(update: string): [Ref, Term] {
+	private static getRefObjAndValue(
+		update: string,
+		sheetID: number
+	): [Ref, Term] {
 		let refEndIndex = update.indexOf(" ");
 		let ref = update.substring(0, refEndIndex);
 		let value = update.substring(refEndIndex + 1);
 
-		let refObj = HashStore.getRefFromString(ref, 0);
+		let refObj = HashStore.getRefFromString(ref, sheetID);
 
 		return [refObj, value];
 	}
