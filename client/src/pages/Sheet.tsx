@@ -5,6 +5,7 @@ import { fetchWithAuth } from "../utils";
 import "../styles/Sheet.css";
 import { Argument } from "../../../types/types";
 import SheetUpdateHandler from "../sheetUpdateHandler";
+import Popup from "./Popup"; 
 
 // Constants
 const INITIALSHEETROWSIZE = 10;
@@ -83,6 +84,7 @@ const Sheet: React.FC = () => {
   const [sheetRelationship, setSheetRelationship] = useState<SheetRelationship>();
   const [latestUpdateID, setLatestUpdateID] = useState<string>("0");
   const [incomingUpdates, setIncomingUpdates] = useState<SheetDataMap>({});
+  const [popupMessage, setPopupMessage] = useState<string | null>(null); 
 
   // Store client's relationship to this sheet based on username and sheet publisher.
   useEffect(() => {
@@ -405,8 +407,11 @@ const Sheet: React.FC = () => {
         setNewlyAddedCells(new Set());
         setNewlyDeletedCells(new Set());
         setManualUpdates(new Set());
+
+        setPopupMessage("Publish successful!"); // Show success popup
       } catch (error) {
         console.error("Error publishing new changes", error);
+        setPopupMessage("Error publishing new changes"); // Show fail popup
       }
     } else {
       console.log(`calling updateSubscription`)
@@ -607,6 +612,9 @@ const Sheet: React.FC = () => {
           <tbody>{renderSheetRows()}</tbody>
         </table>
       </div>
+      {popupMessage && (
+        <Popup message={popupMessage} onClose={() => setPopupMessage(null)} />
+      )}
     </div>
   );
 };
