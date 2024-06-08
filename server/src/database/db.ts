@@ -22,6 +22,7 @@ interface GetSheetRow extends RowDataPacket {
  */
 interface GetUserRow extends RowDataPacket {
 	username: string;
+	isPublisher: boolean;
 }
 
 /**
