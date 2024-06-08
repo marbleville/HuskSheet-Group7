@@ -10,6 +10,16 @@ import DatabaseInstance from "./database/databaseInstance";
 import { Request, Response } from "express";
 import { GetUpdateRow } from "./database/db";
 
+/**
+ * Checks if the client and publisher match.
+ *
+ * @param req the request object from the client
+ * @param authHeader the authorization header from the request
+ *
+ * @returns a boolean indicating whether the client and publisher match
+ *
+ * @author marbleville
+ */
 function clientAndPublisherMatch(
 	req: Request,
 	authHeader: string | undefined
