@@ -3,6 +3,7 @@ import DatabaseInstance from "../database/databaseInstance";
 import DatabaseQueries from "../../../types/queries";
 import HashStore from "../database/HashStore";
 import { GetUpdateRow } from "../database/db";
+import { checkPayloadFormat } from "../utils";
 
 /**
  * Updates the Updates table with the given publisher, sheet, and payload for
@@ -27,6 +28,10 @@ async function updatePublished(argument: Argument): Promise<void> {
 	);
 
 	try {
+		if (checkPayloadFormat(payload) === false) {
+			throw new Error("Invalid payload format");
+		}
+
 		await database.query<GetUpdateRow>(queryString);
 
 		// gets the updates for the subscription so we can greab ids

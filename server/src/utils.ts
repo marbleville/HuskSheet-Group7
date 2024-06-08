@@ -11,6 +11,27 @@ import { Request, Response } from "express";
 import { GetUpdateRow } from "./database/db";
 
 /**
+ * Checks if each change in the payload is in the correct format e.g. $A1 5
+ *
+ * @param payload newline delimited string of changes
+ *
+ * @returns boolean indicating whether the payload is in the correct format
+ *
+ * @author marbleville
+ */
+function checkPayloadFormat(payload: string): boolean {
+	let changes = payload.split("\n");
+
+	changes.forEach((change) => {
+		let ref = change.split(" ", 1)[0];
+
+		return ref.match(/\$([A-Za-z]+[0-9]+)/) !== null;
+	});
+
+	return true;
+}
+
+/**
  * Checks if the client and publisher match.
  *
  * @param req the request object from the client
@@ -230,4 +251,5 @@ export {
 	parseAuthHeader,
 	getUpdatesHelper,
 	clientAndPublisherMatch,
+	checkPayloadFormat,
 };
