@@ -9,6 +9,9 @@ import {
 } from "./Nodes";
 import Tokenizer from "./Tokenizer";
 
+/**
+ * Parses tje
+ */
 class Parser {
   private static instance: Parser;
 

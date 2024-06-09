@@ -36,8 +36,13 @@ class Tokenizer {
     this.formula = "";
   }
 
-  // Finds the next expression and produces the string of tokens with the different expressions and
-  // handles incorrect parentheses maybe better with a stack but works.
+  /**
+   * Finds the next expression and produces the string of tokens with the different expressions and
+   *  handles incorrect parentheses maybe better with a stack but works.
+   *
+   * @param formula string formula from the sheet data
+   * @returns the set of tokens formed by regex
+   */
   tokenize(formula: string): string[] {
     this.index = 0;
     this.formula = formula;
@@ -56,7 +61,8 @@ class Tokenizer {
             throw new Error("Unmatched closing parenthesis");
           }
         }
-      } else {
+      } //@rishavsarma5 is there ever a time this is called
+      else {
         throw new Error(
           `Unexpected token at index ${this.index} in formula: ${this.formula}`
         );
@@ -69,8 +75,12 @@ class Tokenizer {
     return tokens;
   }
 
-  // Gets the next token based on the index and returns if it is null or string based on the regex.
-  // Also removes whitespace based on the match it gets.
+  /**
+   * Gets the next token based on the index and returns if it is null or string based on the regex.
+   * Also removes whitespace based on the match it gets.
+   *
+   * @returns string if the token is recognized in regex else null
+   */
   protected nextToken(): string | null {
     const substr = this.formula.substring(this.index);
     for (const [type, regex] of Tokenizer.tokenSpec) {

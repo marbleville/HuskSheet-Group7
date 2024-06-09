@@ -1,3 +1,4 @@
+import { error } from "console";
 import Tokenizer from "../../../client/src/functions/Tokenizer";
 
 // Tests the singleton is working correctly
@@ -154,6 +155,19 @@ describe("Tokenizer tests", () => {
         const res: string[] = tokenizer.tokenize(func);
         expect(res).toEqual(expected);
       });
+    });
+    it("checks that the parentheses is throwing errors for incorrect values", () => {
+      const parentheses: string = "(";
+      expect(() => tokenizer.tokenize(parentheses)).toThrow(
+        "Unmatched closing parenthesis"
+      );
+    });
+
+    it("checks that the parentheses is throwing errors for incorrect values", () => {
+      const parentheses: string = ")";
+      expect(() => tokenizer.tokenize(parentheses)).toThrow(
+        "Unmatched closing parenthesis"
+      );
     });
   });
 
