@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS publishers (
 	userid INT NOT NULL AUTO_INCREMENT,
   username TEXT NOT NULL,
   pass TEXT NOT NULL,
+  isPublisher BOOLEAN NOT NULL DEFAULT 0,
   PRIMARY KEY (userid)
 );
 

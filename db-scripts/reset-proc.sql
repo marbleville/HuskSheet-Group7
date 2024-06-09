@@ -14,13 +14,14 @@ BEGIN
   SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO
-	publishers (username, pass)
+	publishers (username, pass, isPublisher)
 VALUES
-	('rishav', '123'),
-	('laurence', '123'),
-	('kris', '123'),
-	('eduardo', '123'),
-	('hunter', '123');
+	('rishav', '123', 1),
+	('laurence', '123', 1),
+	('kris', '123', 1),
+	('eduardo', '123', 1),
+	('hunter', '123', 1),
+  ('caroline', '123', 0);
 
 INSERT INTO
 	sheets (sheetname, owner)

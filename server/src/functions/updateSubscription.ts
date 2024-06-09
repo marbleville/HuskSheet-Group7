@@ -1,8 +1,8 @@
 import { Argument, Publisher, Sheet, Payload } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
 import DatabaseQueries from "../../../types/queries";
-import HashStore from "../database/HashStore";
 import { GetUpdateRow } from "../database/db";
+import { checkPayloadFormat } from "../utils";
 
 /**
  * Updates the Updates table with the given publisher, sheet, and payload for
@@ -31,6 +31,9 @@ async function updateSubscription(
 	);
 
 	try {
+		if (checkPayloadFormat(payload) === false) {
+			throw new Error("Invalid payload format");
+		}
 		await database.query<GetUpdateRow>(queryString);
 	} catch (error) {
 		throw error;
