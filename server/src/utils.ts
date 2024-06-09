@@ -145,12 +145,12 @@ async function runEndpointFuntion(
 	let result: Result;
 
 	if (!(await authenticate(req.headers.authorization))) {
-		res.status(410).send("Unauthorized");
+		res.status(401).send("Unauthorized");
 		return;
 	}
 
 	try {
-		if (req.body === undefined) {
+		if (JSON.stringify(req.body) === "{}") {
 			throw new Error("No body provided.");
 		}
 

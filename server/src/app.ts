@@ -91,7 +91,7 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
  * @author marbleville
  */
 app.get("/api/v1/getPublishers", async (req: Request, res: Response) => {
-	runEndpointFuntion(req, res, getPublishers);
+	await runEndpointFuntion(req, res, getPublishers);
 });
 
 /**
@@ -101,7 +101,7 @@ app.get("/api/v1/getPublishers", async (req: Request, res: Response) => {
  */
 app.post("/api/v1/createSheet", async (req: Request, res: Response) => {
 	if (await isUserPublisher(req.headers.authorization)) {
-		runEndpointFuntion(req, res, createSheet);
+		await runEndpointFuntion(req, res, createSheet);
 	} else {
 		res.status(401).send("Unauthorized");
 	}
@@ -113,7 +113,7 @@ app.post("/api/v1/createSheet", async (req: Request, res: Response) => {
  * @author marbleville
  */
 app.post("/api/v1/getSheets", async (req: Request, res: Response) => {
-	runEndpointFuntion(req, res, getSheets);
+	await runEndpointFuntion(req, res, getSheets);
 });
 
 /**
@@ -126,7 +126,7 @@ app.post("/api/v1/deleteSheet", async (req: Request, res: Response) => {
 		(await isUserPublisher(req.headers.authorization)) &&
 		clientAndPublisherMatch(req, req.headers.authorization)
 	) {
-		runEndpointFuntion(req, res, deleteSheet);
+		await runEndpointFuntion(req, res, deleteSheet);
 	} else {
 		res.status(401).send("Unauthorized");
 	}
@@ -140,7 +140,7 @@ app.post("/api/v1/deleteSheet", async (req: Request, res: Response) => {
 app.post(
 	"/api/v1/getUpdatesForSubscription",
 	async (req: Request, res: Response) => {
-		runEndpointFuntion(req, res, getUpdatesForSubscription);
+		await runEndpointFuntion(req, res, getUpdatesForSubscription);
 	}
 );
 
@@ -156,7 +156,7 @@ app.post(
 			clientAndPublisherMatch(req, req.headers.authorization) &&
 			(await isUserPublisher(req.headers.authorization))
 		) {
-			runEndpointFuntion(req, res, getUpdatesForPublished);
+			await runEndpointFuntion(req, res, getUpdatesForPublished);
 		} else {
 			res.status(401).send("Unauthorized");
 		}
@@ -173,7 +173,7 @@ app.post("/api/v1/updatePublished", async (req: Request, res: Response) => {
 		clientAndPublisherMatch(req, req.headers.authorization) &&
 		(await isUserPublisher(req.headers.authorization))
 	) {
-		runEndpointFuntion(req, res, updatePublished);
+		await runEndpointFuntion(req, res, updatePublished);
 	} else {
 		res.status(401).send("Unauthorized");
 	}
@@ -185,18 +185,18 @@ app.post("/api/v1/updatePublished", async (req: Request, res: Response) => {
  * @author marbleville
  */
 app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
-	let result: Result;
+	let result: Result = assembleResultObject(false, null, []);
 
 	try {
 		if (
 			!(await authenticate(req.headers.authorization)) ||
 			clientAndPublisherMatch(req, req.headers.authorization)
 		) {
-			res.status(410).send("Unauthorized");
+			res.status(401).send("Unauthorized");
 			return;
 		}
 
-		if (req.body === undefined) {
+		if (JSON.stringify(req.body) === "{}") {
 			throw new Error("No body provided.");
 		}
 
@@ -207,16 +207,11 @@ app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 
 		await updateSubscription(argument, username);
 
-		result = assembleResultObject(true, null, []);
+		result.success = true;
 		res.send(JSON.stringify(result));
 	} catch (error) {
 		const err: Error = error as Error;
-		console.error(err);
-		result = assembleResultObject(
-			false,
-			`updateSubscription: ` + err.message,
-			[]
-		);
+		result.message = `updateSubscription: ${err.message}`;
 		res.send(JSON.stringify(result));
 	}
 });
