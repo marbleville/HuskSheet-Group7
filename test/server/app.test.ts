@@ -1,10 +1,13 @@
 const request = require("supertest");
-import app from "../../server/src/server";
+import app from "../../server/src/app";
 import { Response } from "supertest";
 import { assembleResultObject } from "../../server/src/utils";
+import { assembleTestArgumentObject, setupDB } from "../utils";
 
-describe("Sets auth checks in server.ts", () => {
+describe("Tests auth checks in server.ts", () => {
 	it("register should fail if the user password is wrong", async () => {
+		await setupDB();
+
 		const response: Response = await request(app)
 			.get("/api/v1/register")
 			.auth("caroline", "1234");
@@ -13,6 +16,8 @@ describe("Sets auth checks in server.ts", () => {
 	});
 
 	it("register should return a success result object", async () => {
+		await setupDB();
+
 		const response: Response = await request(app)
 			.get("/api/v1/register")
 			.auth("caroline", "123");

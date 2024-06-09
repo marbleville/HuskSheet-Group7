@@ -133,7 +133,7 @@ export default class DatabaseQueries {
 	 */
 	static addNewPublisher(username: string, pass: string): string {
 		return `INSERT INTO publishers (username, pass) 
-			VALUES(${username}, ${pass})`;
+			VALUES('${username}', '${pass}')`;
 	}
 	/**
 	 * Returns the query needed for updatePublished.

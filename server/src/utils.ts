@@ -194,7 +194,7 @@ function parseAuthHeader(authHeader: string | undefined): string[] {
 
 async function doesUserExist(authHeader: string | undefined): Promise<boolean> {
 	if (authHeader === undefined) {
-		return Promise.resolve(false);
+		return false;
 	}
 
 	const [username] = parseAuthHeader(authHeader);
