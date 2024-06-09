@@ -202,9 +202,11 @@ async function doesUserExist(authHeader: string | undefined): Promise<boolean> {
 
 	let queryString = DatabaseQueries.getUser(username);
 
-	return database.query(queryString).then((result) => {
-		return result?.length != 0 ? true : false;
-	});
+	let result = await database.query<GetUserRow>(queryString);
+
+	let userExists = result.length != 0 ? true : false;
+
+	return userExists;
 }
 
 /**

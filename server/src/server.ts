@@ -62,13 +62,15 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 	try {
 		let [username, password] = parseAuthHeader(authHeader);
 
-		if (!doesUserExist(authHeader)) {
-			database.query(DatabaseQueries.addNewPublisher(username, password));
+		if (!(await doesUserExist(authHeader))) {
+			await database.query(
+				DatabaseQueries.addNewPublisher(username, password)
+			);
 			result.message = `Register: user does not exist. Created new user.`;
 			res.send(JSON.stringify(result));
 		} else {
 			if (!(await authenticate(req.headers.authorization))) {
-				res.status(410).send("Unauthorized");
+				res.status(401).send("Unauthorized");
 				return;
 			}
 
@@ -228,3 +230,5 @@ app.on("listening", () => {
 app.listen(PORT, () => {
 	console.log(`Server is running at http://localhost:${PORT}/`);
 });
+
+export default app;
