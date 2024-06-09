@@ -20,7 +20,8 @@ VALUES
 	('laurence', '123', 1),
 	('kris', '123', 1),
 	('eduardo', '123', 1),
-	('hunter', '123', 1);
+	('hunter', '123', 1),
+  ('caroline', '123', 0);
 
 INSERT INTO
 	sheets (sheetname, owner)
