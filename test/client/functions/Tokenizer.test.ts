@@ -1,4 +1,3 @@
-import { error } from "console";
 import Tokenizer from "../../../client/src/functions/Tokenizer";
 
 // Tests the singleton is working correctly
@@ -79,7 +78,7 @@ describe("Tokenizer tests", () => {
     });
 
     it("checks that the formula is throwing errors for illegal entries", () => {
-      const parentheses: string = "=SUM";
+      const parentheses: string = "=SUM(";
       expect(() => tokenizer.tokenize(parentheses)).toThrow(
         "Unmatched closing parenthesis"
       );
@@ -96,9 +95,10 @@ describe("Tokenizer tests", () => {
       { op: "1/1", expected: ["1", "/", "1"] },
       { op: "1*1", expected: ["1", "*", "1"] },
       { op: "<", expected: ["<"] },
+      { op: "1<1", expected: ["1", "<", "1"] },
       { op: ">", expected: [">"] },
       { op: "=", expected: ["="] },
-      { op: ">=", expected: [">", "="] },
+      { op: ">=", expected: [">="] },
       { op: "<>", expected: ["<>"] },
       { op: "&", expected: ["&"] },
       { op: "|", expected: ["|"] },
@@ -115,7 +115,7 @@ describe("Tokenizer tests", () => {
     it("Checks for error handling", () => {
       const op: string = "<<>>";
       const res: string[] = tokenizer.tokenize(op);
-      const expected = ["<<>>"];
+      const expected = ["<", "<>", ">"];
       expect(res).toEqual(expected);
     });
   });

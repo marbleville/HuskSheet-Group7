@@ -7,9 +7,9 @@ class Tokenizer {
   //Creates a mapping with the type and the regex that accompanies it.
   private static tokenSpec: [string, RegExp][] = [
     ["FUNCTION", /^=(IF|SUM|MIN|AVG|MAX|CONCAT|DEBUG)/], // Matches functions
-    ["OPERATOR", /^[+\-*/=:&|]/], // Matches operators (excluding < and > for now)
-    ["COMBINED_OPERATOR", /^[<>]+/], // Matches combined < and > operators
-    ["NUMBER", /^-?\d+(\.\d+)?/], // Matches numbers
+    ["COMBINED_OPERATOR", /^(<=|>=|<>)/], // Matches <=, >=, <>
+    ["OPERATOR", /^[+\-*/<>=&|,:]/], // Matches combined < and > operators
+    ["NUMBER", /^[+-]?\d+(\.\d+)?/], // Updated to match optional leading + or -
     ["LPAREN", /^\(/], // Matches left parenthesis
     ["RPAREN", /^\)/], // Matches right parenthesis
     ["REFERENCE", /^\$[A-Z]+\d+/], // Matches cell references and ranges
