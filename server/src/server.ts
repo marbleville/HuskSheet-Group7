@@ -8,6 +8,7 @@ import {
 	assembleResultObject,
 	clientAndPublisherMatch,
 	doesUserExist,
+	isUserPublisher,
 } from "./utils";
 import { Result, Argument } from "../../types/types";
 import {
@@ -98,7 +99,11 @@ app.get("/api/v1/getPublishers", async (req: Request, res: Response) => {
  * @author marbleville
  */
 app.post("/api/v1/createSheet", async (req: Request, res: Response) => {
-	runEndpointFuntion(req, res, createSheet);
+	if (await isUserPublisher(req.headers.authorization)) {
+		runEndpointFuntion(req, res, createSheet);
+	} else {
+		res.status(401).send("Unauthorized");
+	}
 });
 
 /**
@@ -116,7 +121,14 @@ app.post("/api/v1/getSheets", async (req: Request, res: Response) => {
  * @author marbleville
  */
 app.post("/api/v1/deleteSheet", async (req: Request, res: Response) => {
-	runEndpointFuntion(req, res, deleteSheet);
+	if (
+		(await isUserPublisher(req.headers.authorization)) &&
+		clientAndPublisherMatch(req, req.headers.authorization)
+	) {
+		runEndpointFuntion(req, res, deleteSheet);
+	} else {
+		res.status(401).send("Unauthorized");
+	}
 });
 
 /**
@@ -139,7 +151,10 @@ app.post(
 app.post(
 	"/api/v1/getUpdatesForPublished",
 	async (req: Request, res: Response) => {
-		if (clientAndPublisherMatch(req, req.headers.authorization)) {
+		if (
+			clientAndPublisherMatch(req, req.headers.authorization) &&
+			(await isUserPublisher(req.headers.authorization))
+		) {
 			runEndpointFuntion(req, res, getUpdatesForPublished);
 		} else {
 			res.status(401).send("Unauthorized");
@@ -153,7 +168,10 @@ app.post(
  * @author marbleville
  */
 app.post("/api/v1/updatePublished", async (req: Request, res: Response) => {
-	if (clientAndPublisherMatch(req, req.headers.authorization)) {
+	if (
+		clientAndPublisherMatch(req, req.headers.authorization) &&
+		(await isUserPublisher(req.headers.authorization))
+	) {
 		runEndpointFuntion(req, res, updatePublished);
 	} else {
 		res.status(401).send("Unauthorized");

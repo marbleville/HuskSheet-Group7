@@ -8,7 +8,7 @@ import {
 } from "../../types/types";
 import DatabaseInstance from "./database/databaseInstance";
 import { Request, Response } from "express";
-import { GetUpdateRow } from "./database/db";
+import { GetUpdateRow, GetUserRow } from "./database/db";
 import DatabaseQueries from "../../types/queries";
 
 /**
@@ -30,6 +30,22 @@ function checkPayloadFormat(payload: string): boolean {
 	});
 
 	return true;
+}
+
+async function isUserPublisher(header: string | undefined): Promise<boolean> {
+	if (header === undefined) {
+		return false;
+	}
+
+	const [username] = parseAuthHeader(header);
+
+	const database = DatabaseInstance.getInstance();
+
+	let queryString = DatabaseQueries.getUser(username);
+
+	let result = await database.query<GetUserRow>(queryString);
+
+	return result[0].isPublisher;
 }
 
 /**
@@ -268,4 +284,5 @@ export {
 	clientAndPublisherMatch,
 	checkPayloadFormat,
 	doesUserExist,
+	isUserPublisher,
 };
