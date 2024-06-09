@@ -23,7 +23,7 @@ export default class DatabaseQueries {
 	 * @returns The query needed to get a user
 	 */
 	static getUser(username: string) {
-		return `SELECT * FROM publishers WHERE username = '${username}';`;
+		return `SELECT * FROM publishers WHERE username='${username}';`;
 	}
 
 	/**

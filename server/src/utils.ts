@@ -9,6 +9,7 @@ import {
 import DatabaseInstance from "./database/databaseInstance";
 import { Request, Response } from "express";
 import { GetUpdateRow } from "./database/db";
+import DatabaseQueries from "../../types/queries";
 
 /**
  * Checks if each change in the payload is in the correct format e.g. $A1 5
@@ -128,8 +129,7 @@ async function runEndpointFuntion(
 	let result: Result;
 
 	if (!(await authenticate(req.headers.authorization))) {
-		result = assembleResultObject(false, `${func.name}: Unauthorized`, []);
-		res.send(JSON.stringify(result));
+		res.status(410).send("Unauthorized");
 		return;
 	}
 
@@ -176,6 +176,21 @@ function parseAuthHeader(authHeader: string | undefined): string[] {
 	return decodedAuthHeader.split(":").map((str) => str.trimEnd());
 }
 
+async function doesUserExist(authHeader: string | undefined): Promise<boolean> {
+	if (authHeader === undefined) {
+		return Promise.resolve(false);
+	}
+
+	const [username] = parseAuthHeader(authHeader);
+	const database = DatabaseInstance.getInstance();
+
+	let queryString = DatabaseQueries.getUser(username);
+
+	return database.query(queryString).then((result) => {
+		return result?.length != 0 ? true : false;
+	});
+}
+
 /**
  * Checks for a username:password match in the database.
  *
@@ -211,7 +226,7 @@ async function authenticate(authHeader: string | undefined): Promise<boolean> {
 	try {
 		result = await database.query(queryString);
 	} catch (error) {
-		console.error("An error happened when authenticating the user", error);
+		throw new Error("An error happened when authenticating the user");
 	}
 	return result?.length != 0 ? true : false;
 }
@@ -252,4 +267,5 @@ export {
 	getUpdatesHelper,
 	clientAndPublisherMatch,
 	checkPayloadFormat,
+	doesUserExist,
 };

@@ -7,6 +7,7 @@ import {
 	parseAuthHeader,
 	assembleResultObject,
 	clientAndPublisherMatch,
+	doesUserExist,
 } from "./utils";
 import { Result, Argument } from "../../types/types";
 import {
@@ -55,43 +56,30 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 	const database = DatabaseInstance.getInstance();
 	const authHeader = req.headers.authorization;
 
-	let [username, password] = ["", ""];
+	let result = assembleResultObject(false, null, []);
 
-	let queryResult = null;
-	let userExists = false;
-	let isAuthenticated = false;
-
-	// Check if a publisher exists (could be in separate function)
 	try {
-		[username, password] = parseAuthHeader(authHeader);
+		let [username, password] = parseAuthHeader(authHeader);
 
-		queryResult = await database.query(DatabaseQueries.getUser(username));
+		if (!doesUserExist(authHeader)) {
+			database.query(DatabaseQueries.addNewPublisher(username, password));
+			result.message = `Register: user does not exist. Created new user.`;
+			res.send(JSON.stringify(result));
+		} else {
+			if (!(await authenticate(req.headers.authorization))) {
+				res.status(410).send("Unauthorized");
+				return;
+			}
+
+			await register(username);
+			result.success = true;
+			res.send(JSON.stringify(result));
+		}
 	} catch (error) {
-		console.error("An error happened in register", error);
-	}
-	userExists = queryResult?.length != 0 ? true : false;
-
-	// If publisher does NOT exist, create publisher
-	if (!userExists) {
-		await register(username, password);
-	}
-
-	isAuthenticated = await authenticate(authHeader);
-	let success = false;
-
-	// If publisher exists and password matches, set success to true, otherwise leave false
-	if (isAuthenticated) {
-		success = true;
-	}
-	if (success) {
-		let result = {
-			success: success,
-			message: null,
-			value: [],
-		} as Result;
+		const err: Error = error as Error;
+		console.error(err);
+		result.message = `Register: ${err.message}`;
 		res.send(JSON.stringify(result));
-	} else {
-		res.status(401).send("Unauthorized");
 	}
 });
 
@@ -180,20 +168,15 @@ app.post("/api/v1/updatePublished", async (req: Request, res: Response) => {
 app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 	let result: Result;
 
-	if (
-		!(await authenticate(req.headers.authorization)) ||
-		clientAndPublisherMatch(req, req.headers.authorization)
-	) {
-		result = assembleResultObject(
-			false,
-			`updateSubscription: Unauthorized`,
-			[]
-		);
-		res.send(JSON.stringify(result));
-		return;
-	}
-
 	try {
+		if (
+			!(await authenticate(req.headers.authorization)) ||
+			clientAndPublisherMatch(req, req.headers.authorization)
+		) {
+			res.status(410).send("Unauthorized");
+			return;
+		}
+
 		if (req.body === undefined) {
 			throw new Error("No body provided.");
 		}
