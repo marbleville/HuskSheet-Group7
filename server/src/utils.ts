@@ -150,7 +150,7 @@ async function runEndpointFuntion(
 	}
 
 	try {
-		if (JSON.stringify(req.body) === "{}") {
+		if (JSON.stringify(req.body) === "{}" && func.name !== "register" && func.name !== "getPublishers") {
 			throw new Error("No body provided.");
 		}
 
