@@ -76,6 +76,13 @@ describe("Tokenizer tests", () => {
       const expected = ["=IF", "(", "1", ",", "2", ")"];
       expect(res).toEqual(expected);
     });
+
+    it("checks that the formula is throwing errors for illegal entries", () => {
+      const parentheses: string = "=SUM(";
+      expect(() => tokenizer.tokenize(parentheses)).toThrow(
+        "Unmatched closing parenthesis"
+      );
+    });
   });
 
   // Not sure to handle <<>, <<>>
@@ -88,12 +95,11 @@ describe("Tokenizer tests", () => {
       { op: "1/1", expected: ["1", "/", "1"] },
       { op: "1*1", expected: ["1", "*", "1"] },
       { op: "<", expected: ["<"] },
+      { op: "1<1", expected: ["1", "<", "1"] },
       { op: ">", expected: [">"] },
       { op: "=", expected: ["="] },
-      { op: ">=", expected: [">", "="] },
+      { op: ">=", expected: [">="] },
       { op: "<>", expected: ["<>"] },
-      // { op: "<<>", expected: ["<", "<>"] },
-      // { op: "<<>>", expected: ["<", "<>", ">"] },
       { op: "&", expected: ["&"] },
       { op: "|", expected: ["|"] },
       { op: "1:1", expected: ["1", ":", "1"] },
@@ -109,7 +115,7 @@ describe("Tokenizer tests", () => {
     it("Checks for error handling", () => {
       const op: string = "<<>>";
       const res: string[] = tokenizer.tokenize(op);
-      const expected = ["<<>>"];
+      const expected = ["<", "<>", ">"];
       expect(res).toEqual(expected);
     });
   });
@@ -142,10 +148,7 @@ describe("Tokenizer tests", () => {
 
   describe("Tokenizer tests for parentheses", () => {
     const testCases: { paretheses: string; expected: string[] }[] = [
-      // Throw error instead
-      // { paretheses: "(", expected: ["("] },
       { paretheses: "()", expected: ["(", ")"] },
-      // { paretheses: ")", expected: [")"] },
       { paretheses: "(())", expected: ["(", "(", ")", ")"] },
     ];
 
@@ -155,6 +158,19 @@ describe("Tokenizer tests", () => {
         expect(res).toEqual(expected);
       });
     });
+    it("checks that the parentheses is throwing errors for incorrect values", () => {
+      const parentheses: string = "(";
+      expect(() => tokenizer.tokenize(parentheses)).toThrow(
+        "Unmatched closing parenthesis"
+      );
+    });
+
+    it("checks that the parentheses is throwing errors for incorrect values", () => {
+      const parentheses: string = ")";
+      expect(() => tokenizer.tokenize(parentheses)).toThrow(
+        "Unmatched closing parenthesis"
+      );
+    });
   });
 
   describe("Tokenizer tests for references", () => {
@@ -162,9 +178,7 @@ describe("Tokenizer tests", () => {
       { reference: "$A1", expected: ["$A1"] },
       { reference: "$AA11", expected: ["$AA11"] },
       { reference: "$BA1", expected: ["$BA1"] },
-      //throw error
-      // { reference: "$A1B1", expected: ["1.00001"] },
-      // Should it be A1 or $A1
+      { reference: "$A1$B1", expected: ["$A1", "$B1"] },
       { reference: "$A1", expected: ["$A1"] },
     ];
 
@@ -218,6 +232,13 @@ describe("Tokenizer tests", () => {
         const res: string[] = tokenizer.tokenize(func);
         expect(res).toEqual(expected);
       });
+    });
+
+    it("checks that the error is being thrown for empty", () => {
+      const parentheses: string = " ";
+      expect(() => tokenizer.tokenize(parentheses)).toThrow(
+        "Unexpected token at index 1 in formula:  "
+      );
     });
   });
 });

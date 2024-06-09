@@ -7,9 +7,9 @@ class Tokenizer {
   //Creates a mapping with the type and the regex that accompanies it.
   private static tokenSpec: [string, RegExp][] = [
     ["FUNCTION", /^=(IF|SUM|MIN|AVG|MAX|CONCAT|DEBUG)/], // Matches functions
-    ["OPERATOR", /^[+\-*/=:&|]/], // Matches operators (excluding < and > for now)
-    ["COMBINED_OPERATOR", /^[<>]+/], // Matches combined < and > operators
-    ["NUMBER", /^-?\d+(\.\d+)?/], // Matches numbers
+    ["COMBINED_OPERATOR", /^(<=|>=|<>)/], // Matches <=, >=, <>
+    ["OPERATOR", /^[+\-*/<>=&|,:]/], // Matches combined < and > operators
+    ["NUMBER", /^[+-]?\d+(\.\d+)?/], // Updated to match optional leading + or -
     ["LPAREN", /^\(/], // Matches left parenthesis
     ["RPAREN", /^\)/], // Matches right parenthesis
     ["REFERENCE", /^\$[A-Z]+\d+/], // Matches cell references and ranges
@@ -36,8 +36,13 @@ class Tokenizer {
     this.formula = "";
   }
 
-  // Finds the next expression and produces the string of tokens with the different expressions and
-  // handles incorrect parentheses maybe better with a stack but works.
+  /**
+   * Finds the next expression and produces the string of tokens with the different expressions and
+   *  handles incorrect parentheses maybe better with a stack but works.
+   *
+   * @param formula string formula from the sheet data
+   * @returns the set of tokens formed by regex
+   */
   tokenize(formula: string): string[] {
     this.index = 0;
     this.formula = formula;
@@ -69,8 +74,12 @@ class Tokenizer {
     return tokens;
   }
 
-  // Gets the next token based on the index and returns if it is null or string based on the regex.
-  // Also removes whitespace based on the match it gets.
+  /**
+   * Gets the next token based on the index and returns if it is null or string based on the regex.
+   * Also removes whitespace based on the match it gets.
+   *
+   * @returns string if the token is recognized in regex else null
+   */
   protected nextToken(): string | null {
     const substr = this.formula.substring(this.index);
     for (const [type, regex] of Tokenizer.tokenSpec) {
