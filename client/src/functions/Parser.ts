@@ -78,6 +78,8 @@ class Parser {
       return new ReferenceNode(token);
     } else if (token === "(") {
       return this.parseNestedExpression();
+    } else if (token === "-") {
+      return this.parseNegativeNum();
     } else if (this.isString(token)) {
       this.index++;
       return new StringNode(token);
@@ -105,6 +107,14 @@ class Parser {
     const nestedNode: ExpressionNode = this.parseExpression();
     this.consume(")");
     return nestedNode;
+  }
+
+  private parseNegativeNum(): ExpressionNode {
+    let numStr = this.tokens[this.index];
+    this.consume("-");
+    numStr += this.tokens[this.index];
+    this.index++;
+    return new NumberNode(parseFloat(numStr));
   }
 
   private parseFunction(): ExpressionNode {
