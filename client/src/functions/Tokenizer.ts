@@ -61,8 +61,7 @@ class Tokenizer {
             throw new Error("Unmatched closing parenthesis");
           }
         }
-      } //@rishavsarma5 is there ever a time this is called
-      else {
+      } else {
         throw new Error(
           `Unexpected token at index ${this.index} in formula: ${this.formula}`
         );

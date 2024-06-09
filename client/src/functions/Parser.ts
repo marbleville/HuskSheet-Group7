@@ -1,5 +1,5 @@
 import {
-  INode,
+  ExpressionNode,
   FormulaNode,
   NumberNode,
   StringNode,
@@ -10,7 +10,7 @@ import {
 import Tokenizer from "./Tokenizer";
 
 /**
- * Parses tje
+ * Parses the tokens into different nodes based on priority.
  */
 class Parser {
   private static instance: Parser;
@@ -23,6 +23,7 @@ class Parser {
     this.tokens = [];
   }
 
+  //Singleton setup
   public static getInstance() {
     if (Parser.instance == null) {
       Parser.instance = new Parser();
@@ -30,7 +31,13 @@ class Parser {
     return Parser.instance;
   }
 
-  parse(formula: string): INode {
+  /**
+   * Parses the tockens into distinct ExpressionNodes.
+   *
+   * @param formula takes in the string from the user
+   * @returns
+   */
+  parse(formula: string): ExpressionNode {
     this.index = 0;
     this.tokens = Tokenizer.getInstance().tokenize(formula);
     for (const token of this.tokens) {
@@ -44,7 +51,7 @@ class Parser {
     return resultNode;
   }
 
-  private parseFormula(): INode {
+  private parseFormula(): ExpressionNode {
     this.consume("=");
     return new FormulaNode(this.parseExpression());
   }
@@ -59,7 +66,7 @@ class Parser {
     }
   }
 
-  private parseTerm(): INode {
+  private parseTerm(): ExpressionNode {
     const token = this.tokens[this.index];
     if (this.isFunction(token)) {
       return this.parseFunction();
@@ -79,7 +86,7 @@ class Parser {
     }
   }
 
-  private parseExpression(): INode {
+  private parseExpression(): ExpressionNode {
     let node = this.parseTerm();
     while (
       this.index < this.tokens.length &&
@@ -93,14 +100,14 @@ class Parser {
     return node;
   }
 
-  private parseNestedExpression(): INode {
+  private parseNestedExpression(): ExpressionNode {
     this.consume("(");
-    const nestedNode: INode = this.parseExpression();
+    const nestedNode: ExpressionNode = this.parseExpression();
     this.consume(")");
     return nestedNode;
   }
 
-  private parseFunction(): INode {
+  private parseFunction(): ExpressionNode {
     const func = this.tokens[this.index].replace(/^=/, "");
     this.index++;
     this.consume("(");

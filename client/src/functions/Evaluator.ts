@@ -1,7 +1,7 @@
 import {
   FormulaNode,
   FunctionCallNode,
-  INode,
+  ExpressionNode,
   NumberNode,
   OperationNode,
   ReferenceNode,
@@ -26,7 +26,7 @@ class Evaluator {
     this.context = context;
   }
 
-  evaluate(node: INode): string {
+  evaluate(node: ExpressionNode): string {
     if (node instanceof NumberNode) {
       return node.value.toString();
     } else if (node instanceof StringNode) {
@@ -39,7 +39,7 @@ class Evaluator {
       const result = this.applyOp(node.op, left, right);
       return typeof result === "number" ? result.toString() : result;
     } else if (node instanceof FunctionCallNode) {
-      const args = node.args.map((arg: INode) => this.evaluate(arg));
+      const args = node.args.map((arg: ExpressionNode) => this.evaluate(arg));
       const result = this.applyFunc(node.func, args);
       return typeof result === "number" ? result.toString() : result;
     } else if (node instanceof FormulaNode) {
@@ -49,12 +49,7 @@ class Evaluator {
     }
   }
 
-  private applyOp(
-    op: string,
-    left: string,
-    right: string
-  ): number | string {
-
+  private applyOp(op: string, left: string, right: string): number | string {
     switch (op) {
       case "+":
         return this.toNumber(left) + this.toNumber(right);
@@ -93,12 +88,14 @@ class Evaluator {
 
   private applyFunc(func: string, args: string[]): number | string {
     const toNumbers = (args: string[]): number[] => {
-      return args.map(arg => this.toNumber(arg));
+      return args.map((arg) => this.toNumber(arg));
     };
 
     switch (func) {
       case "IF":
-        return this.toNumber(args[0]) !== 0 ? this.toNumber(args[1]) : this.toNumber(args[2]);
+        return this.toNumber(args[0]) !== 0
+          ? this.toNumber(args[1])
+          : this.toNumber(args[2]);
       case "SUM":
         return this.sum(toNumbers(args));
       case "MIN":
@@ -118,7 +115,7 @@ class Evaluator {
   }
 
   private sum(args: number[]): number {
-    return args.reduce((acc, val) => acc + val, 0)
+    return args.reduce((acc, val) => acc + val, 0);
   }
 
   private average(args: number[]): number {
