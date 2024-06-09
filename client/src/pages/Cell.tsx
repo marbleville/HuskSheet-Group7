@@ -5,9 +5,8 @@ import Evaluator from "../functions/Evaluator";
 
 interface CellProps {
   cellId: string;
-  initialValue: string;
   onUpdate: (value: string, cellId: string) => void;
-  cellValue: string; // New prop to pass the value of the cell
+  cellValue: string;
   sheetData: { [key: string]: string };
   isUpdated: boolean;
 }
@@ -17,28 +16,30 @@ const ERROR_TIMEOUT = 1500;
 // Inside the Cell component
 const Cell: React.FC<CellProps> = ({
   cellId,
-  initialValue,
   onUpdate,
-  cellValue, // Use cellValue instead of sheetData
+  cellValue,
   sheetData,
   isUpdated
 }) => {
-  const [value, setValue] = useState(initialValue);
-  const [prevValue, setPrevValue] = useState(initialValue);
+  const [value, setValue] = useState(cellValue);
+  const [prevValue, setPrevValue] = useState(cellValue);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     setValue(cellValue);
+    setPrevValue(cellValue);
   }, [cellValue]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value;
+    setPrevValue(value);
     setValue(newValue);
     setError(false);
   };
 
   const handleBlur = () => {
     if (value !== prevValue) {
+      console.log("CHANGE DETECTED")
       evaluateAndUpdate();
     }
   };
@@ -50,30 +51,34 @@ const Cell: React.FC<CellProps> = ({
   };
 
   const evaluateAndUpdate = () => {
+    if (value === "") {
+      onUpdate("", cellId);
+      return;
+    }
     const parser = Parser.getInstance()
     const evaluator = Evaluator.getInstance();
     evaluator.setContext(sheetData);
     let result: string = "";
-    let isError = false; 
-    
+    let isError = false;
+
     try {
       const parsedNode = parser.parse(value);
       result = evaluator.evaluate(parsedNode);
       console.log('Evaluation Result:', result);
     } catch (error) {
-      isError = true; 
+      isError = true;
     }
-    
+
     if (isError) {
       result = "";
       setValue(result);
-      setError(true); 
+      setError(true);
       setTimeout(() => {
-        setError(false); 
-      }, ERROR_TIMEOUT); 
+        setError(false);
+      }, ERROR_TIMEOUT);
     }
-      onUpdate(result, cellId);
-      setPrevValue(result);
+    onUpdate(result, cellId);
+    setPrevValue(result);
   };
 
   return (
