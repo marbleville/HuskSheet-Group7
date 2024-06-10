@@ -1,6 +1,7 @@
 /**
  * Creates the main tables in the dev db.
- * @author {hunterbrodie}
+ *
+ * @author hunterbrodie
  */
 USE dev;
 

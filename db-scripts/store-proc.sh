@@ -1,4 +1,7 @@
 #!/bin/bash
+# A script to set up the testing docker instance
+#
+# @owner hunterbrodie
 
 cd /app
 

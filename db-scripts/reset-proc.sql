@@ -1,5 +1,7 @@
 /**
- * Reset test data for testing database
+ * Stores a procedure on the MySQL database to reset the testing database.
+ *
+ * @author huntebrodie
  */
 DROP PROCEDURE IF EXISTS resetdata;
 
