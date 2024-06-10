@@ -4,6 +4,7 @@
 
 -   `make build`
     -   Builds and runs the project and runs all tests in one step
+    -   Note: The tests take a moment to run, so please be patient
 
 ## Project status
 
@@ -18,3 +19,6 @@
 -   Persistant login
     -   Users can stay logged in even after relaoding the page or
         navigating to a different page
+-   Private sheets
+    -   Users can create private sheets that only they can access by appending
+        "-private" to the end of the sheet name
