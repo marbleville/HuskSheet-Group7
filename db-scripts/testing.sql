@@ -32,12 +32,3 @@ CREATE TABLE IF NOT EXISTS updates (
   FOREIGN KEY (sheet) REFERENCES sheets(sheetid) ON DELETE CASCADE,
   FOREIGN KEY (owner) REFERENCES publishers(userid)
 );
-
-CREATE TABLE IF NOT EXISTS subscribers (
-	subid INT NOT NULL AUTO_INCREMENT,
-  sub INT NOT NULL,
-  sheet INT NOT NULL,
-  PRIMARY KEY(subid),
-  FOREIGN KEY(sub) REFERENCES publishers(userid),
-  FOREIGN KEY(sheet) REFERENCES sheets(sheetid) ON DELETE CASCADE
-);

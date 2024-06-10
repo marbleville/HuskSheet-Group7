@@ -7,7 +7,6 @@ DELIMITER $$
 CREATE PROCEDURE resetdata()
 BEGIN
   SET FOREIGN_KEY_CHECKS = 0;
-  TRUNCATE TABLE subscribers;
   TRUNCATE TABLE updates;
   TRUNCATE TABLE sheets;
   TRUNCATE TABLE publishers;
@@ -30,13 +29,6 @@ VALUES
 	('test2', 2),
 	('test3', 5),
   ('test4', 5);
-
-INSERT INTO
-	subscribers (sub, sheet)
-VALUES
-	(2, 1),
-  (4, 2),
-  (3, 2);
 
 INSERT INTO
   updates (updatetime, sheet, owner, changes)
