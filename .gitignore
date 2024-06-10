@@ -27,3 +27,4 @@ node_modules
 
 # Tests
 coverage
+.DS_Store

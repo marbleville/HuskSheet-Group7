@@ -33,6 +33,22 @@ describe("Tests auth checks in app.ts", () => {
 		);
 	});
 
+	it("register should fail if it catches an error", async () => {
+		await setupDB();
+
+		// Incorrect call to register to provoke an error
+		const response: Response = await request(app).get("/api/v1/register");
+
+		expect(response.statusCode).toBe(200);
+		expect(JSON.parse(response.text)).toEqual(
+			assembleResultObject(
+				false,
+				"register: No Authorization header provided.",
+				[]
+			)
+		);
+	});
+
 	it("register should add a new user", async () => {
 		await setupDB();
 
@@ -88,7 +104,7 @@ describe("Tests auth checks in app.ts", () => {
 				assembleTestArgumentObject("caroline", "caroline-test", "", "")
 			);
 
-		expect(response.statusCode).toBe(401);
+		expect(JSON.parse(response.text).success).toBeFalsy();
 	});
 
 	it("deleteSheet should should fail if client and publisher do not match", async () => {
@@ -101,7 +117,7 @@ describe("Tests auth checks in app.ts", () => {
 				assembleTestArgumentObject("caroline", "caroline-test", "", "")
 			);
 
-		expect(response.statusCode).toBe(401);
+		expect(JSON.parse(response.text).success).toBeFalsy();
 	});
 
 	it("deleteSheet should should succeed if user is a publisher and matches client", async () => {
@@ -178,6 +194,16 @@ describe("Tests auth checks in app.ts", () => {
 		expect(response.statusCode).toBe(401);
 	});
 
+	it("updatePublished should should fail if there is no auth header", async () => {
+		await setupDB();
+
+		const response: Response = await request(app)
+			.post("/api/v1/updatePublished")
+			.send(assembleTestArgumentObject("laurence", "test2", "0", ""));
+
+		expect(response.statusCode).toBe(401);
+	});
+
 	it("updatePublished should should succeed if user is a publisher and matches client", async () => {
 		await setupDB();
 
@@ -192,6 +218,19 @@ describe("Tests auth checks in app.ts", () => {
 	// updateSubscription tests
 
 	it("updateSubscription should should fail if user is not authenticated", async () => {
+		await setupDB();
+
+		const response: Response = await request(app)
+			.post("/api/v1/updateSubscription")
+			.auth("caroline", "1234")
+			.send(
+				assembleTestArgumentObject("caroline", "caroline-test", "", "")
+			);
+
+		expect(response.statusCode).toBe(401);
+	});
+
+	it("updateSubscription should should fail if no auth header is given", async () => {
 		await setupDB();
 
 		const response: Response = await request(app)

@@ -36,19 +36,8 @@ export default class DatabaseInstance {
 		return DatabaseInstance.instance;
 	}
 
-  /**
-   *
-   */
-	public static getInstanceTest() {
-		if (DatabaseInstance.instance == null) {
-			DatabaseInstance.instance = new DatabaseInstance();
-		}
-
-		return DatabaseInstance.instance;
-	}
-
 	private static getConnection(): Connection {
-    require('dotenv').config();
+		require("dotenv").config();
 		const connection = mysql.createConnection({
 			host: process.env.DB_HOST,
 			user: process.env.DB_USER,
