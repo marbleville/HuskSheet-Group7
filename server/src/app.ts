@@ -9,6 +9,8 @@ import {
 	clientAndPublisherMatch,
 	doesUserExist,
 	isUserPublisher,
+	sendError,
+	getArgument,
 } from "./utils";
 import { Result, Argument } from "../../types/types";
 import {
@@ -23,9 +25,10 @@ import {
 	updateSubscription,
 } from "./serverFunctionsExporter";
 import HashStore from "./database/HashStore";
-
+import bodyParser from "body-parser";
 import DatabaseInstance from "./database/databaseInstance";
 import DatabaseQueries from "../../types/queries";
+import { get } from "http";
 
 const app: Application = express();
 
@@ -38,6 +41,7 @@ const options: cors.CorsOptions = {
 
 app.use(cors(options));
 app.use(express.json());
+app.use(bodyParser.text({ type: "text/*" }));
 
 /**
  * @description Register states:
@@ -196,11 +200,8 @@ app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 			return;
 		}
 
-		if (JSON.stringify(req.body) === "{}") {
-			throw new Error("No body provided.");
-		}
+		let argument = getArgument(req);
 
-		let argument = req.body as Argument;
 		const authHeader = req.headers.authorization;
 
 		const [username] = parseAuthHeader(authHeader);
@@ -210,9 +211,7 @@ app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 		result.success = true;
 		res.send(JSON.stringify(result));
 	} catch (error) {
-		const err: Error = error as Error;
-		result.message = `updateSubscription: ${err.message}`;
-		res.send(JSON.stringify(result));
+		sendError(res, "updateSubscription", error);
 	}
 });
 
