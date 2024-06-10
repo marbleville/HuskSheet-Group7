@@ -1,6 +1,7 @@
 /**
- * Creates the main tables in the testing db and instantiates some testing data.
- * @author {hunterbrodie}
+ * Creates the main tables in the testing db
+ *
+ * @author hunterbrodie
  */
 USE testing;
 
