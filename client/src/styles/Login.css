@@ -1,7 +1,7 @@
 /**
  * @description CSS for Login page.
  * 
- * @author rishavsarma5
+ * @author rishavsarma5, kris-amerman
  */
 
 .login-container {
@@ -78,4 +78,9 @@
 
 .loginButton:hover {
   background-color: #2b7b50; 
+}
+
+.authErrorLabel {
+  color: red;
+  margin-bottom: 20px;
 }
