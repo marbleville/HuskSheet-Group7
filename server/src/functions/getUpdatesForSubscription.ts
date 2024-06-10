@@ -30,9 +30,13 @@ async function getUpdatesForSubscription(
 
 	if (id == 0) {
 		await HashStore.initHash();
-		let payload = await HashStore.getSheetPayload(publisher, sheetName);
-		updates.payload = payload[0];
-		updates.id = payload[1];
+		let [payload, id] = await HashStore.getSheetPayload(
+			publisher,
+			sheetName
+		);
+		updates.payload = payload;
+		updates.id = id;
+
 		return updates;
 	}
 

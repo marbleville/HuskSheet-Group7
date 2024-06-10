@@ -16,8 +16,24 @@ export default class DatabaseQueries {
 			(SELECT userid FROM publishers WHERE username = '${publisher}');`;
 	}
 
+	/**
+	 * Returns the query needed to get a user
+	 *
+	 * @param username The username of the publisher
+	 * @returns The query needed to get a user
+	 */
 	static getUser(username: string) {
-		return `SELECT * FROM publishers WHERE username = '${username}';`;
+		return `SELECT * FROM publishers WHERE username='${username}';`;
+	}
+
+	/**
+	 * Returns the query needed to register a user as a publisher.
+	 *
+	 * @param username the username of the publisher
+	 * @returns the query needed to register a user as a publisher
+	 */
+	static register(username: string): string {
+		return `UPDATE publishers SET isPublisher = 1 WHERE username = '${username}';`;
 	}
 
 	/**
@@ -115,9 +131,9 @@ export default class DatabaseQueries {
 	 *
 	 * @author hunterbrodie
 	 */
-	static register(username: string, pass: string): string {
+	static addNewPublisher(username: string, pass: string): string {
 		return `INSERT INTO publishers (username, pass) 
-			VALUES(${username}, ${pass})`;
+			VALUES('${username}', '${pass}')`;
 	}
 	/**
 	 * Returns the query needed for updatePublished.

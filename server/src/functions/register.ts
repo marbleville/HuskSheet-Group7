@@ -10,14 +10,14 @@ import DatabaseQueries from "../../../types/queries";
  *
  * @TODO change to be create new user
  */
-async function register(username: string, password: string): Promise<void> {
+async function register(username: string): Promise<void> {
 	const database = DatabaseInstance.getInstance();
-	let queryString = DatabaseQueries.register(username, password);
+	let queryString = DatabaseQueries.register(username);
 
 	try {
 		await database.query(queryString);
 	} catch (error) {
-		console.error("An error happened when creating a new publisher", error);
+		throw new Error("Failed to register user.");
 	}
 }
 export { register };
