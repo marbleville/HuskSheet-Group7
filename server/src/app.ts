@@ -29,6 +29,7 @@ import bodyParser from "body-parser";
 import DatabaseInstance from "./database/databaseInstance";
 import DatabaseQueries from "../../types/queries";
 import { get } from "http";
+import { send } from "process";
 
 const app: Application = express();
 
@@ -81,10 +82,7 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 			res.send(JSON.stringify(result));
 		}
 	} catch (error) {
-		const err: Error = error as Error;
-		console.error(err);
-		result.message = `Register: ${err.message}`;
-		res.send(JSON.stringify(result));
+		sendError(res, "register", error);
 	}
 });
 
