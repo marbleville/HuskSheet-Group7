@@ -29,7 +29,7 @@ describe("Parser Test", () => {
     parser = Parser.getInstance();
   });
 
-  it("Checks that parser for comma works properkly", () => {
+  it("Checks that parser woks for formulas ", () => {
     const func: string = "=IF(1, 2)";
     const tokenizer = Tokenizer.getInstance();
     const tokens: string[] = tokenizer.tokenize(func);
@@ -81,6 +81,36 @@ describe("Parser Test", () => {
       new NumberNode(2),
       new NumberNode(3),
     ]);
+    expect(res).toEqual(expected);
+  });
+
+  it("should parse formulas correctly", () => {
+    const func: string = "-1";
+    const tokenizer = Tokenizer.getInstance();
+    const tokens: string[] = tokenizer.tokenize(func);
+    console.log(tokens);
+    const res: ExpressionNode = parser.parse(tokens);
+    const expected: ExpressionNode = new NumberNode(-1);
+    expect(res).toEqual(expected);
+  });
+
+  it("should parse negative numbers correctly", () => {
+    const func: string = "-1";
+    const tokenizer = Tokenizer.getInstance();
+    const tokens: string[] = tokenizer.tokenize(func);
+    console.log(tokens);
+    const res: ExpressionNode = parser.parse(tokens);
+    const expected: ExpressionNode = new NumberNode(-1);
+    expect(res).toEqual(expected);
+  });
+
+  it("should parse formulas correctly", () => {
+    const func: string = "-1";
+    const tokenizer = Tokenizer.getInstance();
+    const tokens: string[] = tokenizer.tokenize(func);
+    console.log(tokens);
+    const res: ExpressionNode = parser.parse(tokens);
+    const expected: ExpressionNode = new NumberNode(-1);
     expect(res).toEqual(expected);
   });
 });
