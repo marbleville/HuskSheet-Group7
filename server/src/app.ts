@@ -201,13 +201,10 @@ app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 
 		const [username] = parseAuthHeader(authHeader);
 
-		if (username) {
-			await updateSubscription(argument, username);
+		await updateSubscription(argument, username);
 
-			result.success = true;
-		} else {
-			throw new Error("No auth header provided.");
-		}
+		result.success = true;
+
 		res.send(JSON.stringify(result));
 	} catch (error) {
 		sendError(res, "updateSubscription", error);
