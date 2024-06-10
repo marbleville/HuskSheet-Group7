@@ -13,7 +13,7 @@ class Tokenizer {
     ["LPAREN", /^\(/], // Matches left parenthesis
     ["RPAREN", /^\)/], // Matches right parenthesis
     ["REFERENCE", /^\$[A-Z]+\d+/], // Matches cell references and ranges
-    ["STRING", /^[^()\s,]+/], // Matches strings
+    ["STRING", /^[^+\-*/=:&|<>\s(),]+/], // Matches strings
     ["COMMA", /^,/], // Matches commas
     ["WHITESPACE", /^\s+/], // Matches whitespace
   ];
