@@ -1,21 +1,44 @@
 import { Result } from "../../types/types";
+import clientConfig from "./config/clientConfig";
+
+const validEndpoints = [
+	"register",
+	"getPublishers",
+	"getSheets",
+	"createSheet",
+	"deleteSheet",
+	"getUpdatesForSubscription",
+	"getUpdatesForPublished",
+	"updatePublished",
+	"updateSubscription",
+] as const;
+
+type Endpoint = (typeof validEndpoints)[number];
 
 /**
- * Fetches data from the given URL with the given options and stored
+ * Fetches data from the given endpoint with the given options and stored
  * authorization. If the fetch is successful, the onSuccess function is called,
  * otherwise the onFailure function is called.
  * 
- * @param url the URL to fetch data from
+ * @param endpoint the endpoint to fetch data from
  * @param options the options to pass to the fetch function
  * @param onSuccess the function to call if the fetch is successful
  * @param onFailure the function to call if the fetch is unsuccessful
  */
 export const fetchWithAuth = async (
-	url: string,
+	endpoint: Endpoint,
 	options: RequestInit = {},
 	onSuccess?: (data: Result) => void,
 	onFailure?: (error: any) => void
 ): Promise<void> => {
+	// Ensure the endpoint is valid
+	if (!validEndpoints.includes(endpoint)) {
+		throw new Error(`Invalid endpoint: ${endpoint}`);
+	}
+
+	// Construct endpoint URL
+	const url = `${clientConfig.BASE_URL}${endpoint}`;
+
 	// Retrieve username and password from sessionStorage
 	const username = sessionStorage.getItem("username");
 	const password = sessionStorage.getItem("password");
@@ -30,7 +53,7 @@ export const fetchWithAuth = async (
 		Authorization: `Basic ${btoa(`${username}:${password}`)}`,
 	};
 
-	// Set Content-Type header
+	// Set Content-Type header for POST requests with a body
 	if (options.method === "POST" && options.body) {
 		options.headers = {
 			...options.headers,
@@ -48,8 +71,8 @@ export const fetchWithAuth = async (
 		}
 
 		let data: Result;
-		let contentType = await response.headers.get("content-type");
-	
+		const contentType = await response.headers.get("content-type");
+
 		// Attempt to parse response as JSON
 		if (contentType?.includes("application/json")) {
 			data = await response.json();
@@ -62,14 +85,14 @@ export const fetchWithAuth = async (
 				return;
 			}
 		}
-		
+
 		if (response.ok) {
 			if (data.success && data.success !== undefined) {
 				// { success: true, ... }
 				onSuccess?.(data);
 			} else {
 				// { success: false, ... }
-				console.warn(data.message);
+				console.warn(data);
 				onFailure?.(data);
 			}
 		} else {
