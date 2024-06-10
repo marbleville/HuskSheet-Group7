@@ -37,6 +37,17 @@ export default class DatabaseQueries {
 	}
 
 	/**
+	 * Returns the query needed to authenticate a user.
+	 *
+	 * @param username the username of the client
+	 * @param password the password of the client
+	 * @returns the query needed to authenticate a user
+	 */
+	static authenticate(username: string, password: string): string {
+		return `SELECT * FROM publishers WHERE username = '${username}' AND pass = '${password}';`;
+	}
+
+	/**
 	 * Returns the query needed for createSheet.
 	 *
 	 * @param newSheetName The name of the new sheet

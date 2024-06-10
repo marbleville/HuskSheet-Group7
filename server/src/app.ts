@@ -12,7 +12,7 @@ import {
 	sendError,
 	getArgument,
 } from "./utils";
-import { Result, Argument } from "../../types/types";
+import { Result } from "../../types/types";
 import {
 	register,
 	getSheets,
@@ -25,11 +25,8 @@ import {
 	updateSubscription,
 } from "./serverFunctionsExporter";
 import HashStore from "./database/HashStore";
-import bodyParser from "body-parser";
 import DatabaseInstance from "./database/databaseInstance";
 import DatabaseQueries from "../../types/queries";
-import { get } from "http";
-import { send } from "process";
 
 const app: Application = express();
 
@@ -44,17 +41,12 @@ app.use(cors(options));
 app.use(express.json());
 
 /**
- * @description Register states:
- * 		1.  authHeader is not provided => return false (Unauthorized)
- * 		2.  publisher does not exist => create publisher, return true (Authorized)
- * 		3.  publisher exists, password does not match => return false (Unauthorized)
- * 		4.  publisher exists, password matches => return true (Authorized)
+ * @description Register will respond in one of three ways:
+ * 		1. If the user does not exist, it will create a new user and respond with a fail in the response object.
+ * 		2. If the user exists, it will register the user as a publisher and respond with a success in the response object.
+ * 		3. If the provided auth header fials to authenticate, it will respond with a 401 status code.
  *
- * 		Generally, two outcomes exist:
- * 		1. success: false => Unauthorized
- * 		2. success: true  => Authorized
- *
- * @author kris-amerman
+ * @author marbleville
  */
 app.get("/api/v1/register", async (req: Request, res: Response) => {
 	const database = DatabaseInstance.getInstance();
@@ -66,7 +58,11 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 		let [username, password] = parseAuthHeader(authHeader);
 
 		// ensure username and password aren't empty
-		if (username && password && !(await doesUserExist(username, password))) {
+		if (
+			username &&
+			password &&
+			!(await doesUserExist(username, password))
+		) {
 			await database.query(
 				DatabaseQueries.addNewPublisher(username, password)
 			);
@@ -204,9 +200,13 @@ app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 
 		const [username] = parseAuthHeader(authHeader);
 
-		await updateSubscription(argument, username);
+		if (username) {
+			await updateSubscription(argument, username);
 
-		result.success = true;
+			result.success = true;
+		} else {
+			throw new Error("No auth header provided.");
+		}
 		res.send(JSON.stringify(result));
 	} catch (error) {
 		sendError(res, "updateSubscription", error);

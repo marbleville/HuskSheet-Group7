@@ -214,7 +214,10 @@ function parseAuthHeader(authHeader: string | undefined): string[] {
 	return decodedAuthHeader.split(":").map((str) => str.trimEnd());
 }
 
-async function doesUserExist(username: string, password: string): Promise<boolean> {
+async function doesUserExist(
+	username: string,
+	password: string
+): Promise<boolean> {
 	if (!username || !password) {
 		return false;
 	}
@@ -244,22 +247,10 @@ async function authenticate(authHeader: string | undefined): Promise<boolean> {
 		return false;
 	}
 
-	/**
-	 * authHeader is the authorization header from the request with the form of
-	 * username:password encoded in base64
-	 *
-	 * Split the authHeader by the colon and decode to get the username
-	 * and password
-	 *
-	 * Search the Users table for the username and check the password
-	 *
-	 * If either fails, return false, otherwise return true
-	 */
 	const [username, password] = parseAuthHeader(authHeader);
 	const database = DatabaseInstance.getInstance();
 
-	let queryString = `SELECT * FROM publishers WHERE username = '${username}' 
-	AND pass = '${password}';`;
+	let queryString = DatabaseQueries.authenticate(username, password);
 
 	let result = null;
 	try {
