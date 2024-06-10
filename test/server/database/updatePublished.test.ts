@@ -84,7 +84,7 @@ describe("updatePublished", () => {
 		}
 	});
 
-	it("checks to see if updatePublished thorws an error with malformed data", async () => {
+	it("checks to see if updatePublished throws an error with malformed data", async () => {
 		await setupDB();
 
 		let data: string = "$8 =dsadsa + 3213";
@@ -97,4 +97,6 @@ describe("updatePublished", () => {
 			expect(error).toMatch("Invalid payload format");
 		}
 	});
+
+
 });
