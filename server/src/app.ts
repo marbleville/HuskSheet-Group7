@@ -126,7 +126,12 @@ app.post("/api/v1/deleteSheet", async (req: Request, res: Response) => {
 	) {
 		await runEndpointFuntion(req, res, deleteSheet);
 	} else {
-		res.status(401).send("Unauthorized");
+		let result = assembleResultObject(
+			false,
+			"You do not own this sheet",
+			[]
+		);
+		res.send(result);
 	}
 });
 

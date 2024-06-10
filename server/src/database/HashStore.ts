@@ -79,7 +79,11 @@ export default class HashStore {
 		publisher: string,
 		sheetName: string
 	): Promise<[Payload, ID]> {
-		let sheetID = await HashStore.getSheetID(publisher, sheetName);
+		let sheetID: number = await HashStore.getSheetID(publisher, sheetName);
+
+		if (sheetID == -1) {
+			throw new Error("Sheet not found");
+		}
 
 		// Initialize the sheet hash is the sheet has no updates
 		if (HashStore.sheets[sheetID] == undefined) {
@@ -114,7 +118,11 @@ export default class HashStore {
 		payload: Payload,
 		lastID: number
 	): Promise<void> {
-		let sheetID = await HashStore.getSheetID(publisher, sheetName);
+		let sheetID: number = await HashStore.getSheetID(publisher, sheetName);
+
+		if (sheetID == -1) {
+			throw new Error("Sheet not found");
+		}
 
 		// Initialize the sheet hash is the sheet has no updates
 		if (HashStore.sheets[sheetID] == undefined) {
@@ -170,6 +178,10 @@ export default class HashStore {
 		let sheetIDArr = await DatabaseInstance.getInstance().query<GetSheetID>(
 			DatabaseQueries.getSheetID(sheetName, publisher)
 		);
+
+		if (sheetIDArr.length == 0) {
+			return -1;
+		}
 
 		return sheetIDArr[0].sheetid;
 	}

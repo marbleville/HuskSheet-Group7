@@ -66,10 +66,6 @@ function clientAndPublisherMatch(
 		return false;
 	}
 
-	if (authHeader === undefined) {
-		return false;
-	}
-
 	const [username] = parseAuthHeader(authHeader);
 	const publisher = req.body.publisher;
 

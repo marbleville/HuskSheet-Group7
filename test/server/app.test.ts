@@ -104,7 +104,7 @@ describe("Tests auth checks in app.ts", () => {
 				assembleTestArgumentObject("caroline", "caroline-test", "", "")
 			);
 
-		expect(response.statusCode).toBe(401);
+		expect(JSON.parse(response.text).success).toBeFalsy();
 	});
 
 	it("deleteSheet should should fail if client and publisher do not match", async () => {
@@ -117,7 +117,7 @@ describe("Tests auth checks in app.ts", () => {
 				assembleTestArgumentObject("caroline", "caroline-test", "", "")
 			);
 
-		expect(response.statusCode).toBe(401);
+		expect(JSON.parse(response.text).success).toBeFalsy();
 	});
 
 	it("deleteSheet should should succeed if user is a publisher and matches client", async () => {

@@ -29,15 +29,20 @@ async function getUpdatesForSubscription(
 	};
 
 	if (id == 0) {
-		await HashStore.initHash();
-		let [payload, id] = await HashStore.getSheetPayload(
-			publisher,
-			sheetName
-		);
-		updates.payload = payload;
-		updates.id = id;
+		try {
+			await HashStore.initHash();
+			let [payload, id] = await HashStore.getSheetPayload(
+				publisher,
+				sheetName
+			);
+			updates.payload = payload;
+			updates.id = id;
 
-		return updates;
+			return updates;
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
 	}
 
 	const queryString = DatabaseQueries.getUpdatesForSubscription(
