@@ -27,6 +27,7 @@ import {
 import HashStore from "./database/HashStore";
 import DatabaseInstance from "./database/databaseInstance";
 import DatabaseQueries from "../../types/queries";
+import { get } from "http";
 
 const app: Application = express();
 
@@ -111,7 +112,23 @@ app.post("/api/v1/createSheet", async (req: Request, res: Response) => {
  * @author marbleville
  */
 app.post("/api/v1/getSheets", async (req: Request, res: Response) => {
-	await runEndpointFuntion(req, res, getSheets);
+	try {
+		if (!(await authenticate(req.headers.authorization))) {
+			throw new Error("Unauthorized");
+		}
+
+		const authHeader = req.headers.authorization;
+
+		const [username] = parseAuthHeader(authHeader);
+
+		let arg = getArgument(req);
+		let sheets = await getSheets(arg, username);
+
+		let result = assembleResultObject(true, null, sheets);
+		res.send(JSON.stringify(result));
+	} catch (error) {
+		sendError(res, "getSheets", error);
+	}
 });
 
 /**

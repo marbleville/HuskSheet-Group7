@@ -40,7 +40,6 @@ async function getUpdatesForSubscription(
 
 			return updates;
 		} catch (error) {
-			console.error(error);
 			throw error;
 		}
 	}
