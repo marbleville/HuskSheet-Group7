@@ -4,12 +4,15 @@ import {
   ExpressionNode,
   NumberNode,
 } from "../../../client/src/functions/Nodes";
+import Tokenizer from "../../../client/src/functions/Tokenizer";
 import Parser from "../../../client/src/functions/Parser";
 
 describe("Evaluator Test", () => {
   it("Checks that evaluator works for a given parser", () => {
     const func: string = "=IF(1, 2, 3)";
-    const res: ExpressionNode = Parser.getInstance().parse(func);
+    const tokenizer = Tokenizer.getInstance();
+    const tokens: string[] = tokenizer.tokenize(func);
+    const res: ExpressionNode = Parser.getInstance().parse(tokens);
     const expected: ExpressionNode = new FunctionCallNode("IF", [
       new NumberNode(1),
       new NumberNode(2),

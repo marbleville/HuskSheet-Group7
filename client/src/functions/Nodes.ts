@@ -1,7 +1,7 @@
 export interface ExpressionNode {}
 
 class NumberNode implements ExpressionNode {
-  constructor(public value: number) {}
+  constructor(public number: number) {}
 }
 
 class StringNode implements ExpressionNode {
@@ -12,16 +12,20 @@ class ReferenceNode implements ExpressionNode {
   constructor(public ref: string) {}
 }
 
-class OperationNode<Type extends ExpressionNode> implements ExpressionNode {
-  constructor(public left: Type, public op: string, public right: Type) {}
+class OperationNode<ExpressionNode> {
+  constructor(
+    public left: ExpressionNode,
+    public op: string,
+    public right: ExpressionNode
+  ) {}
 }
 
-class FunctionCallNode<Type extends ExpressionNode> implements ExpressionNode {
-  constructor(public func: string, public args: Type[]) {}
+class FunctionCallNode<ExpressionNode> {
+  constructor(public func: string, public expressions: ExpressionNode[]) {}
 }
 
-class FormulaNode<Type extends ExpressionNode> implements ExpressionNode {
-  constructor(public expr: Type) {}
+class FormulaNode<ExpressionNode> {
+  constructor(public expression: ExpressionNode) {}
 }
 
 export {
