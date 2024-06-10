@@ -41,7 +41,7 @@ describe('fetchWithAuth function', () => {
 
   it('should fetch data successfully with authorization headers', async () => {
     const url = 'https://example.com/api';
-    const options: RequestInit = { method: 'GET' }; // Specify type as RequestInit
+    const options: RequestInit = { method: 'GET' }; 
     const onSuccess = jest.fn();
     const onFailure = jest.fn();
 
@@ -59,7 +59,7 @@ describe('fetchWithAuth function', () => {
 
   it('should stringify body and set Content-Type header for POST requests', async () => {
     const url = 'https://example.com/api';
-    const options: RequestInit = { method: 'POST', body: JSON.stringify({ key: 'value' }) }; // Specify type as RequestInit and stringify body
+    const options: RequestInit = { method: 'POST', body: JSON.stringify({ key: 'value' }) }; 
     const onSuccess = jest.fn();
     const onFailure = jest.fn();
 
@@ -79,21 +79,21 @@ describe('fetchWithAuth function', () => {
     global.fetch = jest.fn().mockImplementation(() => Promise.resolve({ ok: false }));
 
     const url = 'https://example.com/api';
-    const options: RequestInit = { method: 'GET' }; // Specify type as RequestInit
+    const options: RequestInit = { method: 'GET' }; 
     const onSuccess = jest.fn();
     const onFailure = jest.fn();
 
     await fetchWithAuth(url, options, onSuccess, onFailure);
 
     expect(onSuccess).not.toHaveBeenCalled();
-    expect(onFailure).toHaveBeenCalledWith(null); // or you can adjust to pass specific error object
+    expect(onFailure).toHaveBeenCalledWith(null); 
   });
 
   it('should call onFailure callback on network error', async () => {
     global.fetch = jest.fn().mockImplementation(() => Promise.reject(new Error('Network error')));
 
     const url = 'https://example.com/api';
-    const options: RequestInit = { method: 'GET' }; // Specify type as RequestInit
+    const options: RequestInit = { method: 'GET' }; 
     const onSuccess = jest.fn();
     const onFailure = jest.fn();
 
