@@ -11,7 +11,7 @@ import { GetSheetRow } from "../database/db";
  * @returns An array of arguments containing all sheets
  *                              associated with the publisher
  *
- * @author marbleville, hunterbrodie
+ * @author hunterbrodie
  */
 async function getSheets(argument: Argument): Promise<Array<Argument>> {
 	let sheets: Array<Argument> = [];

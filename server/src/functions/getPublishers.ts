@@ -6,7 +6,7 @@ import { GetUserRow } from "../database/db";
 /**
  * @returns An array of arguments containing all registered publishers
  *
- * @author marbleville, rishavsarma5
+ * @author marbleville
  */
 async function getPublishers(): Promise<Array<Argument>> {
 	let publishers: Array<Argument> = [];

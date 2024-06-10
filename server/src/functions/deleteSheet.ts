@@ -9,7 +9,7 @@ import { GetSheetRow } from "../database/db";
  * @param argument The argument object containing the publisher and sheet to
  * 				   delete
  *
- * @author marbleville, hunterbrodie
+ * @author hunterbrodie
  */
 async function deleteSheet(argument: Argument): Promise<void> {
 	let publisher: Publisher = argument.publisher;

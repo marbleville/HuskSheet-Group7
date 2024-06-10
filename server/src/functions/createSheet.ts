@@ -9,7 +9,7 @@ import { GetSheetRow } from "../database/db";
  *
  * @param argument The argument object containing the publisher and sheet name
  *
- * @author kris-amerman, marbleville
+ * @author kris-amerman
  */
 async function createSheet(argument: Argument): Promise<void> {
 	let publisher: Publisher = argument.publisher;

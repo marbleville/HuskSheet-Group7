@@ -32,6 +32,15 @@ function checkPayloadFormat(payload: string): boolean {
 	return true;
 }
 
+/**
+ * Checks if the user is a publisher.
+ *
+ * @param header the authorization header from the request
+ *
+ * @returns a boolean indicating whether the user is a publisher
+ *
+ * @author marbleville
+ */
 async function isUserPublisher(header: string | undefined): Promise<boolean> {
 	if (header === undefined) {
 		return false;
@@ -83,7 +92,7 @@ function clientAndPublisherMatch(
  * @returns The argument object containing the last update id and payload
  * containing all changes
  *
- * @author marbleville, huntebrodie
+ * @author huntebrodie
  */
 async function getUpdatesHelper(
 	argument: Argument,
@@ -197,7 +206,7 @@ function getArgument(req: Request): Argument {
  *
  * @returns [username, password] string array
  *
- * @author kris-amerman, eduardo-ruiz-garay
+ * @author kris-amerman
  */
 function parseAuthHeader(authHeader: string | undefined): string[] {
 	if (authHeader === undefined) {
@@ -210,6 +219,16 @@ function parseAuthHeader(authHeader: string | undefined): string[] {
 	return decodedAuthHeader.split(":").map((str) => str.trimEnd());
 }
 
+/**
+ * Checks if the user exists in the database.
+ *
+ * @param username the username to check
+ * @param password the password to check
+ *
+ * @returns a boolean indicating whether the user exists
+ *
+ * @author kris-amerman
+ */
 async function doesUserExist(
 	username: string,
 	password: string
@@ -236,7 +255,7 @@ async function doesUserExist(
  *
  * @returns True if the user is authenticated, false otherwise
  *
- * @author marbleville, eduardo-ruiz-garay
+ * @author marbleville
  */
 async function authenticate(authHeader: string | undefined): Promise<boolean> {
 	if (authHeader === undefined) {
