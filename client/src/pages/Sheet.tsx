@@ -19,6 +19,7 @@ interface SheetDataMap {
   [ref: string]: string;
 };
 
+
 /**
  * @description Initializes the SheetDataMap based on given row/columns.
  *
