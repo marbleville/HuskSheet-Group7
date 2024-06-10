@@ -387,8 +387,7 @@ const Sheet: React.FC = () => {
           payload.push(`${ref} ${valueAtCell}`);
         }
       }
-  
-      return payload.join("\n");
+      return payload.join("\n") + "\n";
     };
   
     const payload = getAllCellUpdates();
@@ -455,6 +454,8 @@ const Sheet: React.FC = () => {
       payload: ""
     };
 
+    let newUpdateId: number = -1;
+
     if (sheetRelationship === "OWNER") {
       console.log("ARGUMENT")
       console.log(argument)
@@ -481,7 +482,7 @@ const Sheet: React.FC = () => {
               }));
 
             }
-            argument.id = update.id;
+            newUpdateId = Number(update.id);
           }
         }
       );
@@ -509,8 +510,12 @@ const Sheet: React.FC = () => {
               setIncomingUpdates(updates);
             }
 
-            console.log(`SET NEW UPDATE ID TO ${update.id}`)
-            setLatestUpdateID(update.id);
+            if (Number(update.id) > newUpdateId) {
+              newUpdateId = Number(update.id)
+            }
+
+            console.log(`SET NEW UPDATE ID TO ${newUpdateId}`)
+            setLatestUpdateID(newUpdateId.toString());
           }
         }
       );
