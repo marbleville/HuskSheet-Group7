@@ -8,7 +8,73 @@ import {
 } from "../../types/types";
 import DatabaseInstance from "./database/databaseInstance";
 import { Request, Response } from "express";
-import { GetUpdateRow } from "./database/db";
+import { GetUpdateRow, GetUserRow } from "./database/db";
+import DatabaseQueries from "../../types/queries";
+
+/**
+ * Checks if each change in the payload is in the correct format e.g. $A1 5
+ *
+ * @param payload newline delimited string of changes
+ *
+ * @returns boolean indicating whether the payload is in the correct format
+ *
+ * @author marbleville
+ */
+function checkPayloadFormat(payload: string): boolean {
+	let changes = payload.split("\n");
+
+	changes.forEach((change) => {
+		let ref = change.split(" ", 1)[0];
+
+		return ref.match(/\$([A-Za-z]+[0-9]+)/) !== null;
+	});
+
+	return true;
+}
+
+async function isUserPublisher(header: string | undefined): Promise<boolean> {
+	if (header === undefined) {
+		return false;
+	}
+
+	const [username] = parseAuthHeader(header);
+
+	const database = DatabaseInstance.getInstance();
+
+	let queryString = DatabaseQueries.getUser(username);
+
+	let result = await database.query<GetUserRow>(queryString);
+
+	return result[0].isPublisher;
+}
+
+/**
+ * Checks if the client and publisher match.
+ *
+ * @param req the request object from the client
+ * @param authHeader the authorization header from the request
+ *
+ * @returns a boolean indicating whether the client and publisher match
+ *
+ * @author marbleville
+ */
+function clientAndPublisherMatch(
+	req: Request,
+	authHeader: string | undefined
+): boolean {
+	if (authHeader === undefined) {
+		return false;
+	}
+
+	if (authHeader === undefined) {
+		return false;
+	}
+
+	const [username] = parseAuthHeader(authHeader);
+	const publisher = req.body.publisher;
+
+	return publisher === username;
+}
 
 /**
  * Returns the updates for the given published sheet occuring after the given
@@ -79,20 +145,19 @@ async function runEndpointFuntion(
 	let result: Result;
 
 	if (!(await authenticate(req.headers.authorization))) {
-		result = assembleResultObject(false, `${func.name}: Unauthorized`, []);
-		res.send(JSON.stringify(result));
+		res.status(401).send("Unauthorized");
 		return;
 	}
 
 	try {
-		if (req.body === undefined) {
+		if (JSON.stringify(req.body) === "{}" && func.name !== "register" && func.name !== "getPublishers") {
 			throw new Error("No body provided.");
 		}
 
 		let argument = req.body as Argument;
 		let value: Argument[] | Argument | void = await func(argument);
 
-		result = assembleResultObject(true, `${func.name}: `, value);
+		result = assembleResultObject(true, null, value);
 		res.send(JSON.stringify(result));
 	} catch (error) {
 		const err: Error = error as Error;
@@ -125,6 +190,23 @@ function parseAuthHeader(authHeader: string | undefined): string[] {
 	// Decodes to binary
 	const decodedAuthHeader = Buffer.from(base64, "base64").toString("utf-8");
 	return decodedAuthHeader.split(":").map((str) => str.trimEnd());
+}
+
+async function doesUserExist(authHeader: string | undefined): Promise<boolean> {
+	if (authHeader === undefined) {
+		return false;
+	}
+
+	const [username] = parseAuthHeader(authHeader);
+	const database = DatabaseInstance.getInstance();
+
+	let queryString = DatabaseQueries.getUser(username);
+
+	let result = await database.query<GetUserRow>(queryString);
+
+	let userExists = result.length != 0 ? true : false;
+
+	return userExists;
 }
 
 /**
@@ -162,7 +244,7 @@ async function authenticate(authHeader: string | undefined): Promise<boolean> {
 	try {
 		result = await database.query(queryString);
 	} catch (error) {
-		console.error("An error happened when authenticating the user", error);
+		throw new Error("An error happened when authenticating the user");
 	}
 	return result?.length != 0 ? true : false;
 }
@@ -181,7 +263,7 @@ async function authenticate(authHeader: string | undefined): Promise<boolean> {
  */
 function assembleResultObject(
 	success: boolean,
-	message: string,
+	message: string | null,
 	value: Argument[] | Argument | void
 ): Result {
 	if (!(value instanceof Array) && value !== undefined) {
@@ -201,4 +283,8 @@ export {
 	runEndpointFuntion,
 	parseAuthHeader,
 	getUpdatesHelper,
+	clientAndPublisherMatch,
+	checkPayloadFormat,
+	doesUserExist,
+	isUserPublisher,
 };

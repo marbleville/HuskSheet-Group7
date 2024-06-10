@@ -5,7 +5,7 @@ import { fetchWithAuth } from "../utils";
 import "../styles/Sheet.css";
 import { Argument } from "../../../types/types";
 import SheetUpdateHandler from "../sheetUpdateHandler";
-import Popup from "./Popup"; 
+import Popup from "./Popup";
 
 // Constants
 const INITIALSHEETROWSIZE = 10;
@@ -17,7 +17,7 @@ type SheetRelationship = "OWNER" | "SUBSCRIBER";
 // Represents data stored in the sheet as a mapping of REF:TERM pairs. 
 interface SheetDataMap {
   [ref: string]: string;
-}
+};
 
 /**
  * @description Initializes the SheetDataMap based on given row/columns.
@@ -84,7 +84,7 @@ const Sheet: React.FC = () => {
   const [sheetRelationship, setSheetRelationship] = useState<SheetRelationship>();
   const [latestUpdateID, setLatestUpdateID] = useState<string>("0");
   const [incomingUpdates, setIncomingUpdates] = useState<SheetDataMap>({});
-  const [popupMessage, setPopupMessage] = useState<string | null>(null); 
+  const [popupMessage, setPopupMessage] = useState<string | null>(null);
 
   // Store client's relationship to this sheet based on username and sheet publisher.
   useEffect(() => {
@@ -104,13 +104,21 @@ const Sheet: React.FC = () => {
     if (value === "<DELETED>" || value === "<CREATED>") {
       value = "";
     }
+    
     setSheetData((prevSheetData) => {
       const updatedSheetData = { ...prevSheetData, [cellId]: value };
+      
+      // Record the previous value for comparison
       prevCellDataRef.current = {
         ...prevCellDataRef.current,
         [cellId]: prevSheetData[cellId],
       };
-      setManualUpdates((prevManualUpdates) => new Set(prevManualUpdates).add(cellId));
+      
+      // If the value is different from the previous one, or if the value is empty, mark it as manually updated
+      if (value !== prevSheetData[cellId] || value === "") {
+        setManualUpdates((prevManualUpdates) => new Set(prevManualUpdates).add(cellId));
+      }
+  
       return updatedSheetData;
     });
   };
@@ -308,15 +316,17 @@ const Sheet: React.FC = () => {
       for (let col = 0; col < numCols; col++) {
         const columnLetter: string = getHeaderLetter(col);
         const cellId = `$${columnLetter}${row}`;
+        const cellValue = incomingUpdates.hasOwnProperty(cellId) ? incomingUpdates[cellId] : sheetData[cellId];
+        const isUpdated = incomingUpdates.hasOwnProperty(cellId);
+
         cellsPerRow.push(
           <Cell
             key={cellId}
             cellId={cellId}
-            initialValue={sheetData[cellId]}
             onUpdate={handleCellUpdate}
             sheetData={sheetData}
-            cellValue={incomingUpdates[cellId] || sheetData[cellId]}
-            isUpdated={Object.prototype.hasOwnProperty.call(incomingUpdates, cellId)}
+            cellValue={cellValue}
+            isUpdated={isUpdated}
           />
         );
       }
@@ -361,27 +371,28 @@ const Sheet: React.FC = () => {
     // iterates through sheetData and stores updates in a new-line delimited string
     const getAllCellUpdates = (): string => {
       const payload: string[] = [];
-
+  
       for (const ref of newlyDeletedCells) {
         payload.push(`${ref} <DELETED>`);
       }
-
+  
       for (const ref of newlyAddedCells) {
         payload.push(`${ref} <CREATED>`);
       }
-
+  
       for (const [ref, valueAtCell] of Object.entries(sheetData)) {
         const prevValueAtCell = prevCellDataRef.current[ref] || "";
-        if (valueAtCell !== prevValueAtCell && manualUpdates.has(ref)) {
+        // Include cells with updated values or empty values if marked as manually updated
+        if ((valueAtCell !== prevValueAtCell || valueAtCell === "") && manualUpdates.has(ref)) {
           payload.push(`${ref} ${valueAtCell}`);
         }
       }
-
+  
       return payload.join("\n");
     };
-
+  
     const payload = getAllCellUpdates();
-
+  
     // Argument object with updates to the sheet
     const allUpdates: Argument = {
       id: "",
@@ -389,12 +400,12 @@ const Sheet: React.FC = () => {
       sheet: sheetInfo.sheet,
       payload: payload,
     };
-
+  
     console.log(`Role is: ${sheetRelationship}, User is: ${sessionStorage.getItem("username")}`)
-
+  
     console.log("PAYLOAD:")
     console.log(allUpdates.payload);
-
+  
     if (sheetRelationship === "OWNER") {
       console.log(`calling updatePublished`)
       try {
@@ -402,12 +413,12 @@ const Sheet: React.FC = () => {
           method: "POST",
           body: JSON.stringify(allUpdates),
         });
-
+  
         // Reset newlyAddedCells and newlyDeletedCells sets to empty after successful fetch
         setNewlyAddedCells(new Set());
         setNewlyDeletedCells(new Set());
         setManualUpdates(new Set());
-
+  
         setPopupMessage("Publish successful!"); // Show success popup
       } catch (error) {
         console.error("Error publishing new changes", error);
@@ -420,10 +431,11 @@ const Sheet: React.FC = () => {
           method: "POST",
           body: JSON.stringify(allUpdates),
         });
-
+  
         // Reset newlyAddedCells and newlyDeletedCells sets to empty after successful fetch
         setNewlyAddedCells(new Set());
         setNewlyDeletedCells(new Set());
+        setManualUpdates(new Set());
       } catch (error) {
         console.error("Error publishing new changes", error);
       }
@@ -553,7 +565,19 @@ const Sheet: React.FC = () => {
     });
 
     // Include incoming updates in the manual updates
-    setManualUpdates((prevManualUpdates) => new Set([...prevManualUpdates, ...Object.keys(incomingUpdates)]));
+    setManualUpdates((prevManualUpdates) => {
+
+      const updatedManualUpdates = new Set(prevManualUpdates);
+
+      Object.keys(incomingUpdates).forEach((ref) => {
+
+        updatedManualUpdates.add(ref);
+
+      });
+
+      return updatedManualUpdates;
+
+    });
 
     // Clear incomingUpdates after accepting
     setIncomingUpdates({});
