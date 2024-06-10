@@ -19,7 +19,7 @@ class Parser {
    * @returns boolean for regex
    */
   private isFunction(token: string): boolean {
-    return /^=(IF|SUM|MIN|AVG|MAX|CONCAT|DEBUG)$/.test(token);
+    return /^=(IF|SUM|MIN|AVG|MAX|CONCAT|DEBUG|COPY)$/.test(token);
   }
 
   /**

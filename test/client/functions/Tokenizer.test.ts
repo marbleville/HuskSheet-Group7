@@ -61,6 +61,7 @@ describe("Tokenizer tests", () => {
         func: "=DEBUG(SUM(1))",
         expected: ["=DEBUG", "(", "SUM", "(", "1", ")", ")"],
       },
+      { func: "=COPY", expected: ["=COPY"] },
     ];
 
     testCases.forEach(({ func, expected }) => {
@@ -103,6 +104,7 @@ describe("Tokenizer tests", () => {
       { op: "&", expected: ["&"] },
       { op: "|", expected: ["|"] },
       { op: "1:1", expected: ["1", ":", "1"] },
+      { op: "$A1:$A3", expected: ["$A1", ":", "$A3"] },
     ];
 
     testCases.forEach(({ op: func, expected }) => {

@@ -28,7 +28,7 @@ class Evaluator {
 
   evaluate(node: ExpressionNode): string {
     if (node instanceof NumberNode) {
-      return node.value.toString();
+      return node.number.toString();
     } else if (node instanceof StringNode) {
       return node.value;
     } else if (node instanceof ReferenceNode) {
@@ -39,11 +39,13 @@ class Evaluator {
       const result = this.applyOp(node.op, left, right);
       return typeof result === "number" ? result.toString() : result;
     } else if (node instanceof FunctionCallNode) {
-      const args = node.args.map((arg: ExpressionNode) => this.evaluate(arg));
+      const args = node.expressions.map((arg: ExpressionNode) =>
+        this.evaluate(arg)
+      );
       const result = this.applyFunc(node.func, args);
       return typeof result === "number" ? result.toString() : result;
     } else if (node instanceof FormulaNode) {
-      return this.evaluate(node.expr);
+      return this.evaluate(node.expression);
     } else {
       throw new Error(`Unknown node type: ${node}`);
     }
