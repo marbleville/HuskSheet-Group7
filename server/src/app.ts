@@ -61,11 +61,12 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 	try {
 		let [username, password] = parseAuthHeader(authHeader);
 
-		if (!(await doesUserExist(authHeader))) {
+		// ensure username and password aren't empty
+		if (username && password && !(await doesUserExist(username, password))) {
 			await database.query(
 				DatabaseQueries.addNewPublisher(username, password)
 			);
-			result.message = `Register: user does not exist. Created new user.`;
+			result.message = `register: User does not exist. Created new user.`;
 			res.send(JSON.stringify(result));
 		} else {
 			if (!(await authenticate(req.headers.authorization))) {
@@ -80,7 +81,7 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 	} catch (error) {
 		const err: Error = error as Error;
 		console.error(err);
-		result.message = `Register: ${err.message}`;
+		result.message = `register: ${err.message}`;
 		res.send(JSON.stringify(result));
 	}
 });

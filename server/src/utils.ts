@@ -192,12 +192,11 @@ function parseAuthHeader(authHeader: string | undefined): string[] {
 	return decodedAuthHeader.split(":").map((str) => str.trimEnd());
 }
 
-async function doesUserExist(authHeader: string | undefined): Promise<boolean> {
-	if (authHeader === undefined) {
+async function doesUserExist(username: string, password: string): Promise<boolean> {
+	if (!username || !password) {
 		return false;
 	}
 
-	const [username] = parseAuthHeader(authHeader);
 	const database = DatabaseInstance.getInstance();
 
 	let queryString = DatabaseQueries.getUser(username);
