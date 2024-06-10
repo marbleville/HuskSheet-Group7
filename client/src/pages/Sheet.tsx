@@ -409,7 +409,7 @@ const Sheet: React.FC = () => {
     if (sheetRelationship === "OWNER") {
       console.log(`calling updatePublished`)
       try {
-        await fetchWithAuth("http://localhost:3000/api/v1/updatePublished", {
+        await fetchWithAuth("updatePublished", {
           method: "POST",
           body: JSON.stringify(allUpdates),
         });
@@ -427,7 +427,7 @@ const Sheet: React.FC = () => {
     } else {
       console.log(`calling updateSubscription`)
       try {
-        await fetchWithAuth("http://localhost:3000/api/v1/updateSubscription", {
+        await fetchWithAuth("updateSubscription", {
           method: "POST",
           body: JSON.stringify(allUpdates),
         });
@@ -459,7 +459,7 @@ const Sheet: React.FC = () => {
       console.log("ARGUMENT")
       console.log(argument)
       await fetchWithAuth(
-        "http://localhost:3000/api/v1/getUpdatesForSubscription",
+        "getUpdatesForSubscription",
         {
           method: "POST",
           body: JSON.stringify(argument)
@@ -488,7 +488,7 @@ const Sheet: React.FC = () => {
       console.log("ARGUMENT")
       console.log(argument)
       await fetchWithAuth(
-        "http://localhost:3000/api/v1/getUpdatesForPublished",
+        "getUpdatesForPublished",
         {
           method: "POST",
           body: JSON.stringify(argument)
@@ -518,7 +518,7 @@ const Sheet: React.FC = () => {
       console.log("ARGUMENT")
       console.log(argument)
       await fetchWithAuth(
-        "http://localhost:3000/api/v1/getUpdatesForSubscription",
+        "getUpdatesForSubscription",
         {
           method: "POST",
           body: JSON.stringify(argument)

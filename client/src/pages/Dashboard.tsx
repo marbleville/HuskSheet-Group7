@@ -19,7 +19,7 @@ function Dashboard() {
 
   const fetchPublishers = async (currentUser: string) => {
     fetchWithAuth(
-      "http://localhost:3000/api/v1/getPublishers",
+      "getPublishers",
       { method: "GET" },
       (data) => {
         const publishers = data.value.map((item: Argument) => item.publisher);
@@ -36,7 +36,7 @@ function Dashboard() {
   // fetchSheets for a given publisher
   const fetchSheets = async (publisher: string) => {
     fetchWithAuth(
-      "http://localhost:3000/api/v1/getSheets",
+      "getSheets",
       { method: "POST", body: JSON.stringify({ publisher }) },
       (data) => {
         setSheetsByPublisher(prevState => ({
@@ -49,7 +49,7 @@ function Dashboard() {
 
   const handleDeleteSheet = (sheet: Argument) => {
     fetchWithAuth(
-      "http://localhost:3000/api/v1/deleteSheet",
+      "deleteSheet",
       {
         method: "POST", body: JSON.stringify({
           publisher: sheet.publisher,
@@ -66,7 +66,7 @@ function Dashboard() {
       sheet: sheetName,
     };
     fetchWithAuth(
-      "http://localhost:3000/api/v1/createSheet",
+      "createSheet",
       { method: "POST", body: JSON.stringify(argument) },
       () => fetchSheets(username) // Refresh sheets after creating a new one
     );

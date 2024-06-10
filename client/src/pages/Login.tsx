@@ -32,7 +32,7 @@ function Login() {
   const attemptFetchWithAuth = async () => {
     try {
       await fetchWithAuth(
-        "http://localhost:3000/api/v1/register",
+        "register",
         { method: "GET" },
         handleRegisterSuccess,
         handleRegisterFailure
