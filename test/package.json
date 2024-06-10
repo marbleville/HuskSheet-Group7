@@ -15,6 +15,8 @@
 		"typescript": "^5.4.5"
 	},
 	"dependencies": {
+		"@testing-library/react": "^16.0.0",
+		"jest-environment-jsdom": "^29.7.0",
 		"mysql2": "^3.9.8"
 	}
 }
