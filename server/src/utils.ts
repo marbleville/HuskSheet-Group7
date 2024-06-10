@@ -150,25 +150,47 @@ async function runEndpointFuntion(
 	}
 
 	try {
-		if (JSON.stringify(req.body) === "{}" && func.name !== "register" && func.name !== "getPublishers") {
-			throw new Error("No body provided.");
-		}
+		let value: Argument[] | Argument | void;
 
-		let argument = req.body as Argument;
-		let value: Argument[] | Argument | void = await func(argument);
+		if (func.name !== "register" && func.name !== "getPublishers") {
+			let argument = getArgument(req);
+			value = await func(argument);
+		} else {
+			value = await func({} as Argument);
+		}
 
 		result = assembleResultObject(true, null, value);
 		res.send(JSON.stringify(result));
 	} catch (error) {
-		const err: Error = error as Error;
-		console.error(err);
-		result = assembleResultObject(
-			false,
-			`${func.name}: ` + err.message,
-			[]
-		);
-		res.send(JSON.stringify(result));
+		sendError(res, func.name, error);
 	}
+}
+
+function sendError(res: Response, functionName: string, error: any): void {
+	const err = error as Error;
+	let errorMessage = `${functionName}: ${err.message}`;
+	let result = assembleResultObject(false, errorMessage, []);
+	res.send(JSON.stringify(result));
+}
+
+/**
+ * Gets the argument object from the body of the request
+ *
+ * @param req the request object from the client
+ *
+ * @returns the argument object from body of the request
+ * @throws an error if the body is empty
+ *
+ * @author marbleville
+ */
+function getArgument(req: Request): Argument {
+	if (JSON.stringify(req.body) === "{}") {
+		throw new Error("No body provided.");
+	}
+
+	let argument = req.body as Argument;
+
+	return argument;
 }
 
 /**
@@ -286,4 +308,6 @@ export {
 	checkPayloadFormat,
 	doesUserExist,
 	isUserPublisher,
+	sendError,
+	getArgument,
 };

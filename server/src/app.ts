@@ -9,6 +9,8 @@ import {
 	clientAndPublisherMatch,
 	doesUserExist,
 	isUserPublisher,
+	sendError,
+	getArgument,
 } from "./utils";
 import { Result, Argument } from "../../types/types";
 import {
@@ -23,9 +25,11 @@ import {
 	updateSubscription,
 } from "./serverFunctionsExporter";
 import HashStore from "./database/HashStore";
-
+import bodyParser from "body-parser";
 import DatabaseInstance from "./database/databaseInstance";
 import DatabaseQueries from "../../types/queries";
+import { get } from "http";
+import { send } from "process";
 
 const app: Application = express();
 
@@ -79,10 +83,7 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 			res.send(JSON.stringify(result));
 		}
 	} catch (error) {
-		const err: Error = error as Error;
-		console.error(err);
-		result.message = `register: ${err.message}`;
-		res.send(JSON.stringify(result));
+		sendError(res, "register", error);
 	}
 });
 
@@ -197,11 +198,8 @@ app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 			return;
 		}
 
-		if (JSON.stringify(req.body) === "{}") {
-			throw new Error("No body provided.");
-		}
+		let argument = getArgument(req);
 
-		let argument = req.body as Argument;
 		const authHeader = req.headers.authorization;
 
 		const [username] = parseAuthHeader(authHeader);
@@ -211,9 +209,7 @@ app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 		result.success = true;
 		res.send(JSON.stringify(result));
 	} catch (error) {
-		const err: Error = error as Error;
-		result.message = `updateSubscription: ${err.message}`;
-		res.send(JSON.stringify(result));
+		sendError(res, "updateSubscription", error);
 	}
 });
 
