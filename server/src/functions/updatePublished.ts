@@ -28,7 +28,6 @@ async function updatePublished(argument: Argument): Promise<void> {
 	);
 
 	if (checkPayloadFormat(payload) === false) {
-		console.log(payload);
 		throw new Error("Invalid payload format");
 	}
 
