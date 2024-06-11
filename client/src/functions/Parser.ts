@@ -1,11 +1,11 @@
 import {
-	ExpressionNode,
-	FormulaNode,
-	NumberNode,
-	StringNode,
-	ReferenceNode,
-	OperationNode,
-	FunctionCallNode,
+  ExpressionNode,
+  FormulaNode,
+  NumberNode,
+  StringNode,
+  ReferenceNode,
+  OperationNode,
+  FunctionCallNode,
 } from "./Nodes";
 
 /**
@@ -64,21 +64,21 @@ class Parser {
 
   private static instance: Parser;
 
-	private index: number;
-	private tokens: string[];
+  private index: number;
+  private tokens: string[];
 
-	constructor() {
-		this.index = 0;
-		this.tokens = [];
-	}
+  constructor() {
+    this.index = 0;
+    this.tokens = [];
+  }
 
-	//Singleton setup
-	public static getInstance() {
-		if (Parser.instance == null) {
-			Parser.instance = new Parser();
-		}
-		return Parser.instance;
-	}
+  //Singleton setup
+  public static getInstance() {
+    if (Parser.instance == null) {
+      Parser.instance = new Parser();
+    }
+    return Parser.instance;
+  }
 
   /**
    * Parses the tockens into distinct ExpressionNodes.

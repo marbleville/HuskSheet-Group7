@@ -1,4 +1,3 @@
-import { Operation } from "../../../types/types";
 import {
   FormulaNode,
   FunctionCallNode,
@@ -111,37 +110,67 @@ class Evaluator {
   }
 
   private rangeOp(node: OperationNode<ExpressionNode>): number[] {
+    const res: number[] = [];
     if (
       node.left instanceof ReferenceNode &&
       node.right instanceof ReferenceNode
     ) {
-      console.log(node.left.ref);
       // Get col and row of the reference
-      let colStart = "";
       let rowStart = "";
+      let colStart = "";
       for (let i = 1; i < node.left.ref.length; i++) {
-        if (/^-?\d+(\.\d+)?$/.test(node.left.ref.charAt(i))) {
-          colStart += node.left.ref.charAt(i);
-        } else {
+        if (!/^-?\d+(\.\d+)?$/.test(node.left.ref.charAt(i))) {
           rowStart += node.left.ref.charAt(i);
-        }
-      }
-      console.log(colStart, rowStart);
-
-      let colEnd = "";
-      let rowEnd = "";
-      for (let i = 1; i < node.right.ref.length; i++) {
-        if (/^-?\d+(\.\d+)?$/.test(node.right.ref.charAt(i))) {
-          colEnd += node.right.ref.charAt(i);
         } else {
-          rowEnd += node.right.ref.charAt(i);
+          colStart += node.left.ref.charAt(i);
         }
       }
-      console.log(colEnd, rowEnd);
+
+      let rowEnd = "";
+      let colEnd = "";
+      for (let i = 1; i < node.right.ref.length; i++) {
+        if (!/^-?\d+(\.\d+)?$/.test(node.right.ref.charAt(i))) {
+          rowEnd += node.right.ref.charAt(i);
+        } else {
+          colEnd += node.right.ref.charAt(i);
+        }
+      }
+
       // get the values from the left column to the right and add them to an array
       // double forloop over the context start and end
+
+      const cStart = this.columnLetterToNumber(rowStart) - 1;
+      const cEnd = this.columnLetterToNumber(rowEnd) - 1;
+
+      for (let i = cStart; i <= cEnd; i++) {
+        for (let j = parseInt(colStart); j <= parseInt(colEnd); j++) {
+          const fcol = this.getHeaderLetter(i);
+          const str = "$" + fcol + j.toString();
+          res.push(parseInt(this.context[`${str}`]));
+        }
+      }
     }
-    return [1];
+    return res;
+  }
+
+  getHeaderLetter = (curr: number): string => {
+    let currentCol = curr;
+    let letters = "";
+    while (currentCol >= 0) {
+      const remainder = currentCol % 26;
+      letters = String.fromCharCode(65 + remainder) + letters;
+      currentCol = Math.floor(currentCol / 26) - 1;
+    }
+
+    return letters;
+  };
+
+  columnLetterToNumber(column: string): number {
+    let number = 0;
+    for (let i = 0; i < column.length; i++) {
+      number = number * 26 + (column.charCodeAt(i) - "A".charCodeAt(0) + 1);
+    }
+    return number;
   }
 
   private toNumber(value: string): number {
