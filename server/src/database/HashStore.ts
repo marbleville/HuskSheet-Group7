@@ -12,7 +12,8 @@ const accessUpdateID = 1;
  * @author marbleville, huntebrodie
  */
 export default class HashStore {
-	// Array of maps where each map represents a sheet and contains all associated cell data
+	// Array of maps and IDs where each map represents a sheet and contains all associated cell data
+	// and the ID is the id of the last accepted update
 	private static sheets: Array<[Map<Ref, Term>, ID]>;
 
 	/**
@@ -29,14 +30,15 @@ export default class HashStore {
 
 		HashStore.sheets = new Array<[Map<Ref, Term>, ID]>();
 
+		// every update in the db that has been accepted by the owner
 		let allOwnerUpdates =
 			await DatabaseInstance.getInstance().query<GetAllUpdates>(
 				DatabaseQueries.getAllOwnerUpdates()
 			);
 
-		allOwnerUpdates.forEach((sheet) => {
-			let sheetID = sheet.sheet;
-			let payload: Payload = sheet.changes;
+		allOwnerUpdates.forEach((update) => {
+			let sheetID = update.sheet;
+			let payload: Payload = update.changes;
 
 			// Array containing each update on the sheet
 			let payloadArr = payload.split("\n");
@@ -54,16 +56,16 @@ export default class HashStore {
 				HashStore.sheets[sheetID] = [new Map<Ref, Term>(), "0"];
 			}
 
-			payloadArr.forEach((updatePerSheet) => {
+			payloadArr.forEach((cellChange) => {
 				let [refObj, value] = HashStore.getRefObjAndValue(
-					updatePerSheet,
+					cellChange,
 					sheetID
 				);
 
 				HashStore.sheets[sheetID][accessSheetMap].set(refObj, value);
 
 				HashStore.sheets[sheetID][accessUpdateID] =
-					sheet.updateid.toString();
+					update.updateid.toString();
 			});
 		});
 	}
@@ -82,7 +84,8 @@ export default class HashStore {
 	 */
 	public static async getSheetPayload(
 		publisher: string,
-		sheetName: string
+		sheetName: string,
+		id: number = 0
 	): Promise<[Payload, ID]> {
 		let sheetID: number = await HashStore.getSheetID(publisher, sheetName);
 
