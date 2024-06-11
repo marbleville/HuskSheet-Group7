@@ -32,7 +32,7 @@ class Evaluator {
     } else if (node instanceof StringNode) {
       return node.value;
     } else if (node instanceof ReferenceNode) {
-      return this.context[node.ref] ?? "";
+      return this.context[node.ref].trim().replace(/"/g, "") ?? "";
     } else if (node instanceof OperationNode) {
       const left = this.evaluate(node.left);
       const right = this.evaluate(node.right);
@@ -94,8 +94,8 @@ class Evaluator {
     switch (func) {
       case "IF":
         return this.toNumber(args[0]) !== 0
-          ? this.toNumber(args[1])
-          : this.toNumber(args[2]);
+          ? args[1]
+          : args[2];
       case "SUM":
         return this.sum(toNumbers(args));
       case "MIN":
@@ -106,6 +106,9 @@ class Evaluator {
         return this.average(toNumbers(args));
       case "CONCAT":
         return args.join("");
+      case "COPY":
+        console.log(args);
+        return this.copyFunction(args);
       case "DEBUG":
         console.log(args[0]);
         return args[0];
@@ -120,6 +123,13 @@ class Evaluator {
 
   private average(args: number[]): number {
     return this.sum(args) / args.length;
+  }
+
+  private copyFunction(args: string[]): string {
+    const val: string = args[0];
+    const newPlace: string = args[1];
+    this.context[newPlace] = val;
+    return val;
   }
 }
 

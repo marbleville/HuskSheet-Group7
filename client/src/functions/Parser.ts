@@ -41,13 +41,13 @@ class Parser {
 		this.index = 0;
 		this.tokens = Tokenizer.getInstance().tokenize(formula);
 		for (const token of this.tokens) {
-			// console.log(`token: ${token}`);
+			console.log(`token: ${token}`);
 		}
 		const resultNode =
 			this.tokens.length > 0 && this.tokens[0] === "="
 				? this.parseFormula()
 				: this.parseTerm();
-		// console.log("Parsed INode:", JSON.stringify(resultNode, null, 2));
+		console.log("Parsed ExpressionNode:", JSON.stringify(resultNode, null, 2));
 		return resultNode;
 	}
 
@@ -137,7 +137,7 @@ class Parser {
 	}
 
 	private isString(token: string): boolean {
-		return /^[^()\s,]+$/.test(token);
+		return /^"([^"]*)"|^[^+\-*/=:&|<>\s(),]+/.test(token);
 	}
 
 	private isReference(token: string): boolean {
@@ -149,7 +149,7 @@ class Parser {
 	}
 
 	private isFunction(token: string): boolean {
-		return /^=(IF|SUM|MIN|AVG|MAX|CONCAT|DEBUG)$/.test(token);
+		return /^=(IF|SUM|MIN|AVG|MAX|CONCAT|COPY|DEBUG)$/.test(token);
 	}
 }
 

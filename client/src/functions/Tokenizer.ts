@@ -6,14 +6,14 @@ class Tokenizer {
 
   //Creates a mapping with the type and the regex that accompanies it.
   private static tokenSpec: [string, RegExp][] = [
-    ["FUNCTION", /^=(IF|SUM|MIN|AVG|MAX|CONCAT|DEBUG)/], // Matches functions
+    ["FUNCTION", /^=(IF|SUM|MIN|AVG|MAX|CONCAT|COPY|DEBUG)/], // Matches functions
     ["COMBINED_OPERATOR", /^(<=|>=|<>)/], // Matches <=, >=, <>
     ["OPERATOR", /^[+\-*/<>=&|,:]/], // Matches combined < and > operators
     ["NUMBER", /^[+-]?\d+(\.\d+)?/], // Updated to match optional leading + or -
     ["LPAREN", /^\(/], // Matches left parenthesis
     ["RPAREN", /^\)/], // Matches right parenthesis
     ["REFERENCE", /^\$[A-Z]+\d+/], // Matches cell references and ranges
-    ["STRING", /^[^+\-*/=:&|<>\s(),]+/], // Matches strings
+    ["STRING", /^"([^"]*)"|^[^+\-*/=:&|<>\s(),]+/], // Matches strings
     ["COMMA", /^,/], // Matches commas
     ["WHITESPACE", /^\s+/], // Matches whitespace
   ];
@@ -45,7 +45,7 @@ class Tokenizer {
    */
   tokenize(formula: string): string[] {
     this.index = 0;
-    this.formula = formula;
+    this.formula = formula.trim();
     const tokens: string[] = [];
     let openParenthesesCount = 0;
 
