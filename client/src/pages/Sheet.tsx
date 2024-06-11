@@ -82,7 +82,8 @@ const Sheet: React.FC = () => {
   const [newlyAddedCells, setNewlyAddedCells] = useState<Set<string>>(new Set());
   const [newlyDeletedCells, setNewlyDeletedCells] = useState<Set<string>>(new Set());
   const [sheetRelationship, setSheetRelationship] = useState<SheetRelationship>();
-  const [latestUpdateID, setLatestUpdateID] = useState<string>("0");
+  const [latestPublishedUpdateID, setLatestPublishedUpdateID] = useState<string>("0");
+  const [latestSubscriptionUpdateID, setLatestSubscriptionUpdateID] = useState<string>("0");
   const [incomingUpdates, setIncomingUpdates] = useState<SheetDataMap>({});
   const [popupMessage, setPopupMessage] = useState<string | null>(null);
 
@@ -95,6 +96,11 @@ const Sheet: React.FC = () => {
     }
   }, [])
 
+  useEffect(() => {
+    console.log(`subscription ID: ${latestSubscriptionUpdateID}`)
+    console.log(`published ID: ${latestPublishedUpdateID}`)
+  })
+
   /**
    * @description Updates the sheetData when a cell's input changes.
    *
@@ -104,21 +110,21 @@ const Sheet: React.FC = () => {
     if (value === "<DELETED>" || value === "<CREATED>") {
       value = "";
     }
-    
+
     setSheetData((prevSheetData) => {
       const updatedSheetData = { ...prevSheetData, [cellId]: value };
-      
+
       // Record the previous value for comparison
       prevCellDataRef.current = {
         ...prevCellDataRef.current,
         [cellId]: prevSheetData[cellId],
       };
-      
+
       // If the value is different from the previous one, or if the value is empty, mark it as manually updated
       if (value !== prevSheetData[cellId] || value === "") {
         setManualUpdates((prevManualUpdates) => new Set(prevManualUpdates).add(cellId));
       }
-  
+
       return updatedSheetData;
     });
   };
@@ -371,15 +377,15 @@ const Sheet: React.FC = () => {
     // iterates through sheetData and stores updates in a new-line delimited string
     const getAllCellUpdates = (): string => {
       const payload: string[] = [];
-  
+
       for (const ref of newlyDeletedCells) {
         payload.push(`${ref} <DELETED>`);
       }
-  
+
       for (const ref of newlyAddedCells) {
         payload.push(`${ref} <CREATED>`);
       }
-  
+
       for (const [ref, valueAtCell] of Object.entries(sheetData)) {
         const prevValueAtCell = prevCellDataRef.current[ref] || "";
         // Include cells with updated values or empty values if marked as manually updated
@@ -387,11 +393,11 @@ const Sheet: React.FC = () => {
           payload.push(`${ref} ${valueAtCell}`);
         }
       }
-      return payload.join("\n") + "\n";
+      return payload.length ? payload.join("\n") + "\n" : "";
     };
-  
+
     const payload = getAllCellUpdates();
-  
+
     // Argument object with updates to the sheet
     const allUpdates: Argument = {
       id: "",
@@ -399,38 +405,33 @@ const Sheet: React.FC = () => {
       sheet: sheetInfo.sheet,
       payload: payload,
     };
-  
-    console.log(`Role is: ${sheetRelationship}, User is: ${sessionStorage.getItem("username")}`)
-  
-    console.log("PAYLOAD:")
-    console.log(allUpdates.payload);
-  
+
     if (sheetRelationship === "OWNER") {
-      console.log(`calling updatePublished`)
       try {
+        console.log("CALLING updatePublished")
         await fetchWithAuth("updatePublished", {
           method: "POST",
           body: JSON.stringify(allUpdates),
         });
-  
+
         // Reset newlyAddedCells and newlyDeletedCells sets to empty after successful fetch
         setNewlyAddedCells(new Set());
         setNewlyDeletedCells(new Set());
         setManualUpdates(new Set());
-  
+
         setPopupMessage("Publish successful!"); // Show success popup
       } catch (error) {
         console.error("Error publishing new changes", error);
         setPopupMessage("Error publishing new changes"); // Show fail popup
       }
     } else {
-      console.log(`calling updateSubscription`)
       try {
+        console.log("CALLING updateSubscription")
         await fetchWithAuth("updateSubscription", {
           method: "POST",
           body: JSON.stringify(allUpdates),
         });
-  
+
         // Reset newlyAddedCells and newlyDeletedCells sets to empty after successful fetch
         setNewlyAddedCells(new Set());
         setNewlyDeletedCells(new Set());
@@ -450,15 +451,13 @@ const Sheet: React.FC = () => {
     const argument: Argument = {
       publisher: sheetInfo.publisher,
       sheet: sheetInfo.sheet,
-      id: latestUpdateID,
+      id: "0",
       payload: ""
     };
 
-    let newUpdateId: number = -1;
-
     if (sheetRelationship === "OWNER") {
-      console.log("ARGUMENT")
-      console.log(argument)
+      argument.id = latestSubscriptionUpdateID
+      console.log("CALLING getUpdatesForSubscription")
       await fetchWithAuth(
         "getUpdatesForSubscription",
         {
@@ -466,9 +465,6 @@ const Sheet: React.FC = () => {
           body: JSON.stringify(argument)
         },
         async (data) => {
-          console.log("INCOMING DATA:");
-          console.log(data);
-
           if (data.success && data.value && data.value.length > 0) {
             const update = data.value[0];
             const sheetUpdateHandler = SheetUpdateHandler.getInstance();
@@ -480,14 +476,13 @@ const Sheet: React.FC = () => {
                 ...prevSheetData,
                 ...updates
               }));
-
             }
-            newUpdateId = Number(update.id);
+            setLatestSubscriptionUpdateID(update.id)
           }
         }
       );
-      console.log("ARGUMENT")
-      console.log(argument)
+      argument.id = latestPublishedUpdateID
+      console.log(`CALLING getUpdatesForPublished with id ${latestPublishedUpdateID}`)
       await fetchWithAuth(
         "getUpdatesForPublished",
         {
@@ -495,9 +490,6 @@ const Sheet: React.FC = () => {
           body: JSON.stringify(argument)
         },
         async (data) => {
-          console.log("INCOMING DATA:");
-          console.log(data);
-
           if (data.success && data.value && data.value.length > 0) {
             const update = data.value[0];
             const sheetUpdateHandler = SheetUpdateHandler.getInstance();
@@ -505,23 +497,16 @@ const Sheet: React.FC = () => {
 
             // Check if payload is not empty before updating the sheetData
             if (update.payload !== "") {
-
               // Add updated cell IDs to the incomingUpdates state
               setIncomingUpdates(updates);
             }
-
-            if (Number(update.id) > newUpdateId) {
-              newUpdateId = Number(update.id)
-            }
-
-            console.log(`SET NEW UPDATE ID TO ${newUpdateId}`)
-            setLatestUpdateID(newUpdateId.toString());
+            setLatestPublishedUpdateID(update.id)
           }
         }
       );
     } else {
-      console.log("ARGUMENT")
-      console.log(argument)
+      argument.id = latestSubscriptionUpdateID
+      console.log("CALLING getUpdatesForSubscription")
       await fetchWithAuth(
         "getUpdatesForSubscription",
         {
@@ -529,9 +514,6 @@ const Sheet: React.FC = () => {
           body: JSON.stringify(argument)
         },
         async (data) => {
-          console.log("INCOMING DATA:");
-          console.log(data);
-
           if (data.success && data.value && data.value.length > 0) {
             const update = data.value[0];
             const sheetUpdateHandler = SheetUpdateHandler.getInstance();
@@ -544,9 +526,7 @@ const Sheet: React.FC = () => {
                 ...updates
               }));
             }
-
-            console.log(`SET NEW UPDATE ID TO ${update.id}`)
-            setLatestUpdateID(update.id);
+            setLatestSubscriptionUpdateID(update.id)
           }
         }
       );
@@ -594,6 +574,21 @@ const Sheet: React.FC = () => {
    * @author kris-amerman
    */
   const denyIncomingUpdates = () => {
+    setManualUpdates((prevManualUpdates) => {
+      const updatedManualUpdates = new Set(prevManualUpdates);
+
+      // Iterate through incoming updates to include existing values in manual updates
+      Object.entries(incomingUpdates).forEach(([ref, value]) => {
+        // If the cell exists in sheetData, include its existing value
+        if (sheetData.hasOwnProperty(ref)) {
+          updatedManualUpdates.add(ref);
+        }
+      });
+
+      return updatedManualUpdates;
+    });
+
+    // Clear incomingUpdates after denying
     setIncomingUpdates({});
   };
 
