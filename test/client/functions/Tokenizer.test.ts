@@ -61,7 +61,10 @@ describe("Tokenizer tests", () => {
         func: "=DEBUG(SUM(1))",
         expected: ["=DEBUG", "(", "SUM", "(", "1", ")", ")"],
       },
-      { func: "=COPY", expected: ["=COPY"] },
+      {
+        func: "=COPY($A1, $A2)",
+        expected: ["=COPY", "(", "$A1", ",", "$A2", ")"],
+      },
     ];
 
     testCases.forEach(({ func, expected }) => {

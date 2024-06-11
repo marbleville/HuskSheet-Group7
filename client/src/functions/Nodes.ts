@@ -1,7 +1,7 @@
 export interface ExpressionNode {}
 
 class NumberNode implements ExpressionNode {
-  constructor(public number: number) {}
+  constructor(public value: number) {}
 }
 
 class StringNode implements ExpressionNode {

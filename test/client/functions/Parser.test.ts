@@ -113,4 +113,24 @@ describe("Parser Test", () => {
     const expected: ExpressionNode = new NumberNode(-1);
     expect(res).toEqual(expected);
   });
+
+  it("should parse copy formula correctly", () => {
+    const tokens: string[] = ["=COPY", "(", "$A1", ",", "$A2", ")"];
+    const res: ExpressionNode = parser.parse(tokens);
+    const expected: ExpressionNode = new FunctionCallNode("COPY", [
+      new ReferenceNode("$A1"),
+      new ReferenceNode("$A2"),
+    ]);
+    expect(res).toEqual(expected);
+  });
+
+  it("should parse copy formula correctly", () => {
+    const tokens: string[] = ["=COPY", "(", "1", ",", "$A2", ")"];
+    const res: ExpressionNode = parser.parse(tokens);
+    const expected: ExpressionNode = new FunctionCallNode("COPY", [
+      new NumberNode(1),
+      new ReferenceNode("$A2"),
+    ]);
+    expect(res).toEqual(expected);
+  });
 });

@@ -8,12 +8,20 @@ import {
   StringNode,
 } from "./Nodes";
 
+/**
+ * Creates a evalutor for the parsing of the different node objects
+ */
 class Evaluator {
   private static instance: Evaluator;
   private context: { [key: string]: string } = {};
 
   constructor() {}
 
+  /**
+   * Singleton patter for getInstance
+   *
+   * @returns an instance of the object
+   */
   public static getInstance() {
     if (Evaluator.instance == null) {
       Evaluator.instance = new Evaluator();
@@ -22,17 +30,32 @@ class Evaluator {
     return Evaluator.instance;
   }
 
+  /**
+   * Allows the sheet data to populate the context hashmap
+   *
+   * @param context hash map of the sheet data
+   */
   public setContext(context: { [key: string]: string }) {
     this.context = context;
   }
 
+  /**
+   * Returns the value of a particular reference to the hashmap.
+   *
+   * @param reference
+   * @returns
+   */
+  public getContextValue(reference: string): string {
+    return this.context[reference];
+  }
+
   evaluate(node: ExpressionNode): string {
     if (node instanceof NumberNode) {
-      return node.number.toString();
+      return node.value.toString();
     } else if (node instanceof StringNode) {
       return node.value;
     } else if (node instanceof ReferenceNode) {
-      return this.context[node.ref] ?? "";
+      return this.context[node.ref] ?? node.ref;
     } else if (node instanceof OperationNode) {
       const left = this.evaluate(node.left);
       const right = this.evaluate(node.right);
@@ -51,7 +74,11 @@ class Evaluator {
     }
   }
 
-  private applyOp(op: string, left: string, right: string): number | string {
+  private applyOp(
+    op: string,
+    left: string,
+    right: string
+  ): number | string | string[] {
     switch (op) {
       case "+":
         return this.toNumber(left) + this.toNumber(right);
@@ -77,6 +104,11 @@ class Evaluator {
       default:
         throw new Error(`Unknown operator: ${op}`);
     }
+  }
+
+  private rangeOp(left: string, right: string): string[] {
+    console.log(right, left);
+    return [""];
   }
 
   private toNumber(value: string): number {
@@ -108,6 +140,9 @@ class Evaluator {
         return this.average(toNumbers(args));
       case "CONCAT":
         return args.join("");
+      case "COPY":
+        console.log(args);
+        return this.copyFunction(args);
       case "DEBUG":
         console.log(args[0]);
         return args[0];
@@ -123,6 +158,12 @@ class Evaluator {
   private average(args: number[]): number {
     return this.sum(args) / args.length;
   }
-}
 
+  private copyFunction(args: string[]): string {
+    const val: string = args[0];
+    const newPlace: string = args[1];
+    this.context[newPlace] = val;
+    return val;
+  }
+}
 export default Evaluator;
