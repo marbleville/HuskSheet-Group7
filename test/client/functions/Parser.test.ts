@@ -133,4 +133,17 @@ describe("Parser Test", () => {
     ]);
     expect(res).toEqual(expected);
   });
+
+  it("should parse sum and range formula correctly", () => {
+    const tokens: string[] = ["=SUM", "(", "$A1", ":", "$B4", ")"];
+    const res: ExpressionNode = parser.parse(tokens);
+    const expected: ExpressionNode = new FunctionCallNode("SUM", [
+      new OperationNode(
+        new ReferenceNode("$A1"),
+        ":",
+        new ReferenceNode("$B4")
+      ),
+    ]);
+    expect(res).toEqual(expected);
+  });
 });

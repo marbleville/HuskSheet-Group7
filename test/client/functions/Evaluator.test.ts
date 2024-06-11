@@ -6,6 +6,7 @@ import {
   OperationNode,
   ReferenceNode,
   StringNode,
+  FormulaNode,
 } from "../../../client/src/functions/Nodes";
 import Tokenizer from "../../../client/src/functions/Tokenizer";
 import Parser from "../../../client/src/functions/Parser";
@@ -72,21 +73,21 @@ describe("Evaluator Test", () => {
   });
 
   it("Checks that evaluator works for a given parser", () => {
-    const func: string = "=SUM(1, $A3)";
+    const func: string = "=SUM($A2, $A3)";
     const tokenizer = Tokenizer.getInstance();
     const tokens: string[] = tokenizer.tokenize(func);
     console.log("Tokens:", tokens); // Debug log
     const res: ExpressionNode = Parser.getInstance().parse(tokens);
     console.log("Parsed result:", res); // Debug log
     const expected: ExpressionNode = new FunctionCallNode("SUM", [
-      new NumberNode(1),
+      new ReferenceNode("$A2"),
       new ReferenceNode("$A3"),
     ]);
     expect(res).toEqual(expected);
 
     const evaluator: Evaluator = Evaluator.getInstance();
     evaluator.setContext({
-      $A1: "1",
+      $A2: "1",
       $A3: "3", // Added context for $A3
     });
 
@@ -123,16 +124,39 @@ describe("Evaluator Test", () => {
       new NumberNode(1),
       new ReferenceNode("$A2"),
     ]);
-    const debug = evaluator.evaluate(parsed);
+    evaluator.evaluate(parsed);
     const result = evaluator.getContextValue("$A2");
     const expected = "1";
     expect(result).toEqual(expected);
   });
 
-  it("Check that the range operation works", () => {
-    const parsed: ExpressionNode = new OperationNode("$A1", ":", "$B4");
-    const debug = evaluator.evaluate(parsed);
+  /**
+   * @todo this doesnt work
+   */
+  it("Check that copy function works properly", () => {
+    evaluator.setContext({
+      $A1: "Hello",
+      $A2: "works",
+    });
+    const parsed: ExpressionNode = new FunctionCallNode("COPY", [
+      new ReferenceNode("$A1"),
+      new ReferenceNode("$A2"),
+    ]);
+    evaluator.evaluate(parsed);
     const result = evaluator.getContextValue("$A2");
+    const expected = "Hello";
+    expect(result).toEqual(expected);
+  });
+
+  it("Check that the sum of range operation works", () => {
+    const parsed: ExpressionNode = new FunctionCallNode("SUM", [
+      new OperationNode(
+        new ReferenceNode("$A1"),
+        ":",
+        new ReferenceNode("$B4")
+      ),
+    ]);
+
     evaluator.setContext({
       $A1: "1",
       $A2: "2",
@@ -143,7 +167,67 @@ describe("Evaluator Test", () => {
       $B3: "7",
       $B4: "8",
     });
-    const expected = [1, 2, 3, 4, 5, 6, 7, 8];
+
+    const result = evaluator.evaluate(parsed);
+    const expected = "36";
     expect(result).toEqual(expected);
+  });
+
+  describe("Test that evalute works", () => {
+    test("should evaluate NumberNode correctly", () => {
+      const node = new NumberNode(42);
+      const result = evaluator.evaluate(node);
+      expect(result).toBe("42");
+    });
+
+    test("should evaluate StringNode correctly", () => {
+      const node = new StringNode("hello");
+      const result = evaluator.evaluate(node);
+      expect(result).toBe("hello");
+    });
+
+    test("should evaluate ReferenceNode correctly", () => {
+      evaluator.setContext({ $A1: "world" });
+      const node = new ReferenceNode("$A1");
+      const result = evaluator.evaluate(node);
+      expect(result).toBe("world");
+    });
+
+    test("should return reference name if ReferenceNode is not in context", () => {
+      const node = new ReferenceNode("$B1");
+      const result = evaluator.evaluate(node);
+      expect(result).toBe("$B1");
+    });
+
+    test("should evaluate OperationNode correctly for addition", () => {
+      const leftNode = new NumberNode(2);
+      const rightNode = new NumberNode(3);
+      const node = new OperationNode(leftNode, "+", rightNode);
+      const result = evaluator.evaluate(node);
+      expect(result).toBe("5");
+    });
+
+    test("should evaluate OperationNode correctly for subtraction", () => {
+      const leftNode = new NumberNode(5);
+      const rightNode = new NumberNode(3);
+      const node = new OperationNode(leftNode, "-", rightNode);
+      const result = evaluator.evaluate(node);
+      expect(result).toBe("2");
+    });
+
+    test("should evaluate FunctionCallNode correctly", () => {
+      const arg1 = new NumberNode(10);
+      const arg2 = new NumberNode(20);
+      const node = new FunctionCallNode("SUM", [arg1, arg2]);
+      const result = evaluator.evaluate(node);
+      expect(result).toBe("30");
+    });
+
+    test("should evaluate FormulaNode correctly", () => {
+      const innerNode = new NumberNode(7);
+      const node = new FormulaNode(innerNode);
+      const result = evaluator.evaluate(node);
+      expect(result).toBe("7");
+    });
   });
 });

@@ -246,4 +246,20 @@ describe("Tokenizer tests", () => {
       );
     });
   });
+
+  describe("Tokenizer tests for sum and range", () => {
+    const testCases: { reference: string; expected: string[] }[] = [
+      {
+        reference: "=SUM($A1:$B4)",
+        expected: ["=SUM", "(", "$A1", ":", "$B4", ")"],
+      },
+    ];
+
+    testCases.forEach(({ reference: func, expected }) => {
+      it(`Checks that tokenizer works properly for: ${func}`, () => {
+        const res: string[] = tokenizer.tokenize(func);
+        expect(res).toEqual(expected);
+      });
+    });
+  });
 });

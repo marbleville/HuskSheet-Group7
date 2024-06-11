@@ -1,3 +1,4 @@
+import { Operation } from "../../../types/types";
 import {
   FormulaNode,
   FunctionCallNode,
@@ -50,7 +51,20 @@ class Evaluator {
   }
 
   evaluate(node: ExpressionNode): string {
-    if (node instanceof NumberNode) {
+    if (node instanceof FunctionCallNode) {
+      if (
+        node.func === "SUM" &&
+        node.expressions.at(0) instanceof OperationNode
+      ) {
+        return this.sum(this.rangeOp(node.expressions.at(0))).toString();
+      } else {
+        const args = node.expressions.map((arg: ExpressionNode) =>
+          this.evaluate(arg)
+        );
+        const result = this.applyFunc(node.func, args);
+        return typeof result === "number" ? result.toString() : result;
+      }
+    } else if (node instanceof NumberNode) {
       return node.value.toString();
     } else if (node instanceof StringNode) {
       return node.value;
@@ -61,12 +75,6 @@ class Evaluator {
       const right = this.evaluate(node.right);
       const result = this.applyOp(node.op, left, right);
       return typeof result === "number" ? result.toString() : result;
-    } else if (node instanceof FunctionCallNode) {
-      const args = node.expressions.map((arg: ExpressionNode) =>
-        this.evaluate(arg)
-      );
-      const result = this.applyFunc(node.func, args);
-      return typeof result === "number" ? result.toString() : result;
     } else if (node instanceof FormulaNode) {
       return this.evaluate(node.expression);
     } else {
@@ -74,11 +82,7 @@ class Evaluator {
     }
   }
 
-  private applyOp(
-    op: string,
-    left: string,
-    right: string
-  ): number | string | string[] {
+  private applyOp(op: string, left: string, right: string): number | string {
     switch (op) {
       case "+":
         return this.toNumber(left) + this.toNumber(right);
@@ -106,9 +110,38 @@ class Evaluator {
     }
   }
 
-  private rangeOp(left: string, right: string): string[] {
-    console.log(right, left);
-    return [""];
+  private rangeOp(node: OperationNode<ExpressionNode>): number[] {
+    if (
+      node.left instanceof ReferenceNode &&
+      node.right instanceof ReferenceNode
+    ) {
+      console.log(node.left.ref);
+      // Get col and row of the reference
+      let colStart = "";
+      let rowStart = "";
+      for (let i = 1; i < node.left.ref.length; i++) {
+        if (/^-?\d+(\.\d+)?$/.test(node.left.ref.charAt(i))) {
+          colStart += node.left.ref.charAt(i);
+        } else {
+          rowStart += node.left.ref.charAt(i);
+        }
+      }
+      console.log(colStart, rowStart);
+
+      let colEnd = "";
+      let rowEnd = "";
+      for (let i = 1; i < node.right.ref.length; i++) {
+        if (/^-?\d+(\.\d+)?$/.test(node.right.ref.charAt(i))) {
+          colEnd += node.right.ref.charAt(i);
+        } else {
+          rowEnd += node.right.ref.charAt(i);
+        }
+      }
+      console.log(colEnd, rowEnd);
+      // get the values from the left column to the right and add them to an array
+      // double forloop over the context start and end
+    }
+    return [1];
   }
 
   private toNumber(value: string): number {
@@ -159,11 +192,21 @@ class Evaluator {
     return this.sum(args) / args.length;
   }
 
+  /**
+   * Takes in the new value which can be anything then change the second
+   *
+   * @param args
+   * @returns
+   */
   private copyFunction(args: string[]): string {
     const val: string = args[0];
     const newPlace: string = args[1];
+    console.log(val);
+    console.log(newPlace);
+    // Need to have access to the reference string do not convert here
     this.context[newPlace] = val;
-    return val;
+
+    return this.context[newPlace];
   }
 }
 export default Evaluator;
