@@ -27,10 +27,12 @@ const Cell: React.FC<CellProps> = ({
   const [value, setValue] = useState(cellValue);
   const [prevValue, setPrevValue] = useState(cellValue);
   const [error, setError] = useState(false);
+  const [rendered, setRendered] = useState(false);
 
   useEffect(() => {
-    if (!isUpdated && cellValue !== "") {
+    if (!rendered && !isUpdated && cellValue && cellValue !== "" && cellValue !== "EOF") {
       initialEvaluate(); // Evaluate the loaded cell content
+      setRendered(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sheetData]);
@@ -85,6 +87,11 @@ const Cell: React.FC<CellProps> = ({
   };
 
   const initialEvaluate = () => {
+    if (cellValue === "") {
+      setValue("");
+      setPrevValue("");
+      return;
+    }
     evaluator.setContext(sheetData);
     let result: string = "";
     let isError = false;
@@ -95,6 +102,7 @@ const Cell: React.FC<CellProps> = ({
       console.log('Initial Evaluation Result:', result);
     } catch (error) {
       isError = true;
+      //console.log(error)
     }
 
     if (isError) {
