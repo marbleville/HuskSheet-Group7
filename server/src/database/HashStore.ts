@@ -2,8 +2,9 @@ import { Ref, Term, Payload, ID } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
 import DatabaseQueries from "../../../types/queries";
 import { GetAllUpdates, GetSheetID } from "../database/db";
-const accessSheetMap = 0;
-const accessUpdateID = 1;
+import { parse } from "path";
+const getTerm = 0;
+const getID = 1;
 
 /**
  * Singleton class that stores a cache of each of the sheets in the database.
@@ -12,9 +13,10 @@ const accessUpdateID = 1;
  * @author marbleville, huntebrodie
  */
 export default class HashStore {
-	// Array of maps and IDs where each map represents a sheet and contains all associated cell data
-	// and the ID is the id of the last accepted update
-	private static sheets: Array<[Map<Ref, Term>, ID]>;
+	// An array of tuples representing the current state of each sheet in the database
+	// The ref key is the cell where [Term, ID] is a tuple of the value of
+	// the cell and the ID of the update that set that value.
+	private static sheets: Array<Map<Ref, [Term, number]>>;
 
 	/**
 	 * Initializes the HashStore with the current state of the database.
@@ -28,7 +30,7 @@ export default class HashStore {
 			return;
 		}
 
-		HashStore.sheets = new Array<[Map<Ref, Term>, ID]>();
+		HashStore.sheets = new Array<Map<Ref, [Term, number]>>();
 
 		// every update in the db that has been accepted by the owner
 		let allOwnerUpdates =
@@ -53,7 +55,7 @@ export default class HashStore {
 				payloadArr.length == 0 ||
 				HashStore.sheets[sheetID] == undefined
 			) {
-				HashStore.sheets[sheetID] = [new Map<Ref, Term>(), "0"];
+				HashStore.sheets[sheetID] = new Map<Ref, [Term, number]>();
 			}
 
 			payloadArr.forEach((cellChange) => {
@@ -62,10 +64,7 @@ export default class HashStore {
 					sheetID
 				);
 
-				HashStore.sheets[sheetID][accessSheetMap].set(refObj, value);
-
-				HashStore.sheets[sheetID][accessUpdateID] =
-					update.updateid.toString();
+				HashStore.sheets[sheetID].set(refObj, [value, update.updateid]);
 			});
 		});
 	}
@@ -85,7 +84,7 @@ export default class HashStore {
 	public static async getSheetPayload(
 		publisher: string,
 		sheetName: string,
-		id: number = 0
+		updateID: number = 0
 	): Promise<[Payload, ID]> {
 		let sheetID: number = await HashStore.getSheetID(publisher, sheetName);
 
@@ -95,20 +94,24 @@ export default class HashStore {
 
 		// Initialize the sheet hash is the sheet has no updates
 		if (HashStore.sheets[sheetID] == undefined) {
-			HashStore.sheets[sheetID] = [new Map<Ref, Term>(), "0"];
+			HashStore.sheets[sheetID] = new Map<Ref, [Term, number]>();
 		}
 
-		let sheetMap = HashStore.sheets[sheetID][accessSheetMap];
+		let sheetMap = HashStore.sheets[sheetID];
 
 		let payload = "";
+		let maxID = 0;
 
-		for (let [key, value] of sheetMap) {
+		for (let [key, [value, id]] of sheetMap) {
 			// Would be possible to add support for getting updates during
 			// runtime with IDs here
-			payload += "$" + key.column + key.row + " " + value + "\n";
+			if (id > updateID) {
+				payload += "$" + key.column + key.row + " " + value + "\n";
+				maxID = id > maxID ? id : maxID;
+			}
 		}
 
-		return [payload, HashStore.sheets[sheetID][accessUpdateID]];
+		return [payload, maxID.toString()];
 	}
 
 	/**
@@ -134,10 +137,10 @@ export default class HashStore {
 
 		// Initialize the sheet hash is the sheet has no updates
 		if (HashStore.sheets[sheetID] == undefined) {
-			HashStore.sheets[sheetID] = [new Map<Ref, Term>(), "0"];
+			HashStore.sheets[sheetID] = new Map<Ref, [Term, number]>();
 		}
 
-		let sheetMap = HashStore.sheets[sheetID][accessSheetMap];
+		let sheetMap = HashStore.sheets[sheetID];
 
 		let updates = payload.split("\n");
 
@@ -149,9 +152,8 @@ export default class HashStore {
 		for (let update of updates) {
 			let [refObj, value] = HashStore.getRefObjAndValue(update, sheetID);
 
-			sheetMap.set(refObj, value);
-
-			HashStore.sheets[sheetID][accessUpdateID] = lastID.toString();
+			// FIX THIS DONT FORGET
+			sheetMap.set(refObj, [value, lastID]);
 		}
 	}
 
@@ -216,7 +218,7 @@ export default class HashStore {
 		let refInMap = null;
 
 		// looks if the ref is already in the map
-		HashStore.sheets[sheetID][accessSheetMap].forEach((value, key) => {
+		HashStore.sheets[sheetID].forEach(([value, id], key) => {
 			if (
 				column &&
 				key.column == column.join("") &&
