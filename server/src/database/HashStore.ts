@@ -7,10 +7,12 @@ const accessUpdateID = 1;
 
 /**
  * Singleton class that stores a cache of each of the sheets in the database.
+ * This is used when retrieving the current state of a sheet to improve performance.
  *
  * @author marbleville, huntebrodie
  */
 export default class HashStore {
+	// Array of maps where each map represents a sheet and contains all associated cell data
 	private static sheets: Array<[Map<Ref, Term>, ID]>;
 
 	/**
@@ -67,7 +69,10 @@ export default class HashStore {
 	}
 
 	/**
-	 * @param publisher the publisher of the sheet ot get the payload for
+	 * Returns the current accepted state of the sheet with the given name and
+	 * publisher in a newline delimited string.
+	 *
+	 * @param publisher the publisher of the sheet to get the payload for
 	 * @param sheetName the name of the sheet to get the payload for
 	 *
 	 * @returns a newline delimited string represting the value of each cell
