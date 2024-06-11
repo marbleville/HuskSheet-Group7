@@ -1,8 +1,0 @@
-/**
-* Description
-*
-* @param name description
-* @returns description
-* 
-* @author github_username
-*/

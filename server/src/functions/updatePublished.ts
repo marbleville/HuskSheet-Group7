@@ -19,34 +19,41 @@ async function updatePublished(argument: Argument): Promise<void> {
 	let sheetName: Sheet = argument.sheet;
 	let payload: Payload = argument.payload;
 
-	const database = DatabaseInstance.getInstance();
-
-	const queryString = DatabaseQueries.updatePublished(
-		sheetName,
-		publisher,
-		payload
-	);
-
 	if (checkPayloadFormat(payload) === false) {
 		throw new Error("Invalid payload format");
 	}
 
 	try {
-		await database.query<GetUpdateRow>(queryString);
+		const database = DatabaseInstance.getInstance();
 
-		// gets the updates for the subscription so we can greab ids
+		const queryString = DatabaseQueries.updatePublished(
+			sheetName,
+			publisher,
+			payload
+		);
+
+		// inserts the update into the database
+		await database.query(queryString);
+
+		// gets the updates for the subscription so we can grab ids
 		let updates: GetUpdateRow[] = await database.query<GetUpdateRow>(
 			DatabaseQueries.getUpdatesForSubscription(publisher, sheetName, 0)
 		);
 
-		let lastID =
-			updates.length > 0 ? updates[updates.length - 1].updateid : 0;
+		let payloadUpdate: GetUpdateRow = updates.reduce((update) =>
+			update.changes.includes(payload)
+				? update
+				: updates[updates.length - 1]
+		);
+
+		let payloadID: number = payloadUpdate.updateid;
+
 		await HashStore.initHash();
 		await HashStore.updateSheetPayload(
 			sheetName,
 			publisher,
 			payload,
-			lastID
+			payloadID
 		);
 
 		// now we need to update the latest accepted version of the sheet

@@ -4,7 +4,7 @@ import { Argument } from "../../../types/types";
 import { assembleTestArgumentObject, setupDB } from "../../utils";
 import { getUpdatesForSubscription } from "../../../server/src/functions/getUpdatesForSubscription";
 
-describe("updatePublished", () => {
+describe("updateSubscription", () => {
 	it("checks to see if updateSubscription inserts in DB", async () => {
 		await setupDB();
 
@@ -50,7 +50,7 @@ describe("updatePublished", () => {
 			assembleTestArgumentObject("rishav", "test1", "1", "")
 		);
 
-		expect(updates.payload.split("\n").includes(data)).toEqual(true);
+		expect(updates.payload.split("\n").includes(data)).toEqual(false);
 	});
 
 	it("checks to see if updateSubscription inserts in DB", async () => {

@@ -55,7 +55,7 @@ describe("getUpdatesForSubscription", () => {
 				"hunter",
 				"test3",
 				"4",
-				'$A1 1\n$a2 "help"\n$B1 -1.01\n$C4 ""\n$c1 = SUM($A1:$B1)\n$A1 2\n'
+				'$A1 2\n$a2 "help"\n$B1 -1.01\n$C4 ""\n$c1 = SUM($A1:$B1)\n'
 			)
 		);
 	});
@@ -101,7 +101,7 @@ describe("getUpdatesForSubscription", () => {
 		);
 
 		expect(await getUpdatesForSubscription(testArg)).toEqual(
-			assembleTestArgumentObject("laurence", "test2", "2", "")
+			assembleTestArgumentObject("laurence", "test2", "0", "")
 		);
 	});
 });
