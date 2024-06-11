@@ -1,5 +1,7 @@
+import { SheetDataMap } from "../../../types/types";
+
 /**
- * @description 
+ * @description Takes a hashmap of sheet data and converts it to CSV
  *
  * @author hunterbrodie
  */

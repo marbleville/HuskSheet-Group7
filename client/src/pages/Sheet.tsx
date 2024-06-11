@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import Cell from "./Cell";
 import { fetchWithAuth } from "../utils";
 import "../styles/Sheet.css";
-import { Argument } from "../../../types/types";
+import { Argument, SheetDataMap } from "../../../types/types";
 import SheetUpdateHandler from "../sheetUpdateHandler";
 import Popup from "./Popup";
 
@@ -13,11 +13,6 @@ const INITIALSHEETCOLUMNSIZE = 10;
 
 // Represents the client's relationship to this sheet.
 type SheetRelationship = "OWNER" | "SUBSCRIBER";
-
-// Represents data stored in the sheet as a mapping of REF:TERM pairs. 
-interface SheetDataMap {
-  [ref: string]: string;
-};
 
 
 /**
