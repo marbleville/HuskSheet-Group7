@@ -28,6 +28,7 @@ import HashStore from "./database/HashStore";
 import DatabaseInstance from "./database/databaseInstance";
 import DatabaseQueries from "../../types/queries";
 import { get } from "http";
+import { send } from "process";
 
 const app: Application = express();
 
@@ -102,7 +103,7 @@ app.post("/api/v1/createSheet", async (req: Request, res: Response) => {
 	if (await isUserPublisher(req.headers.authorization)) {
 		await runEndpointFuntion(req, res, createSheet);
 	} else {
-		res.status(401).send("Unauthorized");
+		sendError(res, "createSheet", new Error("Unauthorized"));
 	}
 });
 
@@ -178,7 +179,7 @@ app.post(
 		) {
 			await runEndpointFuntion(req, res, getUpdatesForPublished);
 		} else {
-			res.status(401).send("Unauthorized");
+			sendError(res, "getUpdatesForPublished", new Error("Unauthorized"));
 		}
 	}
 );
@@ -195,7 +196,7 @@ app.post("/api/v1/updatePublished", async (req: Request, res: Response) => {
 	) {
 		await runEndpointFuntion(req, res, updatePublished);
 	} else {
-		res.status(401).send("Unauthorized");
+		sendError(res, "updatePublished", new Error("Unauthorized"));
 	}
 });
 
@@ -210,7 +211,7 @@ app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 	try {
 		// check if the user is authenticated or if a user is trying to update their own sheet
 		if (!(await authenticate(req.headers.authorization))) {
-			res.status(401).send("Unauthorized");
+			sendError(res, "updateSubscription", new Error("Unauthorized"));
 			return;
 		}
 

@@ -150,7 +150,7 @@ async function runEndpointFuntion(
 	let result: Result;
 
 	if (!(await authenticate(req.headers.authorization))) {
-		res.status(401).send("Unauthorized");
+		sendError(res, func.name, new Error("Unauthorized"));
 		return;
 	}
 
