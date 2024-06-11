@@ -30,7 +30,8 @@ VALUES
 	('test1', 1),
 	('test2', 2),
 	('test3', 5),
-  ('test4', 5);
+  ('test4', 5),
+  ('test5-private', 5);
 
 INSERT INTO
   updates (updatetime, sheet, owner, changes)

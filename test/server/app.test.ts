@@ -286,7 +286,7 @@ describe("Tests auth checks in app.ts", () => {
 			.auth("caroline", "1234")
 			.send(assembleTestArgumentObject("laurence", "", "", ""));
 
-		expect(response.statusCode).toBe(401);
+		expect(JSON.parse(response.text).success).toBeFalsy();
 	});
 
 	it("getSheets should should fail if no body is provided", async () => {
