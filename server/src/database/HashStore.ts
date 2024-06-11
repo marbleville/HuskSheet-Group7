@@ -7,7 +7,7 @@ import { GetAllUpdates, GetSheetID } from "../database/db";
  * Singleton class that stores a cache of each of the sheets in the database.
  * This is used when retrieving the current state of a sheet to improve performance.
  *
- * @author marbleville, huntebrodie
+ * @author marbleville
  */
 export default class HashStore {
 	// An array of tuples representing the current state of each sheet in the database
@@ -19,7 +19,7 @@ export default class HashStore {
 	 * Initializes the HashStore with the current state of the database.
 	 * Ensures the HashStore is a singleton instance.
 	 *
-	 * @author marbleville, huntebrodie
+	 * @author marbleville
 	 */
 	public static async initHash(): Promise<void> {
 		// singleton
@@ -76,7 +76,7 @@ export default class HashStore {
 	 * @returns a newline delimited string represting the value of each cell
 	 * 			in the sheet
 	 *
-	 * @author marbleville, huntebrodie
+	 * @author marbleville
 	 */
 	public static async getSheetPayload(
 		publisher: string,
@@ -119,7 +119,7 @@ export default class HashStore {
 	 * @param payload the payload coantinig new changes to add to the cache
 	 * @param payloadID the ID of this payload in the db
 	 *
-	 * @author marbleville, huntebrodie
+	 * @author marbleville
 	 */
 	public static async updateSheetPayload(
 		sheetName: string,
@@ -175,7 +175,7 @@ export default class HashStore {
 	 *
 	 * @returns the ID of the sheet with the given name and publisher
 	 *
-	 * @author marbleville, huntebrodie
+	 * @author marbleville
 	 */
 	private static async getSheetID(
 		publisher: string,
@@ -201,7 +201,7 @@ export default class HashStore {
 	 *
 	 * @returns a Ref object representing the reference
 	 *
-	 * @author marbleville, huntebrodie
+	 * @author marbleville
 	 */
 	private static getRefFromString(ref: string, sheetID: number): Ref {
 		let refWiothout$ = ref.substring(1);
