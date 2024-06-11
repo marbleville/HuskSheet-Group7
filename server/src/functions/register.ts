@@ -6,7 +6,7 @@ import DatabaseQueries from "../../../types/queries";
  *
  *  @param username client username.
  *  @param password client password.
- *  @author kris-amerman, eduardo-ruiz-garay, rishavsarma5
+ *  @author marbleville
  *
  * @TODO change to be create new user
  */

@@ -1,6 +1,5 @@
 import { updatePublished } from "../../../server/src/functions/updatePublished";
 import { getUpdatesForSubscription } from "../../../server/src/functions/getUpdatesForSubscription";
-import { Argument } from "../../../types/types";
 import { assembleTestArgumentObject, setupDB } from "../../utils";
 
 describe("updatePublished", () => {
@@ -84,7 +83,7 @@ describe("updatePublished", () => {
 		}
 	});
 
-	it("checks to see if updatePublished thorws an error with malformed data", async () => {
+	it("checks to see if updatePublished throws an error with malformed data", async () => {
 		await setupDB();
 
 		let data: string = "$8 =dsadsa + 3213";

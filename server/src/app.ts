@@ -9,8 +9,10 @@ import {
 	clientAndPublisherMatch,
 	doesUserExist,
 	isUserPublisher,
+	sendError,
+	getArgument,
 } from "./utils";
-import { Result, Argument } from "../../types/types";
+import { Result } from "../../types/types";
 import {
 	register,
 	getSheets,
@@ -23,9 +25,9 @@ import {
 	updateSubscription,
 } from "./serverFunctionsExporter";
 import HashStore from "./database/HashStore";
-
 import DatabaseInstance from "./database/databaseInstance";
 import DatabaseQueries from "../../types/queries";
+import { get } from "http";
 
 const app: Application = express();
 
@@ -40,17 +42,12 @@ app.use(cors(options));
 app.use(express.json());
 
 /**
- * @description Register states:
- * 		1.  authHeader is not provided => return false (Unauthorized)
- * 		2.  publisher does not exist => create publisher, return true (Authorized)
- * 		3.  publisher exists, password does not match => return false (Unauthorized)
- * 		4.  publisher exists, password matches => return true (Authorized)
+ * @description Register will respond in one of three ways:
+ * 		1. If the user does not exist, it will create a new user and respond with a fail in the response object.
+ * 		2. If the user exists, it will register the user as a publisher and respond with a success in the response object.
+ * 		3. If the provided auth header fials to authenticate, it will respond with a 401 status code.
  *
- * 		Generally, two outcomes exist:
- * 		1. success: false => Unauthorized
- * 		2. success: true  => Authorized
- *
- * @author kris-amerman
+ * @author marbleville
  */
 app.get("/api/v1/register", async (req: Request, res: Response) => {
 	const database = DatabaseInstance.getInstance();
@@ -61,11 +58,16 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 	try {
 		let [username, password] = parseAuthHeader(authHeader);
 
-		if (!(await doesUserExist(authHeader))) {
+		// ensure username and password aren't empty
+		if (
+			username &&
+			password &&
+			!(await doesUserExist(username, password))
+		) {
 			await database.query(
 				DatabaseQueries.addNewPublisher(username, password)
 			);
-			result.message = `Register: user does not exist. Created new user.`;
+			result.message = `register: User does not exist. Created new user.`;
 			res.send(JSON.stringify(result));
 		} else {
 			if (!(await authenticate(req.headers.authorization))) {
@@ -78,10 +80,7 @@ app.get("/api/v1/register", async (req: Request, res: Response) => {
 			res.send(JSON.stringify(result));
 		}
 	} catch (error) {
-		const err: Error = error as Error;
-		console.error(err);
-		result.message = `Register: ${err.message}`;
-		res.send(JSON.stringify(result));
+		sendError(res, "register", error);
 	}
 });
 
@@ -113,7 +112,23 @@ app.post("/api/v1/createSheet", async (req: Request, res: Response) => {
  * @author marbleville
  */
 app.post("/api/v1/getSheets", async (req: Request, res: Response) => {
-	await runEndpointFuntion(req, res, getSheets);
+	try {
+		if (!(await authenticate(req.headers.authorization))) {
+			throw new Error("Unauthorized");
+		}
+
+		const authHeader = req.headers.authorization;
+
+		const [username] = parseAuthHeader(authHeader);
+
+		let arg = getArgument(req);
+		let sheets = await getSheets(arg, username);
+
+		let result = assembleResultObject(true, null, sheets);
+		res.send(JSON.stringify(result));
+	} catch (error) {
+		sendError(res, "getSheets", error);
+	}
 });
 
 /**
@@ -128,7 +143,12 @@ app.post("/api/v1/deleteSheet", async (req: Request, res: Response) => {
 	) {
 		await runEndpointFuntion(req, res, deleteSheet);
 	} else {
-		res.status(401).send("Unauthorized");
+		let result = assembleResultObject(
+			false,
+			"You do not own this sheet",
+			[]
+		);
+		res.send(result);
 	}
 });
 
@@ -188,6 +208,7 @@ app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 	let result: Result = assembleResultObject(false, null, []);
 
 	try {
+		// check if the user is authenticated or if a user is trying to update their own sheet
 		if (
 			!(await authenticate(req.headers.authorization)) ||
 			clientAndPublisherMatch(req, req.headers.authorization)
@@ -196,11 +217,8 @@ app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 			return;
 		}
 
-		if (JSON.stringify(req.body) === "{}") {
-			throw new Error("No body provided.");
-		}
+		let argument = getArgument(req);
 
-		let argument = req.body as Argument;
 		const authHeader = req.headers.authorization;
 
 		const [username] = parseAuthHeader(authHeader);
@@ -208,11 +226,10 @@ app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 		await updateSubscription(argument, username);
 
 		result.success = true;
+
 		res.send(JSON.stringify(result));
 	} catch (error) {
-		const err: Error = error as Error;
-		result.message = `updateSubscription: ${err.message}`;
-		res.send(JSON.stringify(result));
+		sendError(res, "updateSubscription", error);
 	}
 });
 

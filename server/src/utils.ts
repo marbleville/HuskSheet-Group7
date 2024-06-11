@@ -32,6 +32,15 @@ function checkPayloadFormat(payload: string): boolean {
 	return true;
 }
 
+/**
+ * Checks if the user is a publisher.
+ *
+ * @param header the authorization header from the request
+ *
+ * @returns a boolean indicating whether the user is a publisher
+ *
+ * @author marbleville
+ */
 async function isUserPublisher(header: string | undefined): Promise<boolean> {
 	if (header === undefined) {
 		return false;
@@ -66,10 +75,6 @@ function clientAndPublisherMatch(
 		return false;
 	}
 
-	if (authHeader === undefined) {
-		return false;
-	}
-
 	const [username] = parseAuthHeader(authHeader);
 	const publisher = req.body.publisher;
 
@@ -87,7 +92,7 @@ function clientAndPublisherMatch(
  * @returns The argument object containing the last update id and payload
  * containing all changes
  *
- * @author marbleville, huntebrodie
+ * @author huntebrodie
  */
 async function getUpdatesHelper(
 	argument: Argument,
@@ -150,25 +155,47 @@ async function runEndpointFuntion(
 	}
 
 	try {
-		if (JSON.stringify(req.body) === "{}" && func.name !== "register" && func.name !== "getPublishers") {
-			throw new Error("No body provided.");
-		}
+		let value: Argument[] | Argument | void;
 
-		let argument = req.body as Argument;
-		let value: Argument[] | Argument | void = await func(argument);
+		if (func.name !== "register" && func.name !== "getPublishers") {
+			let argument = getArgument(req);
+			value = await func(argument);
+		} else {
+			value = await func({} as Argument);
+		}
 
 		result = assembleResultObject(true, null, value);
 		res.send(JSON.stringify(result));
 	} catch (error) {
-		const err: Error = error as Error;
-		console.error(err);
-		result = assembleResultObject(
-			false,
-			`${func.name}: ` + err.message,
-			[]
-		);
-		res.send(JSON.stringify(result));
+		sendError(res, func.name, error);
 	}
+}
+
+function sendError(res: Response, functionName: string, error: any): void {
+	const err = error as Error;
+	let errorMessage = `${functionName}: ${err.message}`;
+	let result = assembleResultObject(false, errorMessage, []);
+	res.send(JSON.stringify(result));
+}
+
+/**
+ * Gets the argument object from the body of the request
+ *
+ * @param req the request object from the client
+ *
+ * @returns the argument object from body of the request
+ * @throws an error if the body is empty
+ *
+ * @author marbleville
+ */
+function getArgument(req: Request): Argument {
+	if (JSON.stringify(req.body) === "{}") {
+		throw new Error("No body provided.");
+	}
+
+	let argument = req.body as Argument;
+
+	return argument;
 }
 
 /**
@@ -179,7 +206,7 @@ async function runEndpointFuntion(
  *
  * @returns [username, password] string array
  *
- * @author kris-amerman, eduardo-ruiz-garay
+ * @author kris-amerman
  */
 function parseAuthHeader(authHeader: string | undefined): string[] {
 	if (authHeader === undefined) {
@@ -192,12 +219,24 @@ function parseAuthHeader(authHeader: string | undefined): string[] {
 	return decodedAuthHeader.split(":").map((str) => str.trimEnd());
 }
 
-async function doesUserExist(authHeader: string | undefined): Promise<boolean> {
-	if (authHeader === undefined) {
+/**
+ * Checks if the user exists in the database.
+ *
+ * @param username the username to check
+ * @param password the password to check
+ *
+ * @returns a boolean indicating whether the user exists
+ *
+ * @author kris-amerman
+ */
+async function doesUserExist(
+	username: string,
+	password: string
+): Promise<boolean> {
+	if (!username || !password) {
 		return false;
 	}
 
-	const [username] = parseAuthHeader(authHeader);
 	const database = DatabaseInstance.getInstance();
 
 	let queryString = DatabaseQueries.getUser(username);
@@ -216,29 +255,17 @@ async function doesUserExist(authHeader: string | undefined): Promise<boolean> {
  *
  * @returns True if the user is authenticated, false otherwise
  *
- * @author marbleville, eduardo-ruiz-garay
+ * @author marbleville
  */
 async function authenticate(authHeader: string | undefined): Promise<boolean> {
 	if (authHeader === undefined) {
 		return false;
 	}
 
-	/**
-	 * authHeader is the authorization header from the request with the form of
-	 * username:password encoded in base64
-	 *
-	 * Split the authHeader by the colon and decode to get the username
-	 * and password
-	 *
-	 * Search the Users table for the username and check the password
-	 *
-	 * If either fails, return false, otherwise return true
-	 */
 	const [username, password] = parseAuthHeader(authHeader);
 	const database = DatabaseInstance.getInstance();
 
-	let queryString = `SELECT * FROM publishers WHERE username = '${username}' 
-	AND pass = '${password}';`;
+	let queryString = DatabaseQueries.authenticate(username, password);
 
 	let result = null;
 	try {
@@ -287,4 +314,6 @@ export {
 	checkPayloadFormat,
 	doesUserExist,
 	isUserPublisher,
+	sendError,
+	getArgument,
 };
