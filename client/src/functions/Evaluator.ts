@@ -32,7 +32,7 @@ class Evaluator {
     } else if (node instanceof StringNode) {
       return node.value;
     } else if (node instanceof ReferenceNode) {
-      return this.context[node.ref].trim().replace(/"/g, "") ?? "";
+      return this.context[node.ref].trim().replace(/"/g, "") ?? node.ref.replace(/"/g, "");
     } else if (node instanceof OperationNode) {
       const left = this.evaluate(node.left);
       const right = this.evaluate(node.right);

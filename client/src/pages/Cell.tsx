@@ -11,7 +11,10 @@ interface CellProps {
   isUpdated: boolean;
 }
 
-const ERROR_TIMEOUT = 1500;
+//const ERROR_TIMEOUT = 1500;
+
+const parser = Parser.getInstance()
+const evaluator = Evaluator.getInstance();
 
 // Inside the Cell component
 const Cell: React.FC<CellProps> = ({
@@ -26,9 +29,11 @@ const Cell: React.FC<CellProps> = ({
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    setValue(cellValue);
-    setPrevValue(cellValue);
-  }, [cellValue]);
+    if (!isUpdated && cellValue !== "") {
+      initialEvaluate(); // Evaluate the loaded cell content
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sheetData]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value;
@@ -55,8 +60,6 @@ const Cell: React.FC<CellProps> = ({
       onUpdate("", cellId);
       return;
     }
-    const parser = Parser.getInstance()
-    const evaluator = Evaluator.getInstance();
     evaluator.setContext(sheetData);
     let result: string = "";
     let isError = false;
@@ -73,11 +76,35 @@ const Cell: React.FC<CellProps> = ({
       result = "";
       setValue(result);
       setError(true);
-      setTimeout(() => {
-        setError(false);
-      }, ERROR_TIMEOUT);
+      // setTimeout(() => {
+      //   setError(false);
+      // }, ERROR_TIMEOUT);
     }
     onUpdate(result, cellId);
+    setPrevValue(result);
+  };
+
+  const initialEvaluate = () => {
+    evaluator.setContext(sheetData);
+    let result: string = "";
+    let isError = false;
+
+    try {
+      const parsedNode = parser.parse(cellValue);
+      result = evaluator.evaluate(parsedNode);
+      console.log('Initial Evaluation Result:', result);
+    } catch (error) {
+      isError = true;
+    }
+
+    if (isError) {
+      result = cellValue;
+      setError(true);
+      // setTimeout(() => {
+      //   setError(false);
+      // }, ERROR_TIMEOUT);
+    }
+    setValue(result);
     setPrevValue(result);
   };
 
