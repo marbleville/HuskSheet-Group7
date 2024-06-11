@@ -1,6 +1,5 @@
 import { updatePublished } from "../../../server/src/functions/updatePublished";
 import { getUpdatesForSubscription } from "../../../server/src/functions/getUpdatesForSubscription";
-import { Argument } from "../../../types/types";
 import { assembleTestArgumentObject, setupDB } from "../../utils";
 
 describe("updatePublished", () => {
@@ -97,6 +96,4 @@ describe("updatePublished", () => {
 			expect(error).toMatch("Invalid payload format");
 		}
 	});
-
-
 });
