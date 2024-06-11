@@ -19,19 +19,19 @@ async function updatePublished(argument: Argument): Promise<void> {
 	let sheetName: Sheet = argument.sheet;
 	let payload: Payload = argument.payload;
 
-	const database = DatabaseInstance.getInstance();
-
-	const queryString = DatabaseQueries.updatePublished(
-		sheetName,
-		publisher,
-		payload
-	);
-
 	if (checkPayloadFormat(payload) === false) {
 		throw new Error("Invalid payload format");
 	}
 
 	try {
+		const database = DatabaseInstance.getInstance();
+
+		const queryString = DatabaseQueries.updatePublished(
+			sheetName,
+			publisher,
+			payload
+		);
+
 		// inserts the update into the database
 		await database.query(queryString);
 
