@@ -1,43 +1,43 @@
-/**
- * @jest-environment jest-environment-jsdom
- */
+// /**
+//  * @jest-environment jest-environment-jsdom
+//  */
 
-import { fetchWithAuth } from "../../client/src/utils"; 
+// import { fetchWithAuth } from "../../client/src/utils";
 
-describe('fetchWithAuth function', () => {
-  let consoleErrorMock: jest.SpyInstance;
+// describe('fetchWithAuth function', () => {
+//   let consoleErrorMock: jest.SpyInstance;
 
-  beforeEach(() => {
-    // Mocking sessionStorage
-    Object.defineProperty(window, 'sessionStorage', {
-      value: {
-        getItem: jest.fn((key) => {
-          if (key === 'username') return 'testUser';
-          if (key === 'password') return 'testPassword';
-          return null;
-        }),
-        setItem: jest.fn(),
-        removeItem: jest.fn(),
-        clear: jest.fn(),
-      },
-      writable: true,
-    });
+//   beforeEach(() => {
+//     // Mocking sessionStorage
+//     Object.defineProperty(window, 'sessionStorage', {
+//       value: {
+//         getItem: jest.fn((key) => {
+//           if (key === 'username') return 'testUser';
+//           if (key === 'password') return 'testPassword';
+//           return null;
+//         }),
+//         setItem: jest.fn(),
+//         removeItem: jest.fn(),
+//         clear: jest.fn(),
+//       },
+//       writable: true,
+//     });
 
-    // Mocking fetch API
-    global.fetch = jest.fn().mockImplementation(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ success: true, data: 'testData' }),
-      })
-    );
+//     // Mocking fetch API
+//     global.fetch = jest.fn().mockImplementation(() =>
+//       Promise.resolve({
+//         ok: true,
+//         json: () => Promise.resolve({ success: true, data: 'testData' }),
+//       })
+//     );
 
-    // Mocking console.error
-    consoleErrorMock = jest.spyOn(console, 'error').mockImplementation(() => {});
-  });
+//     // Mocking console.error
+//     consoleErrorMock = jest.spyOn(console, 'error').mockImplementation(() => {});
+//   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+//   afterEach(() => {
+//     jest.clearAllMocks();
+//   });
 
   // it('should fetch data successfully with authorization headers', async () => {
   //   const url = 'https://example.com/api';
@@ -102,4 +102,4 @@ describe('fetchWithAuth function', () => {
   //   expect(onSuccess).not.toHaveBeenCalled();
   //   expect(onFailure).toHaveBeenCalledWith(new Error('Network error'));
   // });
-});
+//});

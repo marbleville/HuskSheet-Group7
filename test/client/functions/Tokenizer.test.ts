@@ -61,6 +61,10 @@ describe("Tokenizer tests", () => {
         func: "=DEBUG(SUM(1))",
         expected: ["=DEBUG", "(", "SUM", "(", "1", ")", ")"],
       },
+      {
+        func: "=COPY($A1, $A2)",
+        expected: ["=COPY", "(", "$A1", ",", "$A2", ")"],
+      },
     ];
 
     testCases.forEach(({ func, expected }) => {
@@ -103,6 +107,7 @@ describe("Tokenizer tests", () => {
       { op: "&", expected: ["&"] },
       { op: "|", expected: ["|"] },
       { op: "1:1", expected: ["1", ":", "1"] },
+      { op: "$A1:$A3", expected: ["$A1", ":", "$A3"] },
     ];
 
     testCases.forEach(({ op: func, expected }) => {
@@ -239,6 +244,22 @@ describe("Tokenizer tests", () => {
       expect(() => tokenizer.tokenize(parentheses)).toThrow(
         "Unexpected token at index 1 in formula:  "
       );
+    });
+  });
+
+  describe("Tokenizer tests for sum and range", () => {
+    const testCases: { reference: string; expected: string[] }[] = [
+      {
+        reference: "=SUM($A1:$B4)",
+        expected: ["=SUM", "(", "$A1", ":", "$B4", ")"],
+      },
+    ];
+
+    testCases.forEach(({ reference: func, expected }) => {
+      it(`Checks that tokenizer works properly for: ${func}`, () => {
+        const res: string[] = tokenizer.tokenize(func);
+        expect(res).toEqual(expected);
+      });
     });
   });
 });

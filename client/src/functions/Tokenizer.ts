@@ -6,7 +6,7 @@ class Tokenizer {
 
   //Creates a mapping with the type and the regex that accompanies it.
   private static tokenSpec: [string, RegExp][] = [
-    ["FUNCTION", /^=?(IF|SUM|MIN|AVG|MAX|CONCAT|COPY|DEBUG)/], // Matches functions
+    ["FUNCTION", /^=(IF|SUM|MIN|AVG|MAX|CONCAT|DEBUG|COPY)/], // Matches functions
     ["COMBINED_OPERATOR", /^(<=|>=|<>)/], // Matches <=, >=, <>
     ["OPERATOR", /^[+\-*/<>=&|,:]/], // Matches combined < and > operators
     ["NUMBER", /^[+-]?\d+(\.\d+)?/], // Updated to match optional leading + or -
