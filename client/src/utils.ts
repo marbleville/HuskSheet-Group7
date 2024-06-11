@@ -133,5 +133,5 @@ export const getColumnNumber = (letter: string): number => {
   for (let i = 0; i < letter.length; i++) {
     columnNumber = columnNumber * 26 + (letter.charCodeAt(i) - 65 + 1);
   }
-  return columnNumber - 1;
+  return columnNumber;
 };

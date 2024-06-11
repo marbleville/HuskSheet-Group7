@@ -118,13 +118,9 @@ const Sheet: React.FC = () => {
     for (let col = 0; col < numCols; col++) {
       const colLetter = getHeaderLetter(col);
       const cellID = `$${colLetter}${newRowNumber}`;
+      // If there's an update for this cellID, use the provided value
       newSheetData[cellID] = "";
-      prevCellDataRef.current[cellID] = "";
-      setManualUpdates((prevManualUpdates) => {
-        const newManualUpdates = new Set(prevManualUpdates);
-        newManualUpdates.add(cellID);
-        return newManualUpdates;
-      });
+      prevCellDataRef.current[cellID] = newSheetData[cellID];
     }
 
     setSheetData(newSheetData);
@@ -167,11 +163,7 @@ const Sheet: React.FC = () => {
     for (let row = 1; row <= numRows; row++) {
       const cellID = `$${newColumnLetter}${row}`;
       newSheetData[cellID] = "";
-      setManualUpdates((prevManualUpdates) => {
-        const newManualUpdates = new Set(prevManualUpdates);
-        newManualUpdates.add(cellID);
-        return newManualUpdates;
-      });
+      prevCellDataRef.current[cellID] = newSheetData[cellID];
     }
 
     setSheetData(newSheetData);
@@ -187,7 +179,7 @@ const Sheet: React.FC = () => {
       return;
     }
 
-    const lastColumnLetter = getHeaderLetter(numCols);
+    const lastColumnLetter = getHeaderLetter(numCols - 1);
 
     for (let row = 1; row <= numRows; row++) {
       const cellID = `$${lastColumnLetter}${row}`;
@@ -195,7 +187,6 @@ const Sheet: React.FC = () => {
         handleCellUpdate("", cellID);
       }
     }
-
     setNumCols((prevNumCols) => prevNumCols - 1);
   };
 
@@ -222,7 +213,7 @@ const Sheet: React.FC = () => {
     headers.push(
       <th key="delete-column-header" className="button-header">
         <button
-          onClick={deleteCol}
+          onClick={() => deleteCol()}
           className="delete-column-button"
           key="delete-column-button"
         >
@@ -291,7 +282,7 @@ const Sheet: React.FC = () => {
       <tr key="row-buttons">
         <td className="button-header">
           <button
-            onClick={deleteRow}
+            onClick={() => deleteRow()}
             className="delete-row-button"
             key="delete-row-button"
           >
@@ -325,8 +316,6 @@ const Sheet: React.FC = () => {
       for (const [ref, valueAtCell] of Object.entries(sheetData)) {
         const prevValueAtCell = prevCellDataRef.current[ref] || "";
         // Include cells with updated values or empty values if marked as manually updated
-        console.log(`manual update for ${ref}`);
-        console.log(JSON.stringify(manualUpdates, null, 2));
         if ((valueAtCell !== prevValueAtCell || valueAtCell === "") && manualUpdates.has(ref)) {
           payload.push(`${ref} ${valueAtCell}`);
         }
@@ -414,9 +403,6 @@ const Sheet: React.FC = () => {
             const sheetUpdateHandler = SheetUpdateHandler.getInstance();
             sheetUpdateHandler.setSheetSize(numRows, numCols);
             const updates = await sheetUpdateHandler.applyUpdates(update);
-            console.log("UPDATES")
-            console.log(updates);
-
             const { updatedSheetRow, updatedSheetCol} = sheetUpdateHandler.getUpdatedSheetSize();
 
             if (updatedSheetRow > numRows) {
@@ -461,9 +447,6 @@ const Sheet: React.FC = () => {
             const sheetUpdateHandler = SheetUpdateHandler.getInstance();
             sheetUpdateHandler.setSheetSize(numRows, numCols);
             const updates = await sheetUpdateHandler.applyUpdates(update);
-            console.log("UPDATES")
-            console.log(updates);
-
             const { updatedSheetRow, updatedSheetCol} = sheetUpdateHandler.getUpdatedSheetSize();
 
             if (updatedSheetRow > numRows) {

@@ -1,5 +1,5 @@
 import { Argument } from "../../types/types";
-import { getColumnNumber, getHeaderLetter } from "./utils";
+import { getColumnNumber } from "./utils";
 
 /**
  * Represents a HashMap that contains ref, term pairs to replicate an actual Sheet.
@@ -84,45 +84,15 @@ class SheetUpdateHandler {
     // parses updates list from the payload field by new-line delimiter
     const updates: string[] = argument.payload.split("\n");
 
-    console.log(`num rows: ${this.currRowSize}, num cols: ${this.currRowSize}`);
-
     // Initializes an empty update map
     const sheetsMap: SheetUpdateMap = {};
 
-    /*
-    const addRows = (refRow: number) => {
-      for (let r = this.currRowSize + 1; r <= refRow; r++) {
-        for (let col = 0; col < this.currColSize; col++) {
-          const colLetter = getHeaderLetter(col);
-          const cellID = `$${colLetter}${r}`;
-          sheetsMap[cellID] = "";
-          console.log(`added row cell: ${cellID}`);
-        }
-        this.currRowSize++;
-      }
-    };
-
-    const addCols = (refCol: number) => {
-      for (let c = this.currColSize + 1; c <= refCol; c++) {
-        const currColLetter = getHeaderLetter(c);
-        for (let row = 1; row <= this.currRowSize; row++) {
-          const cellID = `$${currColLetter}${row}`;
-          sheetsMap[cellID] = "";
-          console.log(`adding col cell: ${cellID}`);
-        }
-        this.currColSize++;
-      }
-    };
-    */
     // Update each cell specified in the payload
     for (const update of updates) {
-      console.log(`update: ${update}`);
       if (update.trim()) {
         // Check if the update string is not empty or just whitespace
         const [ref, ...rest] = update.split(" ");
         const term = rest.join(" "); // Join the rest of the parts to handle cases with spaces in the term
-        console.log(`ref: ${ref}`);
-        console.log(`term: ${term}`);
         if (ref) {
           if (this.currRowSize === 0 || this.currColSize === 0) {
             throw new Error("Sheet Update Handler rows and columns not set!");
@@ -130,13 +100,12 @@ class SheetUpdateHandler {
 
           const { col, row } = this.getColAndRowFromRef(ref);
           const colNumber = getColumnNumber(col);
-          if (getColumnNumber(col) > this.currColSize) {
+
+          if (colNumber > this.currColSize) {
             this.currColSize += colNumber - this.currColSize;
-            console.log(`curr col size: ${this.currColSize}`);
           } 
           if (row > this.currRowSize) {
             this.currRowSize += row - this.currRowSize;
-            console.log(`curr row size: ${this.currRowSize}`);
           }
             
           sheetsMap[ref] = term;
