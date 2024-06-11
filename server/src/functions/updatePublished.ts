@@ -40,15 +40,13 @@ async function updatePublished(argument: Argument): Promise<void> {
 			DatabaseQueries.getUpdatesForSubscription(publisher, sheetName, 0)
 		);
 
-		let payloadID = updates
-			.reduce((update) =>
-				update.changes.includes(payload)
-					? update
-					: updates[updates.length - 1]
-			)
-			.catch((error: Error) => {
-				throw error;
-			});
+		let payloadUpdate: GetUpdateRow = updates.reduce((update) =>
+			update.changes.includes(payload)
+				? update
+				: updates[updates.length - 1]
+		);
+
+		let payloadID: number = payloadUpdate.updateid;
 
 		await HashStore.initHash();
 		await HashStore.updateSheetPayload(
