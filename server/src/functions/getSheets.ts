@@ -25,16 +25,18 @@ async function getSheets(
 		let publisher: string = arg.publisher;
 
 		// Get the database instance
-		const database = DatabaseInstance.getInstance();
+		const database: DatabaseInstance = DatabaseInstance.getInstance();
 
 		// Assemble query string
+		let queryStringForPubSheets: string =
+			DatabaseQueries.getSheets(publisher);
 
-		let queryStringForPubSheets = DatabaseQueries.getSheets(publisher);
-
-		let result = await database.query<GetSheetRow>(queryStringForPubSheets);
+		let result: GetSheetRow[] = await database.query<GetSheetRow>(
+			queryStringForPubSheets
+		);
 
 		if (arg.publisher === clientUsername) {
-			let queryStringForPrivSheets = DatabaseQueries.getSheets(
+			let queryStringForPrivSheets: string = DatabaseQueries.getSheets(
 				publisher,
 				""
 			);

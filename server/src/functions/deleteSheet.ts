@@ -16,10 +16,10 @@ async function deleteSheet(argument: Argument): Promise<void> {
 	let sheetName: Sheet = argument.sheet;
 
 	// TODO: check if pub is the same as client
-	const database = DatabaseInstance.getInstance();
+	const database: DatabaseInstance = DatabaseInstance.getInstance();
 
 	// Assemble query string
-	let queryString = DatabaseQueries.deleteSheet(sheetName, publisher);
+	let queryString: string = DatabaseQueries.deleteSheet(sheetName, publisher);
 
 	await database.query<GetSheetRow>(queryString);
 }

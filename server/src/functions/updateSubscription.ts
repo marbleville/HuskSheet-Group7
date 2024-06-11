@@ -21,9 +21,9 @@ async function updateSubscription(
 	let sheetName: Sheet = argument.sheet;
 	let payload: Payload = argument.payload;
 
-	const database = DatabaseInstance.getInstance();
+	const database: DatabaseInstance = DatabaseInstance.getInstance();
 
-	const queryString = DatabaseQueries.updateSubscription(
+	const queryString: string = DatabaseQueries.updateSubscription(
 		sheetName,
 		publisher,
 		payload,

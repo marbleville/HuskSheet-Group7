@@ -16,18 +16,17 @@ async function createSheet(argument: Argument): Promise<void> {
 	let sheetName: Sheet = argument.sheet;
 
 	const database = DatabaseInstance.getInstance();
-	let newSheetName = sheetName;
+	let newSheetName: string = sheetName;
 
 	try {
 		// Query to fetch all sheet names that share the same base name
-		let querySameBaseName = DatabaseQueries.createSheetNewName(
+		let querySameBaseName: string = DatabaseQueries.getSheetsWithName(
 			sheetName,
 			publisher
 		);
 
-		let existingSheetsResult = await database.query<GetSheetRow>(
-			querySameBaseName
-		);
+		let existingSheetsResult: GetSheetRow[] =
+			await database.query<GetSheetRow>(querySameBaseName);
 
 		// Filter strictly by "sheetname" or "sheetname (n)" where `n` is a
 		// number
@@ -37,7 +36,7 @@ async function createSheet(argument: Argument): Promise<void> {
 		});
 
 		// Extract and parse the appended numbers
-		let appendedNumbers = existingSheetsResult.map((row) => {
+		let appendedNumbers: number[] = existingSheetsResult.map((row) => {
 			let appendedPart = row.sheetname.replace(sheetName, "").trim();
 			appendedPart = appendedPart.replace(/^\(/, "").replace(/\)$/, "");
 
@@ -45,14 +44,14 @@ async function createSheet(argument: Argument): Promise<void> {
 		});
 
 		// Find the maximum appended number
-		let maxAppended = Math.max(...appendedNumbers);
+		let maxAppended: number = Math.max(...appendedNumbers);
 
 		// Append the next available number
 		if (maxAppended !== -Infinity) {
 			newSheetName = `${sheetName} (${maxAppended + 1})`;
 		}
 
-		let queryInsertNewSheet = DatabaseQueries.createSheet(
+		let queryInsertNewSheet: string = DatabaseQueries.createSheet(
 			newSheetName,
 			publisher
 		);

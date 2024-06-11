@@ -17,10 +17,10 @@ async function getPublishers(): Promise<Array<Argument>> {
 	 * For each, push the publisher name to an argument object and push that to
 	 * the publishers array
 	 */
-	const get_publishers_query = DatabaseQueries.getPublishers();
-	const database = DatabaseInstance.getInstance();
+	const get_publishers_query: string = DatabaseQueries.getPublishers();
+	const database: DatabaseInstance = DatabaseInstance.getInstance();
 
-	const publishers_result = await database.query<GetUserRow>(
+	const publishers_result: GetUserRow[] = await database.query<GetUserRow>(
 		get_publishers_query
 	);
 

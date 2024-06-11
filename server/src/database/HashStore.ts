@@ -2,6 +2,7 @@ import { Ref, Term, Payload, ID } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
 import DatabaseQueries from "../../../types/queries";
 import { GetAllUpdates, GetSheetID } from "../database/db";
+import { Hash } from "crypto";
 
 /**
  * Singleton class that stores a cache of each of the sheets in the database.
