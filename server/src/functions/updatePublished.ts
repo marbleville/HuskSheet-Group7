@@ -32,21 +32,30 @@ async function updatePublished(argument: Argument): Promise<void> {
 	}
 
 	try {
-		await database.query<GetUpdateRow>(queryString);
+		// inserts the update into the database
+		await database.query(queryString);
 
-		// gets the updates for the subscription so we can greab ids
+		// gets the updates for the subscription so we can grab ids
 		let updates: GetUpdateRow[] = await database.query<GetUpdateRow>(
 			DatabaseQueries.getUpdatesForSubscription(publisher, sheetName, 0)
 		);
 
-		let lastID =
-			updates.length > 0 ? updates[updates.length - 1].updateid : 0;
+		let payloadID = updates
+			.reduce((update) =>
+				update.changes.includes(payload)
+					? update
+					: updates[updates.length - 1]
+			)
+			.catch((error: Error) => {
+				throw error;
+			});
+
 		await HashStore.initHash();
 		await HashStore.updateSheetPayload(
 			sheetName,
 			publisher,
 			payload,
-			lastID
+			payloadID
 		);
 
 		// now we need to update the latest accepted version of the sheet

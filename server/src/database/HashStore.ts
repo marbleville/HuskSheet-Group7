@@ -120,6 +120,7 @@ export default class HashStore {
 	 * @param sheetName the name of the sheet to updatePerSheet
 	 * @param publisher the publisher of the sheet to updatePerSheet
 	 * @param payload the payload coantinig new changes to add to the cache
+	 * @param payloadID the ID of this payload in the db
 	 *
 	 * @author marbleville, huntebrodie
 	 */
@@ -127,7 +128,7 @@ export default class HashStore {
 		sheetName: string,
 		publisher: string,
 		payload: Payload,
-		lastID: number
+		payloadID: number
 	): Promise<void> {
 		let sheetID: number = await HashStore.getSheetID(publisher, sheetName);
 
@@ -152,8 +153,7 @@ export default class HashStore {
 		for (let update of updates) {
 			let [refObj, value] = HashStore.getRefObjAndValue(update, sheetID);
 
-			// FIX THIS DONT FORGET
-			sheetMap.set(refObj, [value, lastID]);
+			sheetMap.set(refObj, [value, payloadID]);
 		}
 	}
 
