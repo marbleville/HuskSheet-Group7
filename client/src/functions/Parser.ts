@@ -149,7 +149,7 @@ class Parser {
 	}
 
 	private isFunction(token: string): boolean {
-		return /^=(IF|SUM|MIN|AVG|MAX|CONCAT|COPY|DEBUG)$/.test(token);
+		return /^(=)?(IF|SUM|MIN|AVG|MAX|CONCAT|COPY|DEBUG)$/.test(token);
 	}
 }
 
