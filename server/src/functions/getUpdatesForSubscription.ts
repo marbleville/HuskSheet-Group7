@@ -21,6 +21,7 @@ async function getUpdatesForSubscription(
 	let sheetName: Sheet = argument.sheet;
 	let publisher: Publisher = argument.publisher;
 	let argumentID: number = parseInt(argument.id);
+
 	let updates: Argument = {
 		publisher: argument.publisher,
 		sheet: argument.sheet,
@@ -29,7 +30,6 @@ async function getUpdatesForSubscription(
 	};
 
 	try {
-		await HashStore.initHash();
 		let [payload, id] = await HashStore.getSheetPayload(
 			publisher,
 			sheetName,

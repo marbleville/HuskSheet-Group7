@@ -24,9 +24,9 @@ async function updatePublished(argument: Argument): Promise<void> {
 	}
 
 	try {
-		const database = DatabaseInstance.getInstance();
+		const database: DatabaseInstance = DatabaseInstance.getInstance();
 
-		const queryString = DatabaseQueries.updatePublished(
+		const queryString: string = DatabaseQueries.updatePublished(
 			sheetName,
 			publisher,
 			payload
@@ -48,7 +48,6 @@ async function updatePublished(argument: Argument): Promise<void> {
 
 		let payloadID: number = payloadUpdate.updateid;
 
-		await HashStore.initHash();
 		await HashStore.updateSheetPayload(
 			sheetName,
 			publisher,

@@ -9,7 +9,7 @@ export default class DatabaseQueries {
 	 *
 	 * @author hunterbrodie
 	 */
-	static createSheetNewName(sheetName: string, publisher: string): string {
+	static getSheetsWithName(sheetName: string, publisher: string): string {
 		return `SELECT sheetname FROM sheets 
       WHERE sheetname LIKE '${sheetName}%'
       AND owner = 

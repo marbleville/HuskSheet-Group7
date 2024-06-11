@@ -150,7 +150,7 @@ async function runEndpointFuntion(
 	let result: Result;
 
 	if (!(await authenticate(req.headers.authorization))) {
-		res.status(401).send("Unauthorized");
+		sendError(res, func.name, new Error("Unauthorized"));
 		return;
 	}
 
@@ -158,7 +158,7 @@ async function runEndpointFuntion(
 		let value: Argument[] | Argument | void;
 
 		if (func.name !== "register" && func.name !== "getPublishers") {
-			let argument = getArgument(req);
+			let argument: Argument = getArgument(req);
 			value = await func(argument);
 		} else {
 			value = await func({} as Argument);
@@ -172,9 +172,9 @@ async function runEndpointFuntion(
 }
 
 function sendError(res: Response, functionName: string, error: any): void {
-	const err = error as Error;
-	let errorMessage = `${functionName}: ${err.message}`;
-	let result = assembleResultObject(false, errorMessage, []);
+	const err: Error = error as Error;
+	let errorMessage: string = `${functionName}: ${err.message}`;
+	let result: Result = assembleResultObject(false, errorMessage, []);
 	res.send(JSON.stringify(result));
 }
 
@@ -193,7 +193,7 @@ function getArgument(req: Request): Argument {
 		throw new Error("No body provided.");
 	}
 
-	let argument = req.body as Argument;
+	let argument: Argument = req.body as Argument;
 
 	return argument;
 }
@@ -213,9 +213,11 @@ function parseAuthHeader(authHeader: string | undefined): string[] {
 		throw new Error("No Authorization header provided.");
 	}
 
-	const base64 = authHeader.split(" ")[1];
+	const base64: string = authHeader.split(" ")[1];
 	// Decodes to binary
-	const decodedAuthHeader = Buffer.from(base64, "base64").toString("utf-8");
+	const decodedAuthHeader: string = Buffer.from(base64, "base64").toString(
+		"utf-8"
+	);
 	return decodedAuthHeader.split(":").map((str) => str.trimEnd());
 }
 
@@ -237,13 +239,13 @@ async function doesUserExist(
 		return false;
 	}
 
-	const database = DatabaseInstance.getInstance();
+	const database: DatabaseInstance = DatabaseInstance.getInstance();
 
-	let queryString = DatabaseQueries.getUser(username);
+	let queryString: string = DatabaseQueries.getUser(username);
 
-	let result = await database.query<GetUserRow>(queryString);
+	let result: GetUserRow[] = await database.query<GetUserRow>(queryString);
 
-	let userExists = result.length != 0 ? true : false;
+	let userExists: boolean = result.length != 0 ? true : false;
 
 	return userExists;
 }
@@ -263,13 +265,13 @@ async function authenticate(authHeader: string | undefined): Promise<boolean> {
 	}
 
 	const [username, password] = parseAuthHeader(authHeader);
-	const database = DatabaseInstance.getInstance();
+	const database: DatabaseInstance = DatabaseInstance.getInstance();
 
-	let queryString = DatabaseQueries.authenticate(username, password);
+	let queryString: string = DatabaseQueries.authenticate(username, password);
 
-	let result = null;
+	let result: GetUserRow[] | null = null;
 	try {
-		result = await database.query(queryString);
+		result = await database.query<GetUserRow>(queryString);
 	} catch (error) {
 		throw new Error("An error happened when authenticating the user");
 	}

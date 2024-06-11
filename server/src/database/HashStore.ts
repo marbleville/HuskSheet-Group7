@@ -2,6 +2,7 @@ import { Ref, Term, Payload, ID } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
 import DatabaseQueries from "../../../types/queries";
 import { GetAllUpdates, GetSheetID } from "../database/db";
+import { Hash } from "crypto";
 
 /**
  * Singleton class that stores a cache of each of the sheets in the database.
@@ -30,17 +31,17 @@ export default class HashStore {
 		HashStore.sheets = new Array<Map<Ref, [Term, number]>>();
 
 		// every update in the db that has been accepted by the owner
-		let allOwnerUpdates =
+		let allOwnerUpdates: GetAllUpdates[] =
 			await DatabaseInstance.getInstance().query<GetAllUpdates>(
 				DatabaseQueries.getAllOwnerUpdates()
 			);
 
 		allOwnerUpdates.forEach((update) => {
-			let sheetID = update.sheet;
+			let sheetID: number = update.sheet;
 			let payload: Payload = update.changes;
 
 			// Array containing each update on the sheet
-			let payloadArr = payload.split("\n");
+			let payloadArr: Array<string> = payload.split("\n");
 
 			// controls for an update in the db that ends with \n
 			if (payloadArr[payloadArr.length - 1] == "") {
@@ -94,10 +95,10 @@ export default class HashStore {
 			HashStore.sheets[sheetID] = new Map<Ref, [Term, number]>();
 		}
 
-		let sheetMap = HashStore.sheets[sheetID];
+		let sheetMap: Map<Ref, [Term, number]> = HashStore.sheets[sheetID];
 
-		let payload = "";
-		let maxID = 0;
+		let payload: string = "";
+		let maxID: number = 0;
 
 		for (let [key, [value, id]] of sheetMap) {
 			// Would be possible to add support for getting updates during
@@ -138,9 +139,9 @@ export default class HashStore {
 			HashStore.sheets[sheetID] = new Map<Ref, [Term, number]>();
 		}
 
-		let sheetMap = HashStore.sheets[sheetID];
+		let sheetMap: Map<Ref, [Term, number]> = HashStore.sheets[sheetID];
 
-		let updates = payload.split("\n");
+		let updates: Array<string> = payload.split("\n");
 
 		// controls for an update in the db that ends with \n
 		if (updates[updates.length - 1] == "") {
@@ -158,11 +159,11 @@ export default class HashStore {
 		update: string,
 		sheetID: number
 	): [Ref, Term] {
-		let refEndIndex = update.indexOf(" ");
-		let ref = update.substring(0, refEndIndex);
-		let value = update.substring(refEndIndex + 1);
+		let refEndIndex: number = update.indexOf(" ");
+		let ref: string = update.substring(0, refEndIndex);
+		let value: string = update.substring(refEndIndex + 1);
 
-		let refObj = HashStore.getRefFromString(ref, sheetID);
+		let refObj: Ref = HashStore.getRefFromString(ref, sheetID);
 
 		return [refObj, value];
 	}
@@ -182,9 +183,10 @@ export default class HashStore {
 		sheetName: string
 	): Promise<number> {
 		// Returns an array of length 1 with the sheet ID
-		let sheetIDArr = await DatabaseInstance.getInstance().query<GetSheetID>(
-			DatabaseQueries.getSheetID(sheetName, publisher)
-		);
+		let sheetIDArr: GetSheetID[] =
+			await DatabaseInstance.getInstance().query<GetSheetID>(
+				DatabaseQueries.getSheetID(sheetName, publisher)
+			);
 
 		if (sheetIDArr.length == 0) {
 			return -1;
@@ -206,13 +208,13 @@ export default class HashStore {
 	private static getRefFromString(ref: string, sheetID: number): Ref {
 		let refWiothout$ = ref.substring(1);
 
-		let pattern1 = /[0-9]/g;
-		let pattern2 = /[a-zA-Z]/g;
-		let column = refWiothout$.match(pattern2);
-		let row = refWiothout$.match(pattern1);
+		let pattern1: RegExp = /[0-9]/g;
+		let pattern2: RegExp = /[a-zA-Z]/g;
+		let column: RegExpMatchArray | null = refWiothout$.match(pattern2);
+		let row: RegExpMatchArray | null = refWiothout$.match(pattern1);
 
-		let mapHasRef = false;
-		let refInMap = null;
+		let mapHasRef: boolean = false;
+		let refInMap: Ref | null = null;
 
 		// looks if the ref is already in the map
 		HashStore.sheets[sheetID].forEach(([value, id], key) => {

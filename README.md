@@ -1,4 +1,4 @@
-# HuskSheet-Group7 (Group 1)
+# HuskSheet-Group7 (Team 1)
 
 ## To Run the Project
 
@@ -22,3 +22,7 @@
 -   Private sheets
     -   Users can create private sheets that only they can access by appending
         "-private" to the end of the sheet name
+-   Server performance improvements
+    -   We have optimized the server to reduce network overhead to the minimum
+        level required and we have reduced the number of db queries necessary
+        in normal operation
