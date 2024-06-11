@@ -20,7 +20,7 @@ async function getUpdatesForSubscription(
 ): Promise<Argument> {
 	let sheetName: Sheet = argument.sheet;
 	let publisher: Publisher = argument.publisher;
-	let id: number = parseInt(argument.id);
+	let argumentID: number = parseInt(argument.id);
 	let updates: Argument = {
 		publisher: argument.publisher,
 		sheet: argument.sheet,
@@ -28,25 +28,20 @@ async function getUpdatesForSubscription(
 		payload: "",
 	};
 
-	if (id == 0) {
+	try {
 		await HashStore.initHash();
 		let [payload, id] = await HashStore.getSheetPayload(
 			publisher,
-			sheetName
+			sheetName,
+			argumentID
 		);
 		updates.payload = payload;
 		updates.id = id;
 
 		return updates;
+	} catch (error) {
+		throw error;
 	}
-
-	const queryString = DatabaseQueries.getUpdatesForSubscription(
-		publisher,
-		sheetName,
-		id
-	);
-
-	return getUpdatesHelper(argument, queryString);
 }
 
 export { getUpdatesForSubscription };

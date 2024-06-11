@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Cell from "./Cell";
-import { fetchWithAuth } from "../utils";
+import { fetchWithAuth, getHeaderLetter } from "../utils";
 import "../styles/Sheet.css";
 import { Argument } from "../../../types/types";
 import SheetUpdateHandler from "../sheetUpdateHandler";
@@ -17,7 +17,7 @@ type SheetRelationship = "OWNER" | "SUBSCRIBER";
 // Represents data stored in the sheet as a mapping of REF:TERM pairs. 
 interface SheetDataMap {
   [ref: string]: string;
-};
+}
 
 /**
  * @description Initializes the SheetDataMap based on given row/columns.
@@ -38,23 +38,6 @@ const initializeSheet = (rowSize: number, colSize: number): SheetDataMap => {
   return initialData;
 };
 
-/**
- * @description Helper to get the letter of the column
- * Starts from 'A ... Z, then 'AA ... AZ', etc.
- *
- * @author rishavsarma5
- */
-const getHeaderLetter = (curr: number): string => {
-  let currentCol = curr;
-  let letters = "";
-  while (currentCol >= 0) {
-    const remainder = currentCol % 26;
-    letters = String.fromCharCode(65 + remainder) + letters;
-    currentCol = Math.floor(currentCol / 26) - 1;
-  }
-
-  return letters;
-};
 
 /**
  * @description A Sheet that manages the data of its child Cells.
@@ -79,8 +62,6 @@ const Sheet: React.FC = () => {
   const prevCellDataRef = useRef<SheetDataMap>({ ...sheetData });
   const [numRows, setNumRows] = useState(INITIALSHEETROWSIZE);
   const [numCols, setNumCols] = useState(INITIALSHEETCOLUMNSIZE);
-  const [newlyAddedCells, setNewlyAddedCells] = useState<Set<string>>(new Set());
-  const [newlyDeletedCells, setNewlyDeletedCells] = useState<Set<string>>(new Set());
   const [sheetRelationship, setSheetRelationship] = useState<SheetRelationship>();
   const [latestUpdateID, setLatestUpdateID] = useState<string>("0");
   const [incomingUpdates, setIncomingUpdates] = useState<SheetDataMap>({});
@@ -101,10 +82,6 @@ const Sheet: React.FC = () => {
    * @author rishavsarma5, eduardo-ruiz-garay, kris-amerman
    */
   const handleCellUpdate = (value: string, cellId: string) => {
-    if (value === "<DELETED>" || value === "<CREATED>") {
-      value = "";
-    }
-    
     setSheetData((prevSheetData) => {
       const updatedSheetData = { ...prevSheetData, [cellId]: value };
       
@@ -116,7 +93,11 @@ const Sheet: React.FC = () => {
       
       // If the value is different from the previous one, or if the value is empty, mark it as manually updated
       if (value !== prevSheetData[cellId] || value === "") {
-        setManualUpdates((prevManualUpdates) => new Set(prevManualUpdates).add(cellId));
+        setManualUpdates((prevManualUpdates) => {
+          const newManualUpdates = new Set(prevManualUpdates);
+          newManualUpdates.add(cellId);
+          return newManualUpdates;
+        });
       }
   
       return updatedSheetData;
@@ -133,24 +114,16 @@ const Sheet: React.FC = () => {
 
     const newSheetData = { ...sheetData };
     const newRowNumber = numRows + 1;
-    const newCells = new Set(newlyAddedCells);
 
     for (let col = 0; col < numCols; col++) {
       const colLetter = getHeaderLetter(col);
       const cellID = `$${colLetter}${newRowNumber}`;
+      // If there's an update for this cellID, use the provided value
       newSheetData[cellID] = "";
-      prevCellDataRef.current[cellID] = "";
-      newCells.add(cellID);
-
-      // Check if the newly added cell was marked as deleted before
-      if (newlyDeletedCells.has(cellID)) {
-        newlyDeletedCells.delete(cellID); // Remove the cell from deletedCells
-        newCells.delete(cellID);
-      }
+      prevCellDataRef.current[cellID] = newSheetData[cellID];
     }
 
     setSheetData(newSheetData);
-    setNewlyAddedCells(newCells);
   };
 
   /**
@@ -163,28 +136,17 @@ const Sheet: React.FC = () => {
       return;
     }
 
-    setNumRows((prevNumRows) => prevNumRows - 1);
     const lastRowNumber = numRows;
-
-    const newSheetData = { ...sheetData };
-    const deletedCells = new Set(newlyDeletedCells);
 
     for (let col = 0; col < numCols; col++) {
       const colLetter = getHeaderLetter(col);
       const cellID = `$${colLetter}${lastRowNumber}`;
-      delete newSheetData[cellID];
-      delete prevCellDataRef.current[cellID];
-      deletedCells.add(cellID);
-
-      // Check if the newly deleted cell was added before
-      if (newlyAddedCells.has(cellID)) {
-        newlyAddedCells.delete(cellID); // Remove the cell from addedCells
-        deletedCells.delete(cellID);
+      if (sheetData[cellID] !== "") {
+        handleCellUpdate("", cellID);
       }
     }
 
-    setSheetData(newSheetData);
-    setNewlyDeletedCells(deletedCells);
+    setNumRows((prevNumRows) => prevNumRows - 1);
   };
 
   /**
@@ -197,23 +159,14 @@ const Sheet: React.FC = () => {
 
     const newSheetData = { ...sheetData };
     const newColumnLetter = getHeaderLetter(numCols);
-    const newCells = new Set(newlyAddedCells);
 
     for (let row = 1; row <= numRows; row++) {
       const cellID = `$${newColumnLetter}${row}`;
       newSheetData[cellID] = "";
-      prevCellDataRef.current[cellID] = "";
-      newCells.add(cellID);
-
-      // Check if the newly added cell was marked as deleted before
-      if (newlyDeletedCells.has(cellID)) {
-        newlyDeletedCells.delete(cellID); // Remove the cell from deletedCells
-        newCells.delete(cellID);
-      }
+      prevCellDataRef.current[cellID] = newSheetData[cellID];
     }
 
     setSheetData(newSheetData);
-    setNewlyAddedCells(newCells);
   };
 
   /**
@@ -226,27 +179,15 @@ const Sheet: React.FC = () => {
       return;
     }
 
-    setNumCols((prevNumCols) => prevNumCols - 1);
-
-    const newSheetData = { ...sheetData };
     const lastColumnLetter = getHeaderLetter(numCols - 1);
-    const deletedCells = new Set(newlyDeletedCells);
 
     for (let row = 1; row <= numRows; row++) {
       const cellID = `$${lastColumnLetter}${row}`;
-      delete newSheetData[cellID];
-      delete prevCellDataRef.current[cellID];
-      deletedCells.add(cellID);
-
-      // Check if the newly deleted cell was added before
-      if (newlyAddedCells.has(cellID)) {
-        newlyAddedCells.delete(cellID); // Remove the cell from addedCells
-        deletedCells.delete(cellID);
+      if (sheetData[cellID] !== "") {
+        handleCellUpdate("", cellID);
       }
     }
-
-    setSheetData(newSheetData);
-    setNewlyDeletedCells(deletedCells);
+    setNumCols((prevNumCols) => prevNumCols - 1);
   };
 
   /**
@@ -272,7 +213,7 @@ const Sheet: React.FC = () => {
     headers.push(
       <th key="delete-column-header" className="button-header">
         <button
-          onClick={deleteCol}
+          onClick={() => deleteCol()}
           className="delete-column-button"
           key="delete-column-button"
         >
@@ -316,8 +257,8 @@ const Sheet: React.FC = () => {
       for (let col = 0; col < numCols; col++) {
         const columnLetter: string = getHeaderLetter(col);
         const cellId = `$${columnLetter}${row}`;
-        const cellValue = incomingUpdates.hasOwnProperty(cellId) ? incomingUpdates[cellId] : sheetData[cellId];
-        const isUpdated = incomingUpdates.hasOwnProperty(cellId);
+        const cellValue = Object.prototype.hasOwnProperty.call(incomingUpdates, cellId) ? incomingUpdates[cellId] : sheetData[cellId];
+        const isUpdated = Object.prototype.hasOwnProperty.call(incomingUpdates, cellId);
 
         cellsPerRow.push(
           <Cell
@@ -341,7 +282,7 @@ const Sheet: React.FC = () => {
       <tr key="row-buttons">
         <td className="button-header">
           <button
-            onClick={deleteRow}
+            onClick={() => deleteRow()}
             className="delete-row-button"
             key="delete-row-button"
           >
@@ -371,15 +312,7 @@ const Sheet: React.FC = () => {
     // iterates through sheetData and stores updates in a new-line delimited string
     const getAllCellUpdates = (): string => {
       const payload: string[] = [];
-  
-      for (const ref of newlyDeletedCells) {
-        payload.push(`${ref} <DELETED>`);
-      }
-  
-      for (const ref of newlyAddedCells) {
-        payload.push(`${ref} <CREATED>`);
-      }
-  
+    
       for (const [ref, valueAtCell] of Object.entries(sheetData)) {
         const prevValueAtCell = prevCellDataRef.current[ref] || "";
         // Include cells with updated values or empty values if marked as manually updated
@@ -409,16 +342,13 @@ const Sheet: React.FC = () => {
     if (sheetRelationship === "OWNER") {
       console.log(`calling updatePublished`)
       try {
-        await fetchWithAuth("http://localhost:3000/api/v1/updatePublished", {
+        await fetchWithAuth("updatePublished", {
           method: "POST",
           body: JSON.stringify(allUpdates),
         });
   
-        // Reset newlyAddedCells and newlyDeletedCells sets to empty after successful fetch
-        setNewlyAddedCells(new Set());
-        setNewlyDeletedCells(new Set());
+        // Reset manualUpdates sets to empty after successful fetch
         setManualUpdates(new Set());
-  
         setPopupMessage("Publish successful!"); // Show success popup
       } catch (error) {
         console.error("Error publishing new changes", error);
@@ -427,17 +357,17 @@ const Sheet: React.FC = () => {
     } else {
       console.log(`calling updateSubscription`)
       try {
-        await fetchWithAuth("http://localhost:3000/api/v1/updateSubscription", {
+        await fetchWithAuth("updateSubscription", {
           method: "POST",
           body: JSON.stringify(allUpdates),
         });
   
-        // Reset newlyAddedCells and newlyDeletedCells sets to empty after successful fetch
-        setNewlyAddedCells(new Set());
-        setNewlyDeletedCells(new Set());
+        // Reset manualUpdates sets to empty after successful fetch
         setManualUpdates(new Set());
+        setPopupMessage("Publish successful!"); // Show success popup
       } catch (error) {
         console.error("Error publishing new changes", error);
+        setPopupMessage("Error publishing new changes"); // Show fail popup
       }
     }
   };
@@ -459,7 +389,7 @@ const Sheet: React.FC = () => {
       console.log("ARGUMENT")
       console.log(argument)
       await fetchWithAuth(
-        "http://localhost:3000/api/v1/getUpdatesForSubscription",
+        "getUpdatesForSubscription",
         {
           method: "POST",
           body: JSON.stringify(argument)
@@ -471,7 +401,22 @@ const Sheet: React.FC = () => {
           if (data.success && data.value && data.value.length > 0) {
             const update = data.value[0];
             const sheetUpdateHandler = SheetUpdateHandler.getInstance();
+            sheetUpdateHandler.setSheetSize(numRows, numCols);
             const updates = await sheetUpdateHandler.applyUpdates(update);
+            const { updatedSheetRow, updatedSheetCol} = sheetUpdateHandler.getUpdatedSheetSize();
+
+            if (updatedSheetRow > numRows) {
+              for (let i = 0; i < updatedSheetRow - numRows; i++) {
+                addNewRow();
+              }
+            }
+
+            if (updatedSheetCol > numCols) {
+              for (let i = 0; i < updatedSheetCol - numCols; i++) {
+                addNewCol();
+              }
+            }
+
 
             // Check if payload is not empty before updating the sheetData
             if (update.payload !== "") {
@@ -488,7 +433,7 @@ const Sheet: React.FC = () => {
       console.log("ARGUMENT")
       console.log(argument)
       await fetchWithAuth(
-        "http://localhost:3000/api/v1/getUpdatesForPublished",
+        "getUpdatesForPublished",
         {
           method: "POST",
           body: JSON.stringify(argument)
@@ -500,7 +445,21 @@ const Sheet: React.FC = () => {
           if (data.success && data.value && data.value.length > 0) {
             const update = data.value[0];
             const sheetUpdateHandler = SheetUpdateHandler.getInstance();
+            sheetUpdateHandler.setSheetSize(numRows, numCols);
             const updates = await sheetUpdateHandler.applyUpdates(update);
+            const { updatedSheetRow, updatedSheetCol} = sheetUpdateHandler.getUpdatedSheetSize();
+
+            if (updatedSheetRow > numRows) {
+              for (let i = 0; i < updatedSheetRow - numRows; i++) {
+                addNewRow();
+              }
+            }
+
+            if (updatedSheetCol > numCols) {
+              for (let i = 0; i < updatedSheetCol - numCols; i++) {
+                addNewCol();
+              }
+            }
 
             // Check if payload is not empty before updating the sheetData
             if (update.payload !== "") {
@@ -518,7 +477,7 @@ const Sheet: React.FC = () => {
       console.log("ARGUMENT")
       console.log(argument)
       await fetchWithAuth(
-        "http://localhost:3000/api/v1/getUpdatesForSubscription",
+        "getUpdatesForSubscription",
         {
           method: "POST",
           body: JSON.stringify(argument)
@@ -530,7 +489,24 @@ const Sheet: React.FC = () => {
           if (data.success && data.value && data.value.length > 0) {
             const update = data.value[0];
             const sheetUpdateHandler = SheetUpdateHandler.getInstance();
+            sheetUpdateHandler.setSheetSize(numRows, numCols);
             const updates = await sheetUpdateHandler.applyUpdates(update);
+            console.log("UPDATES")
+            console.log(updates);
+
+            const { updatedSheetRow, updatedSheetCol } = sheetUpdateHandler.getUpdatedSheetSize();
+
+            if (updatedSheetRow > numRows) {
+              for (let i = 0; i < updatedSheetRow - numRows; i++) {
+                addNewRow();
+              }
+            }
+
+            if (updatedSheetCol > numCols) {
+              for (let i = 0; i < updatedSheetCol - numCols; i++) {
+                addNewCol();
+              }
+            }
 
             // Check if payload is not empty before updating the sheetData
             if (update.payload !== "") {

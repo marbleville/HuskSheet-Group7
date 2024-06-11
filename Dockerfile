@@ -1,3 +1,7 @@
+# Dockerfile for the testing docker instance
+#
+# @author hunterbrodie
+
 FROM node:current-alpine3.19
 RUN apk update
 RUN apk add bash

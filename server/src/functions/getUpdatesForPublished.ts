@@ -11,13 +11,19 @@ import { getUpdatesHelper } from "../utils";
  *
  * @returns The argument object containing the last update id and payload
  *          containing all changes
+ *
+ * @author hunterbrodie
  */
 async function getUpdatesForPublished(argument: Argument): Promise<Argument> {
 	let sheetName: Sheet = argument.sheet;
 	let publisher: Publisher = argument.publisher;
 	let id: number = parseInt(argument.id);
 
-	const queryString = DatabaseQueries.getUpdatesForPublished(publisher, sheetName, id);
+	const queryString = DatabaseQueries.getUpdatesForPublished(
+		publisher,
+		sheetName,
+		id
+	);
 
 	return await getUpdatesHelper(argument, queryString);
 }

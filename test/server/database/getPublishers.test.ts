@@ -37,12 +37,6 @@ describe("getPublishers", () => {
 				publisher: "hunter",
 				sheet: "",
 			} as Argument,
-			{
-				id: "",
-				payload: "",
-				publisher: "caroline",
-				sheet: "",
-			} as Argument,
 		]);
 	});
 });

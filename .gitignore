@@ -26,4 +26,5 @@ node_modules
 */build
 
 # Tests
-*/coverage
+coverage
+.DS_Store

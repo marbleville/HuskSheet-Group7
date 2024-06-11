@@ -1,5 +1,6 @@
-# Use root/example as user/password credentials
-version: "3.1"
+# Docker Compose file to set up all of the docker instances
+#
+# @author hunterbrodie
 
 services:
     db:
@@ -38,14 +39,8 @@ services:
         build: .
         container_name: testing
         volumes:
-            - "./server:/server"
-            - "/server/node_modules"
-            - "./types:/types"
-            - "./test:/test"
-            - "./client:/client"
-            - "./db-scripts/reset-proc.sql:/reset-proc.sql"
-            - "./db-scripts/store-proc.sh:/store-proc.sh"
-        command: bash -c "/store-proc.sh"
+            - "./:/app"
+        command: bash -c "/app/db-scripts/store-proc.sh"
         links:
             - "db:db"
         env_file:

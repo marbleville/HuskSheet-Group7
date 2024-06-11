@@ -1,6 +1,7 @@
 /**
- * Creates the schema for the dev and testing databases in the mysql instance. Creates empty tables for 
- * @author{hunterbrodie}
+ * Creates the databases for dev and testing.
+ *
+ * @author hunterbrodie
  */
 
 CREATE DATABASE IF NOT EXISTS dev;
