@@ -1,156 +1,216 @@
 import {
-	ExpressionNode,
-	FormulaNode,
-	NumberNode,
-	StringNode,
-	ReferenceNode,
-	OperationNode,
-	FunctionCallNode,
+  ExpressionNode,
+  FormulaNode,
+  NumberNode,
+  StringNode,
+  ReferenceNode,
+  OperationNode,
+  FunctionCallNode,
 } from "./Nodes";
-import Tokenizer from "./Tokenizer";
 
 /**
  * Parses the tokens into different nodes based on priority.
  */
 class Parser {
-	private static instance: Parser;
+  /**
+   * Checks whether the token is a function
+   *
+   * @param token string token
+   * @returns boolean for regex
+   */
+  private isFunction(token: string): boolean {
+    return /^=(IF|SUM|MIN|AVG|MAX|CONCAT|DEBUG|COPY)$/.test(token);
+  }
 
-	private index: number;
-	private tokens: string[];
+  /**
+   * Checks whether a token is an operator.
+   *
+   * @param token string token
+   * @returns boolean for regex
+   */
+  private isOperator(token: string): boolean {
+    return /^[+\-*/<>=&|:]+$/.test(token);
+  }
 
-	constructor() {
-		this.index = 0;
-		this.tokens = [];
-	}
+  /**
+   * Checks whether a token is a reference.
+   *
+   * @param token string token
+   * @returns boolean for regex
+   */
+  private isReference(token: string): boolean {
+    return /^\$[A-Z]+\d+$/.test(token);
+  }
 
-	//Singleton setup
-	public static getInstance() {
-		if (Parser.instance == null) {
-			Parser.instance = new Parser();
-		}
-		return Parser.instance;
-	}
+  /**
+   * Checks whether a token is a number.
+   *
+   * @param token string token
+   * @returns boolean for regex
+   */
+  private isNumber(token: string): boolean {
+    return /^-?\d+(\.\d+)?$/.test(token);
+  }
 
-	/**
-	 * Parses the tockens into distinct ExpressionNodes.
-	 *
-	 * @param formula takes in the string from the user
-	 * @returns
-	 */
-	parse(formula: string): ExpressionNode {
-		this.index = 0;
-		this.tokens = Tokenizer.getInstance().tokenize(formula);
-		for (const token of this.tokens) {
-			// console.log(`token: ${token}`);
-		}
-		const resultNode =
-			this.tokens.length > 0 && this.tokens[0] === "="
-				? this.parseFormula()
-				: this.parseTerm();
-		// console.log("Parsed INode:", JSON.stringify(resultNode, null, 2));
-		return resultNode;
-	}
+  /**
+   * Checks whether a token is a string.
+   *
+   * @param token string token
+   * @returns boolean for regex
+   */
+  private isString(token: string): boolean {
+    return /^[^()\s,]+$/.test(token);
+  }
 
-	private parseFormula(): ExpressionNode {
-		this.consume("=");
-		return new FormulaNode(this.parseExpression());
-	}
+  private static instance: Parser;
 
-	private consume(expected: string): void {
-		if (this.tokens[this.index] === expected) {
-			this.index++;
-		} else {
-			throw new Error(
-				`Expected ${expected}, but found ${this.tokens[this.index]}`
-			);
-		}
-	}
+  private index: number;
+  private tokens: string[];
 
-	private parseTerm(): ExpressionNode {
-		const token = this.tokens[this.index];
-		if (this.isFunction(token)) {
-			return this.parseFunction();
-		} else if (this.isNumber(token)) {
-			this.index++;
-			return new NumberNode(parseFloat(token));
-		} else if (this.isReference(token)) {
-			this.index++;
-			return new ReferenceNode(token);
-		} else if (token === "(") {
-			return this.parseNestedExpression();
-		} else if (token === "-") {
-			return this.parseNegativeNum();
-		} else if (this.isString(token)) {
-			this.index++;
-			return new StringNode(token);
-		} else {
-			throw new Error(`Unexpected token: ${token}`);
-		}
-	}
+  constructor() {
+    this.index = 0;
+    this.tokens = [];
+  }
 
-	private parseExpression(): ExpressionNode {
-		let node = this.parseTerm();
-		while (
-			this.index < this.tokens.length &&
-			this.isOperator(this.tokens[this.index])
-		) {
-			const operator = this.tokens[this.index];
-			this.index++;
-			const rightNode = this.parseTerm();
-			node = new OperationNode(node, operator, rightNode);
-		}
-		return node;
-	}
+  //Singleton setup
+  public static getInstance() {
+    if (Parser.instance == null) {
+      Parser.instance = new Parser();
+    }
+    return Parser.instance;
+  }
 
-	private parseNestedExpression(): ExpressionNode {
-		this.consume("(");
-		const nestedNode: ExpressionNode = this.parseExpression();
-		this.consume(")");
-		return nestedNode;
-	}
+  /**
+   * Parses the tockens into distinct ExpressionNodes.
+   *
+   * @param tokens takes in the tokens from the Tokenizer
+   * @returns a expressionode  based on the priority
+   */
+  parse(tokens: string[]): ExpressionNode {
+    this.index = 0;
+    this.tokens = tokens;
+    const resultNode =
+      this.tokens.length > 0 && this.tokens[0] === "="
+        ? this.parseFormula()
+        : this.parseTerm();
+    return resultNode;
+  }
 
-	private parseNegativeNum(): ExpressionNode {
-		let numStr = this.tokens[this.index];
-		this.consume("-");
-		numStr += this.tokens[this.index];
-		this.index++;
-		return new NumberNode(parseFloat(numStr));
-	}
+  /**
+   * Creates a formula node with the expression if the starting term is a =.
+   *
+   * @returns a new formula node and then parses the rest.
+   */
+  private parseFormula(): ExpressionNode {
+    this.consume("=");
+    return new FormulaNode(this.parseOperation());
+  }
 
-	private parseFunction(): ExpressionNode {
-		const func = this.tokens[this.index].replace(/^=/, "");
-		this.index++;
-		this.consume("(");
-		const args = [];
-		while (this.tokens[this.index] !== ")") {
-			args.push(this.parseExpression());
-			if (this.tokens[this.index] === ",") {
-				this.index++;
-			}
-		}
-		this.consume(")");
-		return new FunctionCallNode(func, args);
-	}
+  /**
+   * Increases the index if the token is the expected value.
+   *
+   * @param expected depending on the expression has a unique identifier
+   */
+  private consume(expected: string): void {
+    if (this.tokens[this.index] === expected) {
+      this.index++;
+    } else {
+      throw new Error(
+        `Expected ${expected}, but found ${this.tokens[this.index]}`
+      );
+    }
+  }
 
-	private isNumber(token: string): boolean {
-		return /^-?\d+(\.\d+)?$/.test(token);
-	}
+  /**
+   * Takes in a fucntion and makes a new expression node.
+   *
+   * @returns Expression node
+   */
+  private parseFunction(): ExpressionNode {
+    const func = this.tokens[this.index].replace(/^=/, "");
+    this.index++;
+    this.consume("(");
+    const expressions = [];
+    while (this.tokens[this.index] !== ")") {
+      expressions.push(this.parseOperation());
+      if (this.tokens[this.index] === ",") {
+        this.index++;
+      }
+    }
+    this.consume(")");
+    return new FunctionCallNode(func, expressions);
+  }
 
-	private isString(token: string): boolean {
-		return /^[^()\s,]+$/.test(token);
-	}
+  /**
+   * Parses the expression into an expression node with right node and left node, operator
+   *
+   * @returns Expression node
+   */
+  private parseOperation(): ExpressionNode {
+    let node = this.parseTerm();
+    while (
+      this.index < this.tokens.length &&
+      this.isOperator(this.tokens[this.index])
+    ) {
+      const operator = this.tokens[this.index];
+      this.index++;
+      const rightNode = this.parseTerm();
+      node = new OperationNode(node, operator, rightNode);
+    }
+    return node;
+  }
 
-	private isReference(token: string): boolean {
-		return /^\$[A-Z]+\d+$/.test(token);
-	}
+  /**
+   * Divies up the expressions based on their token first
+   *
+   * @returns Expression node
+   */
+  private parseTerm(): ExpressionNode {
+    const token = this.tokens[this.index];
+    if (this.isFunction(token)) {
+      return this.parseFunction();
+    } else if (this.isNumber(token)) {
+      this.index++;
+      return new NumberNode(parseFloat(token));
+    } else if (this.isReference(token)) {
+      this.index++;
+      return new ReferenceNode(token);
+    } else if (token === "(") {
+      return this.parseParentheses();
+    } else if (token === "-") {
+      return this.parseNegativeNum();
+    } else if (this.isString(token)) {
+      this.index++;
+      return new StringNode(token);
+    } else {
+      throw new Error(`Unexpected token: ${token}`);
+    }
+  }
 
-	private isOperator(token: string): boolean {
-		return /^[+\-*/<>=&|:]+$/.test(token);
-	}
+  /**
+   * Takes in the parenthesis and makes new expression node.
+   *
+   * @returns Expression node
+   */
+  private parseParentheses(): ExpressionNode {
+    this.consume("(");
+    const nestedNode: ExpressionNode = this.parseOperation();
+    this.consume(")");
+    return nestedNode;
+  }
 
-	private isFunction(token: string): boolean {
-		return /^=(IF|SUM|MIN|AVG|MAX|CONCAT|DEBUG)$/.test(token);
-	}
+  /**
+   * Creates a Number node after the string number
+   *
+   * @returns Expression Node
+   */
+  private parseNegativeNum(): ExpressionNode {
+    let numStr = this.tokens[this.index];
+    this.consume("-");
+    numStr += this.tokens[this.index];
+    this.index++;
+    return new NumberNode(parseFloat(numStr));
+  }
 }
 
 export default Parser;
