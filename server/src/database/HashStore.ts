@@ -2,9 +2,6 @@ import { Ref, Term, Payload, ID } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
 import DatabaseQueries from "../../../types/queries";
 import { GetAllUpdates, GetSheetID } from "../database/db";
-import { parse } from "path";
-const getTerm = 0;
-const getID = 1;
 
 /**
  * Singleton class that stores a cache of each of the sheets in the database.
