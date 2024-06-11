@@ -1,4 +1,4 @@
-# HuskSheet-Group7 (Group 1)
+# HuskSheet-Group7 (Team 1)
 
 ## To Run the Project
 

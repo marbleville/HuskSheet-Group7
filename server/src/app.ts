@@ -209,10 +209,7 @@ app.post("/api/v1/updateSubscription", async (req: Request, res: Response) => {
 
 	try {
 		// check if the user is authenticated or if a user is trying to update their own sheet
-		if (
-			!(await authenticate(req.headers.authorization)) ||
-			clientAndPublisherMatch(req, req.headers.authorization)
-		) {
+		if (!(await authenticate(req.headers.authorization))) {
 			res.status(401).send("Unauthorized");
 			return;
 		}
