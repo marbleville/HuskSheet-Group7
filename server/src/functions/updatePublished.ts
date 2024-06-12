@@ -48,6 +48,7 @@ async function updatePublished(argument: Argument): Promise<void> {
 
 		let payloadID: number = payloadUpdate.updateid;
 
+		await HashStore.initHash();
 		await HashStore.updateSheetPayload(
 			sheetName,
 			publisher,

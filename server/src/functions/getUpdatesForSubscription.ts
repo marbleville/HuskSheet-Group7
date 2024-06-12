@@ -30,6 +30,7 @@ async function getUpdatesForSubscription(
 	};
 
 	try {
+		await HashStore.initHash();
 		let [payload, id] = await HashStore.getSheetPayload(
 			publisher,
 			sheetName,
