@@ -13,7 +13,7 @@ class Tokenizer {
     ["LPAREN", /^\(/], // Matches left parenthesis
     ["RPAREN", /^\)/], // Matches right parenthesis
     ["REFERENCE", /^\$[A-Z]+\d+/], // Matches cell references and ranges
-    ["STRING", /^[^+\-*/=:&|<>\s(),]+/], // Matches strings
+    ["STRING", /^"([^"]*)"|^[^+\-*/=:&|<>\s(),]+/], // Matches strings
     ["COMMA", /^,/], // Matches commas
     ["WHITESPACE", /^\s+/], // Matches whitespace
   ];
@@ -45,7 +45,7 @@ class Tokenizer {
    */
   tokenize(formula: string): string[] {
     this.index = 0;
-    this.formula = formula;
+    this.formula = formula?.trim();
     const tokens: string[] = [];
     let openParenthesesCount = 0;
 
@@ -82,11 +82,17 @@ class Tokenizer {
    */
   protected nextToken(): string | null {
     const substr = this.formula.substring(this.index);
+    if (substr.length === 0) {
+      throw new Error("Unexpected EOF");
+    }
+
     for (const [type, regex] of Tokenizer.tokenSpec) {
       const match = regex.exec(substr);
       if (match !== null) {
         this.index += match[0].length;
-        if (type !== "WHITESPACE") {
+        if (type === "STRING" && match[0].includes("EOF")) {
+            throw new Error("Encountered EOF");
+        } else if (type !== "WHITESPACE") {
           return match[0];
         } else {
           return this.nextToken();

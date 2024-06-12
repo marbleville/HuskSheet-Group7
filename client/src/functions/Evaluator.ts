@@ -190,8 +190,8 @@ class Evaluator {
     switch (func) {
       case "IF":
         return this.toNumber(args[0]) !== 0
-          ? this.toNumber(args[1])
-          : this.toNumber(args[2]);
+          ? args[1]
+          : args[2];
       case "SUM":
         return this.sum(toNumbers(args));
       case "MIN":
