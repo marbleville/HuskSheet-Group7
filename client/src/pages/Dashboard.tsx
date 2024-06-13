@@ -77,9 +77,8 @@ function Dashboard() {
     setExpanded(prevState => ({ ...prevState, [publisher]: !prevState[publisher] }));
   };
 
-  // Create a new sheet with the on click and load any data that is on the sheet
   const handleSheetClick = (sheet: Argument) => {
-    navigate(`/${sheet.sheet}`, { state: sheet });
+    navigate(`/${sheet.publisher}/${sheet.sheet}`, { state: sheet });
   };
 
   useEffect(() => {

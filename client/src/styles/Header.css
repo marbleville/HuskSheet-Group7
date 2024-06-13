@@ -5,7 +5,7 @@
     padding-left: 15px;
     padding-right: 15px;
     align-items: center;
-    background-color: rgb(237, 237, 239);
+    background-color: #ccf1d9;
     margin-bottom: 20px;
 }
 
@@ -28,4 +28,5 @@
 .current-user {
     font-size: 18px;
     font-weight: bold;
+    color: rgb(53, 53, 53);
 }

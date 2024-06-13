@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Sheet from "./pages/Sheet";
@@ -22,13 +22,14 @@ function App() {
           }
         />
         <Route
-          path="/:sheet"
+          path="/:publisher/:sheet"
           element={
             <ProtectedRoute>
               <Sheet />
             </ProtectedRoute>
           }
         />
+        <Route path="*" element={<Navigate to="/dashboard" />} />
       </Routes>
     </>
   );
