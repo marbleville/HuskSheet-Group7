@@ -94,7 +94,7 @@ function Dashboard() {
   return (
     <div className="wrapper">
       <div className="dashboard-container">
-        <p style={{"fontSize": "28px", "fontWeight": "bold", "color": "#5b5b5d", "marginBottom": "50px"}}>Hello, {username} 👋</p>
+        <p style={{ "fontSize": "28px", "fontWeight": "bold", "color": "#5b5b5d", "marginBottom": "50px" }}>Hello, {username} 👋</p>
         <div className="create-sheet-container">
           <input
             value={sheetName}
@@ -107,7 +107,7 @@ function Dashboard() {
           </button>
         </div>
         {publishers
-          .sort((a, b) => (a === username ? -1 : b === username ? 1 : 0)) // Move current user's publisher to the top
+          .sort((a, b) => (a === username ? -1 : b === username ? 1 : 0)) // move current user's publisher to the top
           .map(publisher => (
             <div key={publisher}>
               <h2 onClick={() => toggleExpand(publisher)} className="publisher-header">
@@ -116,7 +116,7 @@ function Dashboard() {
               </h2>
               {expanded[publisher] && (
                 <div className="sheet-buttons-container">
-                  {sheetsByPublisher[publisher]?.slice().reverse().map((sheet, index) => ( // Reverse the sheets array
+                  {sheetsByPublisher[publisher]?.slice().reverse().map((sheet, index) => ( // reverse the sheets array
                     <div key={index} className="sheet-button-container">
                       <button
                         onClick={() => handleSheetClick(sheet)}
@@ -124,12 +124,14 @@ function Dashboard() {
                       >
                         <p className="sheet-name-text">{sheet.sheet}</p>
                       </button>
-                      <button
-                        className="delete-button"
-                        onClick={() => handleDeleteSheet(sheet)}
-                      >
-                        Delete
-                      </button>
+                      {sheet.publisher === username && ( // only render Delete button if the publisher is the current user
+                        <button
+                          className="delete-button"
+                          onClick={() => handleDeleteSheet(sheet)}
+                        >
+                          Delete
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>

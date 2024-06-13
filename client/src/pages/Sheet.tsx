@@ -407,7 +407,7 @@ const Sheet: React.FC = () => {
       );
     }
 
-    headers.push(
+    sheetRelationship === "OWNER" && headers.push(
       <th key="delete-column-header" className="button-header">
         <button
           onClick={deleteCol}
@@ -419,7 +419,7 @@ const Sheet: React.FC = () => {
       </th>
     );
 
-    headers.push(
+    sheetRelationship === "OWNER" && headers.push(
       <th key="add-column-header" className="button-header">
         <button
           onClick={addNewCol}
@@ -475,7 +475,7 @@ const Sheet: React.FC = () => {
       );
     }
 
-    rows.push(
+    sheetRelationship === "OWNER" && rows.push(
       <tr key="row-buttons">
         <td className="button-header">
           <button
