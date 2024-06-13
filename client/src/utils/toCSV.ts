@@ -51,14 +51,6 @@ const toCSV = (data: SheetDataMap) => {
   }
 
   return csv;
-
-  // Put in separate function (return csv)
-  const element = document.createElement("a");
-  const file = new Blob([csv], { type: 'text/csv' });
-  element.href = URL.createObjectURL(file);
-  element.download = "data.csv";
-  document.body.appendChild(element);
-  element.click();
 }
 
 export default toCSV;
