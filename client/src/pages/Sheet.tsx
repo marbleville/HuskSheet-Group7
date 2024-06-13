@@ -14,13 +14,23 @@ import getHeaderLetter from "../utils/getHeaderLetter";
 import generateSheetDataMap from "../utils/generateSheetDataMap";
 
 import { Argument } from "../../../types/types";
-import { SheetDataMap, SheetRelationship, GetUpdatesEndpoint, SendUpdatesEndpoint } from "../types";
+import { SheetDataMap, SheetRelationship, GetUpdatesEndpoint, SendUpdatesEndpoint, UpdatesWithId } from "../types";
 
 import "../styles/Sheet.css";
 
 // Constants
 const INITIALSHEETROWSIZE = 10;
 const INITIALSHEETCOLUMNSIZE = 10;
+
+const BASE_SUBSCRIPTION_UPDATES: UpdatesWithId = {
+  id: '',
+  updates: {} as SheetDataMap,
+};
+
+const BASE_PUBLISHED_UPDATES: UpdatesWithId = {
+  id: '',
+  updates: {} as SheetDataMap,
+};
 
 /**
  * A Sheet that manages the data of its child Cells.
@@ -50,6 +60,9 @@ const Sheet: React.FC = () => {
   const [numRows, setNumRows] = useState(INITIALSHEETROWSIZE);
   const [numCols, setNumCols] = useState(INITIALSHEETCOLUMNSIZE);
 
+  const pendingSubUpdates = useRef<UpdatesWithId>(BASE_SUBSCRIPTION_UPDATES);
+  const pendingPubUpdates = useRef<UpdatesWithId>(BASE_PUBLISHED_UPDATES);
+
   /**
    * Actions to perform on first load.
    * 
@@ -63,22 +76,11 @@ const Sheet: React.FC = () => {
     }
   }, []);
 
-  // TODO delete
-  useEffect(() => {
-    // console.log('----------------------------------')
-    // console.log(`subscription ID: ${latestSubscriptionUpdateID}`)
-    // console.log(`published ID: ${latestPublishedUpdateID}`)
-    // console.log('sheetData')
-    // console.log(sheetData)
-    // console.log('refsToPublish')
-    // console.log(refsToPublish)
-    // console.log('incomingUpdates')
-    // console.log(incomingUpdates)
-    // console.log('----------------------------------')
-  }, [latestSubscriptionUpdateID, latestPublishedUpdateID, sheetData, refsToPublish, incomingUpdates])
-
   /**
-   * Updates the sheetData when a cell's input changes.
+   * Updates the sheetData with new cell value.
+   * 
+   * @param {string} value - new cell value
+   * @param {string} cellId - the cell to update
    *
    * @author kris-amerman
    */
@@ -139,9 +141,12 @@ const Sheet: React.FC = () => {
     setSheetData(updatedSheetData);
   };
 
-
   /**
    * Iterate through the given SheetDataMap and build a payload based on the given refs to include. 
+   * 
+   * @param {Set<string>} refs - the refs to use in the payload
+   * @param {SheetDataMap} refs - the sheet data to use in the payload
+   * @returns {string} - payload
    * 
    * @author kris-amerman
    */
@@ -156,7 +161,12 @@ const Sheet: React.FC = () => {
   };
 
   /**
-   * Publish the values for the given refs in the given SheetDataMap.
+   * Publish the values in the given SheetDataMap for the given refs.
+   * 
+   * @param {Set<string>} refs - the refs to publish
+   * @param {SheetDataMap} updatedSheetData - the sheet data to use for reference
+   * @param {SendUpdatesEndpoint} refs - the endpoint to publish to
+   * @returns {Promise<void>}
    *
    * @author kris-amerman
    */
@@ -171,36 +181,39 @@ const Sheet: React.FC = () => {
     };
 
     try {
-      await fetchWithAuth(endpoint, {
-        method: "POST",
-        body: JSON.stringify(allUpdates),
-      });
-      setRefsToPublish(new Set());
-      setPopupMessage("Publish successful!");
+      await fetchWithAuth(endpoint,
+        {
+          method: "POST",
+          body: JSON.stringify(allUpdates),
+        },
+        () => {
+          setRefsToPublish(new Set());
+          setPopupMessage("Publish successful!");
+        },
+        () => {
+          setPopupMessage("Error publishing new changes");
+        }
+      );
     } catch (error) {
       console.error("Error publishing new changes", error);
       setPopupMessage("Error publishing new changes");
     }
   };
 
-
-  // TODO change the language on this
-  const currRowSizeRef = useRef<number>(0);
-  const currColSizeRef = useRef<number>(0);
-
-  const setSheetSize = (row: number, col: number): void => {
-    currRowSizeRef.current = row;
-    currColSizeRef.current = col;
-  };
-
-  const getUpdatedSheetSize = (): { updatedSheetRow: number; updatedSheetCol: number } => {
-    return { updatedSheetRow: currRowSizeRef.current, updatedSheetCol: currColSizeRef.current };
-  };
-
-
-
-
-  function getUnreconciledUpdates(existingUpdates: SheetDataMap, incomingUpdates: SheetDataMap): SheetDataMap {
+  /**
+   * Generate a payload string representing the incoming updates that 
+   * have never been dealt with by the owner.
+   * 
+   * @param {SheetDataMap} existingUpdates - updates from getUpdatesForSubscription
+   * @param {SheetDataMap} incomingUpdates - updates from getUpdatesForPublished
+   * @returns {SheetDataMap} - incoming updates that the owner has never reviewed
+   *
+   * @author kris-amerman
+   */
+  const getUnreconciledUpdates = (
+    existingUpdates: SheetDataMap,
+    incomingUpdates: SheetDataMap
+  ): SheetDataMap => {
     const unreconciledUpdates: SheetDataMap = {};
 
     for (const cell in incomingUpdates) {
@@ -211,25 +224,6 @@ const Sheet: React.FC = () => {
 
     return unreconciledUpdates;
   }
-
-  type PendingUpdates = {
-    id: string,
-    updates: SheetDataMap,
-  }
-
-  const emptySubscriptionUpdates: PendingUpdates = {
-    id: '',
-    updates: {} as SheetDataMap,
-  };
-
-  const emptyPublishedUpdates: PendingUpdates = {
-    id: '',
-    updates: {} as SheetDataMap,
-  };
-
-  const unhandledSubscriptionUpdates = useRef<PendingUpdates>(emptySubscriptionUpdates);
-  const unhandledPublishedUpdates = useRef<PendingUpdates>(emptyPublishedUpdates);
-
 
   /**
    * Stores updates in either sheetData or incomingUpdates based on the provided endpoint.
@@ -246,15 +240,11 @@ const Sheet: React.FC = () => {
    */
   const handleUpdates = (id: string, updatesEndpoint: GetUpdatesEndpoint, updates: SheetDataMap) => {
     if (updatesEndpoint === "getUpdatesForSubscription") {
-      unhandledSubscriptionUpdates.current.updates = updates;
-      unhandledSubscriptionUpdates.current.id = id;
-      // setSheetData(prevSheetData => ({ ...prevSheetData, ...updates }));
-      // setLatestSubscriptionUpdateID(id)
+      pendingSubUpdates.current.updates = updates;
+      pendingSubUpdates.current.id = id;
     } else if (updatesEndpoint === "getUpdatesForPublished") {
-      unhandledPublishedUpdates.current.updates = updates;
-      unhandledPublishedUpdates.current.id = id;
-      // setIncomingUpdates(updates);
-      // setLatestPublishedUpdateID(id)
+      pendingPubUpdates.current.updates = updates;
+      pendingPubUpdates.current.id = id;
     }
   };
 
@@ -266,32 +256,25 @@ const Sheet: React.FC = () => {
    * 
    * @author kris-amerman
    */
-  const handleGetUpdatesResult = (resultArgument: Argument) => {
-    // Set the sheet size using state hooks
-    setSheetSize(numRows, numCols);
+  const handleGetUpdatesResult = (resultArgument: Argument): SheetDataMap => {
 
-    // Generate sheet updates using local function instead of SheetUpdateHandler
-    // TODO: I think we need to return the currCol/row stuff or pull it out of this function to do its own thing (for sheet expansion??)
-    const updates = generateSheetDataMap(resultArgument.payload, currColSizeRef.current, currRowSizeRef.current);
-
-    // Get updated sheet sizes from state hooks
-    const { updatedSheetRow, updatedSheetCol } = getUpdatedSheetSize();
+    const {sheetMap, newColSize, newRowSize} = generateSheetDataMap(resultArgument.payload, numCols, numRows);
 
     // Dynamically add rows if needed
-    if (updatedSheetRow > numRows) {
-      for (let i = 0; i < updatedSheetRow - numRows; i++) {
+    if (newRowSize > numRows) {
+      for (let i = 0; i < newRowSize - numRows; i++) {
         addNewRow();
       }
     }
 
     // Dynamically add columns if needed
-    if (updatedSheetCol > numCols) {
-      for (let i = 0; i < updatedSheetCol - numCols; i++) {
+    if (newColSize > numCols) {
+      for (let i = 0; i < newColSize - numCols; i++) {
         addNewCol();
       }
     }
 
-    return updates;
+    return sheetMap;
   };
 
   /**
@@ -330,17 +313,16 @@ const Sheet: React.FC = () => {
   };
 
   const resolvePendingUpdates = () => {
-    console.log(unhandledSubscriptionUpdates.current.updates)
-    const subscriptionUpdates = unhandledSubscriptionUpdates.current.updates;
+    const subscriptionUpdates = pendingSubUpdates.current.updates;
     setSheetData(prevSheetData => ({ ...prevSheetData, ...subscriptionUpdates }));
-    setLatestSubscriptionUpdateID(unhandledSubscriptionUpdates.current.id);
+    setLatestSubscriptionUpdateID(pendingSubUpdates.current.id);
 
-    const unreconciledUpdates = getUnreconciledUpdates(unhandledSubscriptionUpdates.current.updates, unhandledPublishedUpdates.current.updates);
+    const unreconciledUpdates = getUnreconciledUpdates(pendingSubUpdates.current.updates, pendingPubUpdates.current.updates);
     setIncomingUpdates(unreconciledUpdates)
-    setLatestPublishedUpdateID(unhandledPublishedUpdates.current.id);
+    setLatestPublishedUpdateID(pendingPubUpdates.current.id);
 
-    unhandledSubscriptionUpdates.current = emptySubscriptionUpdates;
-    unhandledPublishedUpdates.current = emptyPublishedUpdates;
+    pendingSubUpdates.current = BASE_SUBSCRIPTION_UPDATES;
+    pendingPubUpdates.current = BASE_PUBLISHED_UPDATES;
   }
 
   /**
@@ -534,7 +516,7 @@ const Sheet: React.FC = () => {
         <button
           onClick={() => {
             publishRefs(
-              refsToPublish, 
+              refsToPublish,
               sheetData,
               sheetRelationship === "OWNER" ? "updatePublished" : "updateSubscription"
             )

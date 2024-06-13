@@ -33,3 +33,9 @@ export type SendUpdatesEndpoint = "updateSubscription" | "updatePublished";
 
 // Represents a valid endpoint.
 export type Endpoint = (typeof validEndpoints)[number];
+
+// An object containing updates and the latest id for those updates. 
+export type UpdatesWithId = {
+    id: string,
+    updates: SheetDataMap,
+}
