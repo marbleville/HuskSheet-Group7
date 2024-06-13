@@ -114,7 +114,8 @@ class Evaluator {
     const res: number[] = [];
     if (
       node.left instanceof ReferenceNode &&
-      node.right instanceof ReferenceNode
+      node.right instanceof ReferenceNode &&
+      node.op === ":"
     ) {
       // Get col and row of the reference
       let rowStart = "";
@@ -190,9 +191,7 @@ class Evaluator {
 
     switch (func) {
       case "IF":
-        return this.toNumber(args[0]) !== 0
-          ? args[1]
-          : args[2];
+        return this.toNumber(args[0]) !== 0 ? args[1] : args[2];
       case "SUM":
         return this.sum(toNumbers(args));
       case "MIN":
