@@ -1,7 +1,7 @@
 import toCSV from "../../../client/src/utils/toCSV";
 import { SheetDataMap } from "../../../client/src/types";
 
-describe("createSheet", () => {
+describe("toCSV", () => {
 	it("checks to see if it formats CSV correctly for correct data", () => {
     let data: SheetDataMap = {};
 
