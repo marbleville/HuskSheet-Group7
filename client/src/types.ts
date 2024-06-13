@@ -28,5 +28,8 @@ export type SheetRelationship = "OWNER" | "SUBSCRIBER";
 // Represents a valid getUpdates... endpoint.
 export type GetUpdatesEndpoint = "getUpdatesForSubscription" | "getUpdatesForPublished";
 
+// Represents a valid update... endpoint.
+export type SendUpdatesEndpoint = "updateSubscription" | "updatePublished";
+
 // Represents a valid endpoint.
 export type Endpoint = (typeof validEndpoints)[number];
