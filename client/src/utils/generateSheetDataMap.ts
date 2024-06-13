@@ -8,7 +8,7 @@ import getColAndRowFromRef from "./getColAndRowFromRef";
  * @param {string} payload - the payload to parse
  * @param {number} currColSize - the current column size
  * @param {number} currRowSize - the current row size
- * @returns {SheetDataMap} - SheetDataMap representation of payload
+ * @returns {Object} - SheetDataMap and updated col/row numbers
  *
  * @author kris-amerman
  */
@@ -16,8 +16,10 @@ export const generateSheetDataMap = (
     payload: string,
     currColSize: number,
     currRowSize: number
-): SheetDataMap => {
-    const sheetsMap: SheetDataMap = {};
+): { sheetMap: SheetDataMap, newColSize: number, newRowSize: number } => {
+    const sheetMap: SheetDataMap = {};
+    let newColSize = currColSize;
+    let newRowSize = currRowSize;
 
     const updates: string[] = payload.split("\n");
 
@@ -26,26 +28,22 @@ export const generateSheetDataMap = (
             const [ref, ...rest] = update.split(" ");
             const term = rest.join(" ");
             if (ref) {
-                if (currRowSize === 0 || currColSize === 0) {
-                    throw new Error("Sheet rows and columns not set!");
-                }
-
                 const { col, row } = getColAndRowFromRef(ref);
                 const colNumber = getColumnNumber(col);
 
-                if (colNumber > currColSize) {
-                    currColSize = currColSize + colNumber - currColSize;
+                if (colNumber > newColSize) {
+                    newColSize = colNumber;
                 }
-                if (row > currRowSize) {
-                    currRowSize = currRowSize + row - currRowSize;
+                if (row > newRowSize) {
+                    newRowSize = row;
                 }
 
-                sheetsMap[ref] = term;
+                sheetMap[ref] = term;
             }
         }
     }
     
-    return sheetsMap; // TODO make sure returning the most recent
+    return { sheetMap, newColSize, newRowSize}; 
 };
 
 export default generateSheetDataMap;
