@@ -6,6 +6,13 @@ interface PopupProps {
   onClose: () => void;
 }
 
+/**
+ * Displays a popup.
+ * 
+ * @param {Object} - message to display 
+ * 
+ * @author rishavsarma5
+ */
 const Popup: React.FC<PopupProps> = ({ message, onClose }) => {
   return (
     <div className="popup-background" onClick={onClose}>

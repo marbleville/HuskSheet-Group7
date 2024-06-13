@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 import Popup from "../components/Popup";
 import Cell from "./Cell";
@@ -15,7 +15,7 @@ import generateSheetDataMap from "../utils/generateSheetDataMap";
 import buildPayload from "../utils/buildPayload";
 import getUnreconciledUpdates from "../utils/getUnreconciledUpdates";
 
-import { Argument } from "../../../types/types";
+import { Argument, Result } from "../../../types/types";
 import { SheetDataMap, SheetRelationship, GetUpdatesEndpoint, SendUpdatesEndpoint, UpdatesWithId } from "../types";
 
 import "../styles/Sheet.css";
@@ -38,9 +38,11 @@ const BASE_PUBLISHED_UPDATES: UpdatesWithId = {
  * @author kris-amerman
  */
 const Sheet: React.FC = () => {
+
+
   // Receive contextual information about sheet from the dashboard page. TODO -- maybe use URL
-  const location = useLocation();
-  const sheetInfo = location.state;
+  const sheetInfo = useParams<{ publisher: string; sheet: string; }>();
+  const navigate = useNavigate();
 
   // Initialize the SheetDataMap
   const initialSheetData: SheetDataMap = initializeSheet(
@@ -74,6 +76,41 @@ const Sheet: React.FC = () => {
     if (sheetInfo.publisher === sessionStorage.getItem("username")) {
       setSheetRelationship("OWNER")
     }
+
+    // The following functions are necessary to check whether the provided URL
+    // params are valid. If the provided publisher/sheet DNE, navigate to /dashboard
+    const handlePublishersSuccess = (data: Result) => {
+      const publishers = data.value.map((item: Argument) => item.publisher);
+      if (sheetInfo.publisher && publishers.includes(sheetInfo.publisher)) {
+        checkValidSheets();
+      } else {
+        navigate('/dashboard');
+      }
+    };
+
+    const handleSheetsSuccess = (data: Result) => {
+      const sheets = data.value.map((item: Argument) => item.sheet);
+      console.log(sheets);
+      if (!sheetInfo.sheet || !sheets.includes(sheetInfo.sheet)) {
+        navigate('/dashboard');
+      }
+    };
+
+    const checkValidSheets = () => {
+      fetchWithAuth(
+        "getSheets",
+        { method: "POST", body: JSON.stringify({ publisher: sheetInfo.publisher }) },
+        handleSheetsSuccess,
+        () => { navigate('/dashboard'); }
+      );
+    };
+
+    fetchWithAuth(
+      "getPublishers",
+      { method: "GET" },
+      handlePublishersSuccess,
+      () => { navigate('/dashboard'); }
+    );
   }, []);
 
   /**
@@ -207,8 +244,8 @@ const Sheet: React.FC = () => {
    */
   const getUpdates = async (updatesEndpoint: GetUpdatesEndpoint, id: string) => {
     const argument: Argument = {
-      publisher: sheetInfo.publisher,
-      sheet: sheetInfo.sheet,
+      publisher: sheetInfo.publisher!,
+      sheet: sheetInfo.sheet!,
       id: id,
       payload: ""
     };

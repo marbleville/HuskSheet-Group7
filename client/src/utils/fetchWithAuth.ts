@@ -48,7 +48,6 @@ const fetchWithAuth = async (
 
   // Set Content-Type header for POST requests with a body
   if (options.method === "POST" && options.body) {
-	console.log(options.body)
     options.headers = {
       ...options.headers,
       "Content-Type": "application/json",
@@ -80,7 +79,7 @@ const fetchWithAuth = async (
       }
     }
 
-	console.log(data)
+    console.log(data)
 
     if (response.ok) {
       if (data.success && data.success !== undefined) {
