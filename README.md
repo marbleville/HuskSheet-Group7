@@ -28,6 +28,7 @@
         in normal operation
 - Export sheet as CSV
 - Duplicate sheet names
-       - One user may have multiple sheets with the same name
-      - Each occurance will have a number automatically appended to the end of the sheet
+    -   One user may have multiple sheets with the same name
+    -   Each occurance will have a number automatically appended to the end of the sheet
+
   
