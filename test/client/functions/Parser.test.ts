@@ -31,9 +31,7 @@ describe("Parser Test", () => {
 
   it("Checks that parser woks for formulas ", () => {
     const func: string = "=IF(1, 2)";
-    const tokenizer = Tokenizer.getInstance();
-    const tokens: string[] = tokenizer.tokenize(func);
-    const res: ExpressionNode = parser.parse(tokens);
+    const res: ExpressionNode = parser.parse(func);
     const expected: ExpressionNode = new FunctionCallNode("IF", [
       new NumberNode(1),
       new NumberNode(2),
@@ -45,7 +43,7 @@ describe("Parser Test", () => {
     const func: string = "=IF(1, 2, 3)";
     const tokenizer = Tokenizer.getInstance();
     const tokens: string[] = tokenizer.tokenize(func);
-    const res: ExpressionNode = parser.parse(tokens);
+    const res: ExpressionNode = parser.parse(func);
     const expected: ExpressionNode = new FunctionCallNode("IF", [
       new NumberNode(1),
       new NumberNode(2),
@@ -55,8 +53,8 @@ describe("Parser Test", () => {
   });
 
   it("should parse formulas correctly", () => {
-    const tokens: string[] = ["=SUM", "(", "$A1", ",", "2", ",", "3", ")"];
-    const result = parser.parse(tokens);
+    const func: string = "=SUM($A1, 2, 3)";
+    const result = parser.parse(func);
     expect(result).toBeInstanceOf(FunctionCallNode);
 
     // Create the expected node structure
@@ -71,10 +69,7 @@ describe("Parser Test", () => {
 
   it("should parse formulas correctly", () => {
     const func: string = "=SUM($A1, 1, 2, 3)";
-    const tokenizer = Tokenizer.getInstance();
-    const tokens: string[] = tokenizer.tokenize(func);
-    console.log(tokens);
-    const res: ExpressionNode = parser.parse(tokens);
+    const res: ExpressionNode = parser.parse(func);
     const expected: ExpressionNode = new FunctionCallNode("SUM", [
       new ReferenceNode("$A1"),
       new NumberNode(1),
@@ -86,37 +81,28 @@ describe("Parser Test", () => {
 
   it("should parse formulas correctly", () => {
     const func: string = "-1";
-    const tokenizer = Tokenizer.getInstance();
-    const tokens: string[] = tokenizer.tokenize(func);
-    console.log(tokens);
-    const res: ExpressionNode = parser.parse(tokens);
+    const res: ExpressionNode = parser.parse(func);
     const expected: ExpressionNode = new NumberNode(-1);
     expect(res).toEqual(expected);
   });
 
   it("should parse negative numbers correctly", () => {
     const func: string = "-1";
-    const tokenizer = Tokenizer.getInstance();
-    const tokens: string[] = tokenizer.tokenize(func);
-    console.log(tokens);
-    const res: ExpressionNode = parser.parse(tokens);
+    const res: ExpressionNode = parser.parse(func);
     const expected: ExpressionNode = new NumberNode(-1);
     expect(res).toEqual(expected);
   });
 
   it("should parse formulas correctly", () => {
     const func: string = "-1";
-    const tokenizer = Tokenizer.getInstance();
-    const tokens: string[] = tokenizer.tokenize(func);
-    console.log(tokens);
-    const res: ExpressionNode = parser.parse(tokens);
+    const res: ExpressionNode = parser.parse(func);
     const expected: ExpressionNode = new NumberNode(-1);
     expect(res).toEqual(expected);
   });
 
   it("should parse copy formula correctly", () => {
-    const tokens: string[] = ["=COPY", "(", "$A1", ",", "$A2", ")"];
-    const res: ExpressionNode = parser.parse(tokens);
+    const func: string = "=COPY($A1, $A2)";
+    const res: ExpressionNode = parser.parse(func);
     const expected: ExpressionNode = new FunctionCallNode("COPY", [
       new ReferenceNode("$A1"),
       new ReferenceNode("$A2"),
@@ -125,8 +111,8 @@ describe("Parser Test", () => {
   });
 
   it("should parse copy formula correctly", () => {
-    const tokens: string[] = ["=COPY", "(", "1", ",", "$A2", ")"];
-    const res: ExpressionNode = parser.parse(tokens);
+    const func: string = "=COPY(1,$A2)";
+    const res: ExpressionNode = parser.parse(func);
     const expected: ExpressionNode = new FunctionCallNode("COPY", [
       new NumberNode(1),
       new ReferenceNode("$A2"),
@@ -135,8 +121,8 @@ describe("Parser Test", () => {
   });
 
   it("should parse sum and range formula correctly", () => {
-    const tokens: string[] = ["=SUM", "(", "$A1", ":", "$B4", ")"];
-    const res: ExpressionNode = parser.parse(tokens);
+    const func: string = "=SUM($A1:$B4)";
+    const res: ExpressionNode = parser.parse(func);
     const expected: ExpressionNode = new FunctionCallNode("SUM", [
       new OperationNode(
         new ReferenceNode("$A1"),
@@ -146,4 +132,11 @@ describe("Parser Test", () => {
     ]);
     expect(res).toEqual(expected);
   });
+
+  // it("should parse a %a1 to be a uppercase reference node", () => {
+  //   const func: string = "$a1";
+  //   const res: ExpressionNode = parser.parse(func);
+  //   const expected: ExpressionNode = new ReferenceNode("$A1");
+  //   expect(res).toEqual(expected);
+  // });
 });
