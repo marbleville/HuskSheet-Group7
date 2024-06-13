@@ -27,19 +27,25 @@ const Cell: React.FC<CellProps> = ({
   const [value, setValue] = useState(cellValue);
   const [prevValue, setPrevValue] = useState(cellValue);
   const [error, setError] = useState(false);
-  const [rendered, setRendered] = useState(false);
+  //const [rendered, setRendered] = useState(false);
 
-  useEffect(() => {
-    if (!rendered && !isUpdated && cellValue && cellValue !== "" && cellValue !== "EOF") {
-      initialEvaluate(); // Evaluate the loaded cell content
-      setRendered(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sheetData]);
+  // useEffect(() => {
+  //   if (!rendered && !isUpdated && cellValue && cellValue !== "" && cellValue !== "EOF") {
+  //     initialEvaluate(); // Evaluate the loaded cell content
+  //     setRendered(true);
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [sheetData]);
 
   useEffect(() => {
     setValue(cellValue);
   }, [cellValue])
+
+  /*
+  useEffect(() => {
+    setValue(isUpdated ? cellValue : sheetData[cellId]);
+  }, [cellValue, isUpdated, sheetData, cellId]);
+  */
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value;
@@ -90,6 +96,7 @@ const Cell: React.FC<CellProps> = ({
     setPrevValue(result);
   };
 
+  /*
   const initialEvaluate = () => {
     if (cellValue === "") {
       setValue("");
@@ -119,6 +126,7 @@ const Cell: React.FC<CellProps> = ({
     setValue(result);
     setPrevValue(result);
   };
+  */
 
   return (
     <td key={cellId} className={`cell ${error ? 'error' : ''} ${isUpdated ? 'updated-cell' : ''}`}>

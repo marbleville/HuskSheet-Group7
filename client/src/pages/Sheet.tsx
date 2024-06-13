@@ -19,6 +19,9 @@ import { Argument, Result } from "../../../types/types";
 import { SheetDataMap, SheetRelationship, GetUpdatesEndpoint, SendUpdatesEndpoint, UpdatesWithId } from "../types";
 
 import "../styles/Sheet.css";
+import Parser from "../functions/Parser";
+import Evaluator from "../functions/Evaluator";
+import findDependencies from "../utils/findDependencies";
 
 // Constants
 const INITIALSHEETROWSIZE = 10;
@@ -31,6 +34,8 @@ const BASE_PUBLISHED_UPDATES: UpdatesWithId = {
   id: '',
   updates: {} as SheetDataMap,
 };
+const parser = Parser.getInstance();
+const evaluator = Evaluator.getInstance();
 
 /**
  * A Sheet that manages the data of its child cells and handles communication.
@@ -64,6 +69,8 @@ const Sheet: React.FC = () => {
 
   const pendingSubUpdates = useRef<UpdatesWithId>(BASE_SUBSCRIPTION_UPDATES);
   const pendingPubUpdates = useRef<UpdatesWithId>(BASE_PUBLISHED_UPDATES);
+
+  const [pendingEvaluationCells, setPendingEvaluationCells] = useState<string[]>([]);
 
   /**
    * Actions to perform on first load.
@@ -130,6 +137,14 @@ const Sheet: React.FC = () => {
     setSheetData((prevSheetData) => {
       const updatedSheetData = { ...prevSheetData, [cellId]: value };
 
+      // Track dependencies for this cellId
+      const dependencies = findDependencies(updatedSheetData, cellId);
+      dependencies.forEach((dep) => {
+        if (!pendingEvaluationCells.includes(dep)) {
+          setPendingEvaluationCells((prevPendingCells) => [...prevPendingCells, dep]);
+        }
+      });
+
       // If the value is different from the previous one, or if the value is empty, mark it as manually updated
       if (value !== prevSheetData[cellId]) {
         setRefsToPublish((prevManualUpdates) => new Set(prevManualUpdates).add(cellId));
@@ -138,6 +153,85 @@ const Sheet: React.FC = () => {
       return updatedSheetData;
     });
   };
+
+  const evaluatePendingCells = async (sheetData: SheetDataMap) => {
+    const updatedData: SheetDataMap = { ...sheetData };
+    const pendingCellsSet = new Set(pendingEvaluationCells); // Use a set for faster lookups
+
+    const areDependenciesResolved = (dependencies: string[]): boolean => {
+        return dependencies.every(dep => !pendingCellsSet.has(dep));
+    };
+
+    while (pendingCellsSet.size > 0) {
+        const cellsToEvaluate: string[] = [];
+
+        // Find cells that can be evaluated in this iteration
+        for (const cellId of pendingCellsSet) {
+            const dependencies = findDependencies(updatedData, cellId);
+            if (areDependenciesResolved(dependencies)) {
+                console.log("all values resolved!");
+                cellsToEvaluate.push(cellId);
+            }
+        }
+
+        if (cellsToEvaluate.length === 0) {
+            console.error("Cyclic dependency detected or unsatisfiable dependencies");
+            break;
+        }
+
+        // Evaluate cells in parallel
+        const promises = cellsToEvaluate.map(async cellId => {
+            const cellValue = updatedData[cellId];
+            try {
+                const parsedNode = parser.parse(cellValue);
+                evaluator.setContext(updatedData);
+                const result = evaluator.evaluate(parsedNode);
+                updatedData[cellId] = result;
+
+                // Remove evaluated cell from pending set only if successful
+                pendingCellsSet.delete(cellId);
+            } catch (error) {
+                console.error(`Error evaluating formula in ${cellId}:`, error);
+                // If an error occurs, keep the cell in the pending set
+            }
+        });
+
+        // Wait for all evaluations in this iteration to complete
+        await Promise.all(promises);
+
+        // If no cells were successfully evaluated and removed from the pending set, break to avoid infinite loop
+        if (cellsToEvaluate.every(cellId => pendingCellsSet.has(cellId))) {
+            console.error("Cyclic dependency detected or unsatisfiable dependencies");
+            break;
+        }
+    }
+
+    setPendingEvaluationCells([]); // Clear pending cells
+    setSheetData(updatedData); // Update sheetData with evaluated values
+};
+
+
+  
+
+   // Function to handle incoming updates and add cells to pendingCells
+   const evaluateIncomingUpdates = async (updates: SheetDataMap) => {
+    // Identify cells from incoming updates that need evaluation
+    const cellsToUpdate = Object.keys(updates).filter((cellId) => {
+      return updates[cellId].startsWith("="); // Check if cell value is a formula
+    });
+
+    // Add cells to pendingCells for evaluation
+    setPendingEvaluationCells((prevPendingCells) => [
+      ...prevPendingCells,
+      ...cellsToUpdate.filter((cellId) => !prevPendingCells.includes(cellId)),
+    ]);
+  };
+
+  useEffect(() => {
+    if (pendingEvaluationCells.length > 0) {
+      evaluatePendingCells(sheetData);
+    }
+  }, [pendingEvaluationCells]);
 
   /**
    * Add a new empty row.
@@ -260,10 +354,11 @@ const Sheet: React.FC = () => {
         method: "POST",
         body: JSON.stringify(argument)
       },
-      (data) => {
+      async (data) => {
         if (data.success && data.value && data.value.length > 0) {
           const resultArgument = data.value[0];
           const updates = handleGetUpdatesResult(resultArgument);
+          await evaluateIncomingUpdates(updates);
           setPendingUpdates(resultArgument.id, updatesEndpoint, updates);
         }
       }
@@ -330,12 +425,13 @@ const Sheet: React.FC = () => {
   const resolvePendingUpdates = () => {
     const subscriptionUpdates = pendingSubUpdates.current.updates;
     const publishedUpdates = pendingPubUpdates.current.updates;
-
+    evaluateIncomingUpdates(subscriptionUpdates);
     setSheetData(prevSheetData => ({ ...prevSheetData, ...subscriptionUpdates }));
     setLatestSubscriptionUpdateID(pendingSubUpdates.current.id);
 
     if (publishedUpdates && sheetRelationship === "OWNER") {
       const unreconciledUpdates = getUnreconciledUpdates(subscriptionUpdates, publishedUpdates);
+      evaluateIncomingUpdates(unreconciledUpdates);
       setIncomingUpdates(unreconciledUpdates)
       setLatestPublishedUpdateID(pendingPubUpdates.current.id);
     }
