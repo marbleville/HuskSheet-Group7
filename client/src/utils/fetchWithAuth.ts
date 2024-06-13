@@ -1,31 +1,21 @@
-import { Result } from "../../types/types";
-import clientConfig from "./config/clientConfig";
-
-const validEndpoints = [
-  "register",
-  "getPublishers",
-  "getSheets",
-  "createSheet",
-  "deleteSheet",
-  "getUpdatesForSubscription",
-  "getUpdatesForPublished",
-  "updatePublished",
-  "updateSubscription",
-] as const;
-
-type Endpoint = (typeof validEndpoints)[number];
+import { Result } from "../../../types/types";
+import clientConfig from "../config/clientConfig";
+import { Endpoint, validEndpoints } from "../types";
 
 /**
  * Fetches data from the given endpoint with the given options and stored
  * authorization. If the fetch is successful, the onSuccess function is called,
  * otherwise the onFailure function is called.
  *
- * @param endpoint the endpoint to fetch data from
- * @param options the options to pass to the fetch function
- * @param onSuccess the function to call if the fetch is successful
- * @param onFailure the function to call if the fetch is unsuccessful
+ * @param {Endpoint} endpoint - the endpoint to fetch data from
+ * @param {RequestInit} options - the options to pass to the fetch function
+ * @param {function} onSuccess - the function to call if the fetch is successful
+ * @param {function} onFailure - the function to call if the fetch is unsuccessful
+ * @returns {Promise<void> }
+ * 
+ * @author kris-amerman
  */
-export const fetchWithAuth = async (
+const fetchWithAuth = async (
   endpoint: Endpoint,
   options: RequestInit = {},
   onSuccess?: (data: Result) => void,
@@ -36,6 +26,8 @@ export const fetchWithAuth = async (
   if (!validEndpoints.includes(endpoint)) {
     throw new Error(`Invalid endpoint: ${endpoint}`);
   }
+
+  console.log(`CALLING ${endpoint}`)
 
   // Construct endpoint URL
   const url = `${clientConfig.BASE_URL}${endpoint}`;
@@ -56,6 +48,7 @@ export const fetchWithAuth = async (
 
   // Set Content-Type header for POST requests with a body
   if (options.method === "POST" && options.body) {
+	console.log(options.body)
     options.headers = {
       ...options.headers,
       "Content-Type": "application/json",
@@ -87,6 +80,8 @@ export const fetchWithAuth = async (
       }
     }
 
+	console.log(data)
+
     if (response.ok) {
       if (data.success && data.success !== undefined) {
         // { success: true, ... }
@@ -105,33 +100,4 @@ export const fetchWithAuth = async (
   }
 };
 
-/**
- * @description Helper to get the letter of the column
- * Starts from 'A ... Z, then 'AA ... AZ', etc.
- *
- * @author rishavsarma5
- */
-export const getHeaderLetter = (curr: number): string => {
-  let currentCol = curr;
-  let letters = "";
-  while (currentCol >= 0) {
-    const remainder = currentCol % 26;
-    letters = String.fromCharCode(65 + remainder) + letters;
-    currentCol = Math.floor(currentCol / 26) - 1;
-  }
-
-  return letters;
-};
-
-/**
- * @description Helper to get the number of the column
- *
- * @author rishavsarma5
- */
-export const getColumnNumber = (letter: string): number => {
-  let columnNumber = 0;
-  for (let i = 0; i < letter.length; i++) {
-    columnNumber = columnNumber * 26 + (letter.charCodeAt(i) - 65 + 1);
-  }
-  return columnNumber;
-};
+export default fetchWithAuth;

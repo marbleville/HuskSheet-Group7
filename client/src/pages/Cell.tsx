@@ -37,6 +37,10 @@ const Cell: React.FC<CellProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sheetData]);
 
+  useEffect(() => {
+    setValue(cellValue);
+  }, [cellValue])
+
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value;
     setPrevValue(value);

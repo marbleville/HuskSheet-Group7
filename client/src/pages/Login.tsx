@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchWithAuth } from "../utils";
+import fetchWithAuth from "../utils/fetchWithAuth";
 import { Result } from "../../../types/types";
 import "../styles/Login.css";
 
