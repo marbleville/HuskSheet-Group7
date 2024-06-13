@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { fetchWithAuth } from "../utils";
+import fetchWithAuth from "../utils/fetchWithAuth";
 import { useNavigate } from "react-router-dom";
 import "../styles/Dashboard.css";
 import { Argument } from "../../../types/types";

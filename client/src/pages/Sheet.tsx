@@ -1,50 +1,33 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
+
+import Popup from "../components/Popup";
 import Cell from "./Cell";
-import { fetchWithAuth, getHeaderLetter } from "../utils";
+
+import fetchWithAuth from "../utils/fetchWithAuth";
+import initializeSheet from "../utils/initializeSheet";
+import addRowData from "../utils/addRowData";
+import addColData from "../utils/addColData";
+import deleteColData from "../utils/deleteColData";
+import deleteRowData from "../utils/deleteRowData";
+import getHeaderLetter from "../utils/getHeaderLetter";
+import generateSheetDataMap from "../utils/generateSheetDataMap";
+
+import { Argument, Result } from "../../../types/types";
+import { SheetDataMap, SheetRelationship, GetUpdatesEndpoint } from "../types";
+
 import "../styles/Sheet.css";
-import { Argument } from "../../../types/types";
-import SheetUpdateHandler from "../sheetUpdateHandler";
-import Popup from "./Popup";
 
 // Constants
 const INITIALSHEETROWSIZE = 10;
 const INITIALSHEETCOLUMNSIZE = 10;
 
-// Represents the client's relationship to this sheet.
-type SheetRelationship = "OWNER" | "SUBSCRIBER";
-
-// Represents data stored in the sheet as a mapping of REF:TERM pairs. 
-interface SheetDataMap {
-  [ref: string]: string;
-};
-
 /**
- * @description Initializes the SheetDataMap based on given row/columns.
+ * A Sheet that manages the data of its child Cells.
  *
- * @author rishavsarma5
- */
-const initializeSheet = (rowSize: number, colSize: number): SheetDataMap => {
-  const initialData: SheetDataMap = {};
-
-  for (let i = 1; i <= rowSize; i++) {
-    for (let j = 0; j < colSize; j++) {
-      const columnValue: string = getHeaderLetter(j);
-      const ref = `$${columnValue}${i}`;
-      initialData[ref] = "";
-    }
-  }
-
-  return initialData;
-};
-
-/**
- * @description A Sheet that manages the data of its child Cells.
- *
- * @author kris-amerman, rishavsarma5, eduardo-ruiz-garay
+ * @author kris-amerman
  */
 const Sheet: React.FC = () => {
-
   // Receive contextual information about sheet from the dashboard page.
   const location = useLocation();
   const sheetInfo: Argument = location.state;
@@ -57,48 +40,55 @@ const Sheet: React.FC = () => {
 
   // Sheet state.
   const [sheetData, setSheetData] = useState<SheetDataMap>(initialSheetData);
-  const [manualUpdates, setManualUpdates] = useState<Set<string>>(new Set());
-  const prevCellDataRef = useRef<SheetDataMap>({ ...sheetData });
-  const [numRows, setNumRows] = useState(INITIALSHEETROWSIZE);
-  const [numCols, setNumCols] = useState(INITIALSHEETCOLUMNSIZE);
-  const [sheetRelationship, setSheetRelationship] = useState<SheetRelationship>();
+  const [refsToPublish, setRefsToPublish] = useState<Set<string>>(new Set());
+  const [incomingUpdates, setIncomingUpdates] = useState<SheetDataMap>({});
+  const [sheetRelationship, setSheetRelationship] = useState<SheetRelationship>("SUBSCRIBER");
   const [latestPublishedUpdateID, setLatestPublishedUpdateID] = useState<string>("0");
   const [latestSubscriptionUpdateID, setLatestSubscriptionUpdateID] = useState<string>("0");
-  const [incomingUpdates, setIncomingUpdates] = useState<SheetDataMap>({});
   const [popupMessage, setPopupMessage] = useState<string | null>(null);
 
-  // Store client's relationship to this sheet based on username and sheet publisher.
+  const [numRows, setNumRows] = useState(INITIALSHEETROWSIZE);
+  const [numCols, setNumCols] = useState(INITIALSHEETCOLUMNSIZE);
+
+  /**
+   * Actions to perform on first load.
+   * 
+   * @author kris-amerman
+   */
   useEffect(() => {
+    // If the publisher for the current sheet is the same as the current user,
+    // set the sheetRelationship to OWNER
     if (sheetInfo.publisher === sessionStorage.getItem("username")) {
       setSheetRelationship("OWNER")
-    } else {
-      setSheetRelationship("SUBSCRIBER")
     }
   }, []);
 
+  // TODO delete
   useEffect(() => {
-    console.log(`subscription ID: ${latestSubscriptionUpdateID}`)
-    console.log(`published ID: ${latestPublishedUpdateID}`)
-  })
+    // console.log('----------------------------------')
+    // console.log(`subscription ID: ${latestSubscriptionUpdateID}`)
+    // console.log(`published ID: ${latestPublishedUpdateID}`)
+    // console.log('sheetData')
+    // console.log(sheetData)
+    // console.log('refsToPublish')
+    // console.log(refsToPublish)
+    // console.log('incomingUpdates')
+    // console.log(incomingUpdates)
+    // console.log('----------------------------------')
+  }, [latestSubscriptionUpdateID, latestPublishedUpdateID, sheetData, refsToPublish, incomingUpdates])
 
   /**
-   * @description Updates the sheetData when a cell's input changes.
+   * Updates the sheetData when a cell's input changes.
    *
-   * @author rishavsarma5, eduardo-ruiz-garay, kris-amerman
+   * @author kris-amerman
    */
   const handleCellUpdate = (value: string, cellId: string) => {
     setSheetData((prevSheetData) => {
       const updatedSheetData = { ...prevSheetData, [cellId]: value };
 
-      // Record the previous value for comparison
-      prevCellDataRef.current = {
-        ...prevCellDataRef.current,
-        [cellId]: prevSheetData[cellId],
-      };
-
       // If the value is different from the previous one, or if the value is empty, mark it as manually updated
-      if (value !== prevSheetData[cellId] || value === "") {
-        setManualUpdates((prevManualUpdates) => new Set(prevManualUpdates).add(cellId));
+      if (value !== prevSheetData[cellId]) {
+        setRefsToPublish((prevManualUpdates) => new Set(prevManualUpdates).add(cellId));
       }
 
       return updatedSheetData;
@@ -106,104 +96,280 @@ const Sheet: React.FC = () => {
   };
 
   /**
-   * @description Add a new empty row.
+   * Add a new empty row.
    *
    * @author rishavsarma5
    */
   const addNewRow = () => {
     setNumRows((prevNumRows) => prevNumRows + 1);
-
-    const newSheetData = { ...sheetData };
-    const newRowNumber = numRows + 1;
-
-    for (let col = 0; col < numCols; col++) {
-      const colLetter = getHeaderLetter(col);
-      const cellID = `$${colLetter}${newRowNumber}`;
-      // If there's an update for this cellID, use the provided value
-      newSheetData[cellID] = "";
-      prevCellDataRef.current[cellID] = newSheetData[cellID];
-    }
-
+    const newSheetData = addRowData(sheetData, numRows, numCols);
     setSheetData(newSheetData);
   };
 
   /**
-   * @description Delete a row.
+   * Delete a row.
    *
    * @author rishavsarma5
    */
   const deleteRow = () => {
-    if (numRows === 1) {
-      return;
-    }
-
-    const lastRowNumber = numRows;
-
-    for (let col = 0; col < numCols; col++) {
-      const colLetter = getHeaderLetter(col);
-      const cellID = `$${colLetter}${lastRowNumber}`;
-      if (sheetData[cellID] !== "") {
-        handleCellUpdate("", cellID);
-      }
-    }
-
-    setNumRows((prevNumRows) => prevNumRows - 1);
+    const updatedSheetData = deleteRowData(sheetData, numRows, numCols, handleCellUpdate);
+    setNumRows((prevNumRows) => (prevNumRows > 1 ? prevNumRows - 1 : prevNumRows));
+    setSheetData(updatedSheetData);
   };
 
   /**
-   * @description Add a new empty column.
+   * Add a new empty column.
    *
    * @author rishavsarma5
    */
   const addNewCol = () => {
     setNumCols((prevNumCols) => prevNumCols + 1);
-
-    const newSheetData = { ...sheetData };
-    const newColumnLetter = getHeaderLetter(numCols);
-
-    for (let row = 1; row <= numRows; row++) {
-      const cellID = `$${newColumnLetter}${row}`;
-      newSheetData[cellID] = "";
-      prevCellDataRef.current[cellID] = newSheetData[cellID];
-    }
-
+    const newSheetData = addColData(sheetData, numCols, numRows);
     setSheetData(newSheetData);
   };
 
   /**
-   * @description Delete a column.
+   * Delete a column.
    *
    * @author rishavsarma5
    */
   const deleteCol = () => {
-    if (numCols === 1) {
-      return;
-    }
+    const updatedSheetData = deleteColData(sheetData, numCols, numRows, handleCellUpdate);
+    setNumCols((prevNumCols) => (prevNumCols > 1 ? prevNumCols - 1 : prevNumCols));
+    setSheetData(updatedSheetData);
+  };
 
-    const lastColumnLetter = getHeaderLetter(numCols - 1);
-
-    for (let row = 1; row <= numRows; row++) {
-      const cellID = `$${lastColumnLetter}${row}`;
-      if (sheetData[cellID] !== "") {
-        handleCellUpdate("", cellID);
+  /**
+   * Iterate through the given SheetDataMap and build a payload based on the given refs to include. 
+   * 
+   * @author kris-amerman
+   */
+  const buildPayload = (refs: Set<string>, updatedSheetData: SheetDataMap): string => {
+    const payload: string[] = [];
+    for (const [ref, valueAtCell] of Object.entries(updatedSheetData)) {
+      if (refs.has(ref)) {
+        payload.push(`${ref} ${valueAtCell}`);
       }
     }
-    setNumCols((prevNumCols) => prevNumCols - 1);
+    return payload.length ? payload.join("\n") + "\n" : "";
+  };
+
+  /**
+   * Publish the values for the given refs in the given SheetDataMap.
+   *
+   * @author kris-amerman
+   */
+  const publishRefs = async (refs: Set<string>, updatedSheetData: SheetDataMap) => {
+    const payload = buildPayload(refs, updatedSheetData);
+
+    const allUpdates = {
+      id: "",
+      publisher: sheetInfo.publisher,
+      sheet: sheetInfo.sheet,
+      payload: payload,
+    };
+
+    try {
+      const endpoint = sheetRelationship === "OWNER" ? "updatePublished" : "updateSubscription";
+      await fetchWithAuth(endpoint, {
+        method: "POST",
+        body: JSON.stringify(allUpdates),
+      });
+      setRefsToPublish(new Set());
+      setPopupMessage("Publish successful!");
+    } catch (error) {
+      console.error("Error publishing new changes", error);
+      setPopupMessage("Error publishing new changes");
+    }
+  };
+
+
+  // TODO change the language on this
+  const currRowSizeRef = useRef<number>(0);
+  const currColSizeRef = useRef<number>(0);
+
+  const setSheetSize = (row: number, col: number): void => {
+    currRowSizeRef.current = row;
+    currColSizeRef.current = col;
+  };
+
+  const getUpdatedSheetSize = (): { updatedSheetRow: number; updatedSheetCol: number } => {
+    return { updatedSheetRow: currRowSizeRef.current, updatedSheetCol: currColSizeRef.current };
+  };
+
+
+  /**
+   * Handles the result of getUpdates. Modifies the size of the sheet and directs the incoming updates.
+   * 
+   * @param {Result} result - The result object containing the updates argument.
+   * @param {UpdatesEndpoint} updatesEndpoint - The endpoint from which updates were retrieved.
+   * @returns {void}
+   * 
+   * @author kris-amerman
+   */
+  const handleGetUpdatesResult = (result: Result, updatesEndpoint: GetUpdatesEndpoint) => {
+    const resultArgument = result.value[0];
+
+    // Set the sheet size using state hooks
+    setSheetSize(numRows, numCols);
+
+    // Generate sheet updates using local function instead of SheetUpdateHandler
+    const updates = generateSheetDataMap(resultArgument.payload, currColSizeRef.current, currRowSizeRef.current);
+
+    // Get updated sheet sizes from state hooks
+    const { updatedSheetRow, updatedSheetCol } = getUpdatedSheetSize();
+
+    // Dynamically add rows if needed
+    if (updatedSheetRow > numRows) {
+      for (let i = 0; i < updatedSheetRow - numRows; i++) {
+        addNewRow();
+      }
+    }
+
+    // Dynamically add columns if needed
+    if (updatedSheetCol > numCols) {
+      for (let i = 0; i < updatedSheetCol - numCols; i++) {
+        addNewCol();
+      }
+    }
+
+    // Deal with updates based on endpoint
+    handleUpdates(resultArgument.id, updatesEndpoint, updates);
+  };
+
+
+  /**
+   * Stores updates in either sheetData or incomingUpdates based on the provided endpoint.
+   * 
+   * Subscription updates will be automatically applied to the sheetData.
+   * Published updates will be held in incomingUpdates until dealt with.
+   * 
+   * @param {string} id - The identifier associated with the updates.
+   * @param {UpdatesEndpoint} updatesEndpoint - The endpoint specifying the type of updates.
+   * @param {SheetDataMap} updates - The updates to apply to the sheet data or incoming updates.
+   * @returns {void}
+   * 
+   * @author kris-amerman
+   */
+  const handleUpdates = (id: string, updatesEndpoint: GetUpdatesEndpoint, updates: SheetDataMap) => {
+    if (updatesEndpoint === "getUpdatesForSubscription") {
+      setSheetData(prevSheetData => ({ ...prevSheetData, ...updates }));
+      setLatestSubscriptionUpdateID(id)
+    } else if (updatesEndpoint === "getUpdatesForPublished") {
+      setIncomingUpdates(updates);
+      setLatestPublishedUpdateID(id)
+    }
+  };
+
+  /**
+   * Retrieves subscription or published updates. Gets all updates that occurred after the given id.
+   * If successful, calls handleGetUpdatesResult to process the returned data and update state.
+   * 
+   * @param {UpdatesEndpoint} updatesEndpoint - The endpoint to send the request to.
+   * @param {string} id - The update id. 
+   * @returns {Promise<void>}
+   * 
+   * @author kris-amerman
+   */
+  const getUpdates = async (updatesEndpoint: GetUpdatesEndpoint, id: string) => {
+    const argument: Argument = {
+      publisher: sheetInfo.publisher,
+      sheet: sheetInfo.sheet,
+      id: id,
+      payload: ""
+    };
+
+    await fetchWithAuth(updatesEndpoint,
+      {
+        method: "POST",
+        body: JSON.stringify(argument)
+      },
+      (data) => {
+        if (data.success && data.value && data.value.length > 0) {
+          handleGetUpdatesResult(data, updatesEndpoint);
+        }
+      }
+    );
+  };
+
+  /**
+   * Request updates based on the client's relationship to the sheet.
+   *
+   * @author kris-amerman
+   */
+  const handleRequestUpdates = async () => {
+    if (sheetRelationship === "OWNER") {
+      await getUpdates("getUpdatesForSubscription", latestSubscriptionUpdateID);
+      await getUpdates("getUpdatesForPublished", latestPublishedUpdateID);
+    } else if (sheetRelationship === "SUBSCRIBER") {
+      await getUpdates("getUpdatesForSubscription", latestSubscriptionUpdateID);
+    }
+  };
+
+  /**
+   * Accept the incoming updates.
+   *
+   * @author kris-amerman
+   */
+  const handleAccept = async () => {
+    // Update sheetData with incomingUpdates
+    setSheetData(prevSheetData => {
+      const newSheetData = { ...prevSheetData, ...incomingUpdates };
+
+      // Include incoming updates in the refs to publish
+      const updatedRefs = new Set<string>();
+      Object.keys(incomingUpdates).forEach((ref) => {
+        updatedRefs.add(ref);
+      });
+
+      // Call publishRefs with the updated state
+      publishRefs(updatedRefs, newSheetData);
+
+      return newSheetData;
+    });
+
+    // Clear incomingUpdates after accepting
+    setIncomingUpdates({});
+  };
+
+  /**
+   * Deny the incoming updates.
+   * 
+   * Overwrite the incoming updates by re-asserting the existing cell values.
+   *
+   * @author kris-amerman
+   */
+  const handleDeny = async () => {
+    setRefsToPublish((prevRefs) => {
+      const updatedRefs = new Set(prevRefs);
+
+      Object.entries(incomingUpdates).forEach(([ref]) => {
+        // If the cell exists in sheetData, include the existing value 
+        // in refsToPublish rather than the incoming value
+        if (sheetData.hasOwnProperty(ref)) {
+          updatedRefs.add(ref);
+        }
+      });
+
+      return updatedRefs;
+    });
+
+    // Clear incomingUpdates
+    setIncomingUpdates({});
   };
 
   /**
    * Renders the headers of the columns with the A ... AA by using mod 26.
    *
-   * @author rishavsarma5, eduardo-ruiz-garay
-   * @returns the new headers for the columns
+   * @author rishavsarma5
+   * @returns the headers to render for the columns.
    */
   const renderSheetHeader = () => {
-    const headers = [];
+    const headers: JSX.Element[] = [];
     headers.push(<th key="header-empty" className="header"></th>);
 
-    const col = numCols;
-    for (let i = 0; i < col; i++) {
-      const letters: string = getHeaderLetter(i);
+    for (let i = 0; i < numCols; i++) {
+      const letters = getHeaderLetter(i);
       headers.push(
         <th key={`header-${letters}`} className="header">
           {letters}
@@ -214,7 +380,7 @@ const Sheet: React.FC = () => {
     headers.push(
       <th key="delete-column-header" className="button-header">
         <button
-          onClick={() => deleteCol()}
+          onClick={deleteCol}
           className="delete-column-button"
           key="delete-column-button"
         >
@@ -239,16 +405,16 @@ const Sheet: React.FC = () => {
   };
 
   /**
-   * Renders the rows and renders cells for each column in each row.
+   * Renders Cells for each column in each row.
    *
-   * @author rishavsarma5, eduardo-ruiz-garay
-   * @returns the row headers and cells per row
+   * @author rishavsarma5
+   * @returns the rows to render.
    */
   const renderSheetRows = () => {
-    const rows = [];
+    const rows: JSX.Element[] = [];
 
     for (let row = 1; row <= numRows; row++) {
-      const cellsPerRow = [];
+      const cellsPerRow: JSX.Element[] = [];
       cellsPerRow.push(
         <td key={`row-header-${row}`} className="row-header">
           {row}
@@ -258,16 +424,8 @@ const Sheet: React.FC = () => {
       for (let col = 0; col < numCols; col++) {
         const columnLetter: string = getHeaderLetter(col);
         const cellId = `$${columnLetter}${row}`;
-        const cellValue = Object.prototype.hasOwnProperty.call(
-          incomingUpdates,
-          cellId
-        )
-          ? incomingUpdates[cellId]
-          : sheetData[cellId];
-        const isUpdated = Object.prototype.hasOwnProperty.call(
-          incomingUpdates,
-          cellId
-        );
+        const cellValue = Object.prototype.hasOwnProperty.call(incomingUpdates, cellId) ? incomingUpdates[cellId] : sheetData[cellId];
+        const isUpdated = Object.prototype.hasOwnProperty.call(incomingUpdates, cellId);
 
         cellsPerRow.push(
           <Cell
@@ -291,7 +449,7 @@ const Sheet: React.FC = () => {
       <tr key="row-buttons">
         <td className="button-header">
           <button
-            onClick={() => deleteRow()}
+            onClick={deleteRow}
             className="delete-row-button"
             key="delete-row-button"
           >
@@ -313,285 +471,18 @@ const Sheet: React.FC = () => {
   };
 
   /**
-   * @description Collects the updates made to this sheet and pushes them to server based on sheet relationship.
+   * Render the Sheet. 
    *
-   * @author kris-amerman, rishavsarma5, eduardo-ruiz-garay
-   */
-  const onPublishButtonClick = async () => {
-    // iterates through sheetData and stores updates in a new-line delimited string
-    const getAllCellUpdates = (): string => {
-      const payload: string[] = [];
-
-      for (const [ref, valueAtCell] of Object.entries(sheetData)) {
-        const prevValueAtCell = prevCellDataRef.current[ref] || "";
-        // Include cells with updated values or empty values if marked as manually updated
-        if ((valueAtCell !== prevValueAtCell || valueAtCell === "") && manualUpdates.has(ref)) {
-          payload.push(`${ref} ${valueAtCell}`);
-        }
-      }
-      return payload.length ? payload.join("\n") + "\n" : "";
-    };
-
-    const payload = getAllCellUpdates();
-
-    // Argument object with updates to the sheet
-    const allUpdates: Argument = {
-      id: "",
-      publisher: sheetInfo.publisher,
-      sheet: sheetInfo.sheet,
-      payload: payload,
-    };
-
-    if (sheetRelationship === "OWNER") {
-      try {
-        console.log("CALLING updatePublished")
-        await fetchWithAuth("updatePublished", {
-          method: "POST",
-          body: JSON.stringify(allUpdates),
-        });
-        // Reset manualUpdates sets to empty after successful fetch
-        setManualUpdates(new Set());
-        setPopupMessage("Publish successful!"); // Show success popup
-      } catch (error) {
-        console.error("Error publishing new changes", error);
-        setPopupMessage("Error publishing new changes"); // Show fail popup
-      }
-    } else {
-      try {
-        console.log("CALLING updateSubscription")
-        await fetchWithAuth("updateSubscription", {
-          method: "POST",
-          body: JSON.stringify(allUpdates),
-        });
-        setManualUpdates(new Set());
-        setPopupMessage("Publish successful!");
-      } catch (error) {
-        console.error("Error publishing new changes", error);
-      }
-    }
-  };
-
-  /**
-   * @description Requests updates to the sheet based on client's relationship to the sheet.
-   *
-   * @author kris-amerman
-   */
-  const requestUpdatesHandler = async () => {
-    const argument: Argument = {
-      publisher: sheetInfo.publisher,
-      sheet: sheetInfo.sheet,
-      id: "0",
-      payload: ""
-    };
-
-    if (sheetRelationship === "OWNER") {
-      argument.id = latestSubscriptionUpdateID
-      console.log("CALLING getUpdatesForSubscription")
-      await fetchWithAuth(
-        "getUpdatesForSubscription",
-        {
-          method: "POST",
-          body: JSON.stringify(argument)
-        },
-        async (data) => {
-          if (data.success && data.value && data.value.length > 0) {
-            const update = data.value[0];
-            const sheetUpdateHandler = SheetUpdateHandler.getInstance();
-            sheetUpdateHandler.setSheetSize(numRows, numCols);
-            const updates = await sheetUpdateHandler.applyUpdates(update);
-            const { updatedSheetRow, updatedSheetCol } =
-              sheetUpdateHandler.getUpdatedSheetSize();
-
-            if (updatedSheetRow > numRows) {
-              for (let i = 0; i < updatedSheetRow - numRows; i++) {
-                addNewRow();
-              }
-            }
-
-            if (updatedSheetCol > numCols) {
-              for (let i = 0; i < updatedSheetCol - numCols; i++) {
-                addNewCol();
-              }
-            }
-
-            // Check if payload is not empty before updating the sheetData
-            if (update.payload !== "") {
-              setSheetData(prevSheetData => ({
-                ...prevSheetData,
-                ...updates
-              }));
-            }
-            setLatestSubscriptionUpdateID(update.id)
-          }
-        }
-      );
-      argument.id = latestPublishedUpdateID
-      console.log(`CALLING getUpdatesForPublished with id ${latestPublishedUpdateID}`)
-      await fetchWithAuth(
-        "getUpdatesForPublished",
-        {
-          method: "POST",
-          body: JSON.stringify(argument)
-        },
-        async (data) => {
-          if (data.success && data.value && data.value.length > 0) {
-            const update = data.value[0];
-            const sheetUpdateHandler = SheetUpdateHandler.getInstance();
-            sheetUpdateHandler.setSheetSize(numRows, numCols);
-            const updates = await sheetUpdateHandler.applyUpdates(update);
-            const { updatedSheetRow, updatedSheetCol } =
-              sheetUpdateHandler.getUpdatedSheetSize();
-
-            if (updatedSheetRow > numRows) {
-              for (let i = 0; i < updatedSheetRow - numRows; i++) {
-                addNewRow();
-              }
-            }
-
-            if (updatedSheetCol > numCols) {
-              for (let i = 0; i < updatedSheetCol - numCols; i++) {
-                addNewCol();
-              }
-            }
-
-            // Check if payload is not empty before updating the sheetData
-            if (update.payload !== "") {
-              // Add updated cell IDs to the incomingUpdates state
-              setIncomingUpdates(updates);
-            }
-            setLatestPublishedUpdateID(update.id)
-          }
-        }
-      );
-    } else {
-      argument.id = latestSubscriptionUpdateID
-      console.log("CALLING getUpdatesForSubscription")
-      await fetchWithAuth(
-        "getUpdatesForSubscription",
-        {
-          method: "POST",
-          body: JSON.stringify(argument)
-        },
-        async (data) => {
-          if (data.success && data.value && data.value.length > 0) {
-            const update = data.value[0];
-            const sheetUpdateHandler = SheetUpdateHandler.getInstance();
-            sheetUpdateHandler.setSheetSize(numRows, numCols);
-            const updates = await sheetUpdateHandler.applyUpdates(update);
-
-            const { updatedSheetRow, updatedSheetCol } =
-              sheetUpdateHandler.getUpdatedSheetSize();
-
-            if (updatedSheetRow > numRows) {
-              for (let i = 0; i < updatedSheetRow - numRows; i++) {
-                addNewRow();
-              }
-            }
-
-            if (updatedSheetCol > numCols) {
-              for (let i = 0; i < updatedSheetCol - numCols; i++) {
-                addNewCol();
-              }
-            }
-
-            // Check if payload is not empty before updating the sheetData
-            if (update.payload !== "") {
-              setSheetData(prevSheetData => ({
-                ...prevSheetData,
-                ...updates
-              }));
-            }
-            setLatestSubscriptionUpdateID(update.id)
-          }
-        }
-      );
-    }
-  };
-
-  /**
-   * @description Commits the `incomingUpdates` (i.e., those from `getUpdatesForPublished`) to `sheetData`. 
-   *
-   * @author kris-amerman
-   */
-  const acceptIncomingUpdates = () => {
-    setSheetData((prevSheetData) => {
-      // Merge incoming updates into the sheetData
-      const updatedSheetData = {
-        ...prevSheetData,
-        ...incomingUpdates,
-      };
-
-      return updatedSheetData;
-    });
-
-    // Include incoming updates in the manual updates
-    setManualUpdates((prevManualUpdates) => {
-      const updatedManualUpdates = new Set(prevManualUpdates);
-      Object.keys(incomingUpdates).forEach((ref) => {
-        updatedManualUpdates.add(ref);
-      });
-      return updatedManualUpdates;
-    });
-
-    // Clear incomingUpdates after accepting
-    setIncomingUpdates({});
-  };
-
-  /**
-   * @description Effectively ignores and erases `incomingUpdates`. 
-   *
-   * @author kris-amerman
-   */
-  const denyIncomingUpdates = () => {
-    setManualUpdates((prevManualUpdates) => {
-      const updatedManualUpdates = new Set(prevManualUpdates);
-
-      // Iterate through incoming updates to include existing values in manual updates
-      Object.entries(incomingUpdates).forEach(([ref, value]) => {
-        // If the cell exists in sheetData, include its existing value
-        if (sheetData.hasOwnProperty(ref)) {
-          updatedManualUpdates.add(ref);
-        }
-      });
-
-      return updatedManualUpdates;
-    });
-
-    // Clear incomingUpdates after denying
-    setIncomingUpdates({});
-  };
-
-  /**
-   * @description Dynamically renders "Accept" and "Deny" buttons for incoming changes. 
-   *
-   * @author kris-amerman
-   */
-  const renderUpdateButtons = () => {
-    if (Object.keys(incomingUpdates).length > 0) {
-      return (
-        <div className="update-buttons">
-          <button onClick={acceptIncomingUpdates}>Accept</button>
-          <button onClick={denyIncomingUpdates}>Deny</button>
-        </div>
-      );
-    } else {
-      return null; // hide buttons if there are no incoming updates
-    }
-  };
-
-  /**
-   * @description Render the Sheet. 
-   *
-   * @author rishavsarma5, kris-amerman
+   * @author rishavsarma5
    */
   return (
     <div className="sheet-container">
       <div className="info-section">
-        <button onClick={() => { requestUpdatesHandler() }}>Request Updates</button>
+        <button onClick={handleRequestUpdates}>Request Updates</button>
         <div className="publisher-info">Publisher: {sheetInfo.publisher}</div>
         <div className="sheet-name">Sheet Name: {sheetInfo.sheet}</div>
         <button
-          onClick={onPublishButtonClick}
+          onClick={() => publishRefs(refsToPublish, sheetData)}
           className="publish-button"
           key="publish-button"
         >
@@ -599,10 +490,22 @@ const Sheet: React.FC = () => {
         </button>
       </div>
       <div className="sheet-wrapper">
-        {renderUpdateButtons()}
+        {Object.keys(incomingUpdates).length > 0
+          ?
+          <div className="update-buttons">
+            <button onClick={handleAccept}>Accept</button>
+            <button onClick={handleDeny}>Deny</button>
+          </div>
+          :
+          <></>
+        }
         <table className="sheet">
-          <thead>{renderSheetHeader()}</thead>
-          <tbody>{renderSheetRows()}</tbody>
+          <thead>
+            {renderSheetHeader()}
+          </thead>
+          <tbody>
+            {renderSheetRows()}
+          </tbody>
         </table>
       </div>
       {popupMessage && (
