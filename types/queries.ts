@@ -259,7 +259,7 @@ export default class DatabaseQueries {
       SELECT '${Date.now()}', sheets.sheetid, 
 	  (SELECT publishers.userid FROM publishers 
 	  WHERE publishers.username='${updatePublisher}'), '${payload}', ${accepted}
-      FROM sheets INNER JOIN publishers on sheets.owner=publishers.userid
+      FROM sheets INNER JOIN publishers ON sheets.owner=publishers.userid
       WHERE sheets.sheetname='${sheetName}' AND publishers.username='${sheetPublisher}';`;
 	}
 

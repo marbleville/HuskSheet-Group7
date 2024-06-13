@@ -29,6 +29,7 @@ async function updatePublished(argument: Argument): Promise<void> {
 		const queryString: string = DatabaseQueries.updatePublished(
 			sheetName,
 			publisher,
+			// We need to sanitize the paylod of '' to prevent SQL errors
 			payload
 		);
 

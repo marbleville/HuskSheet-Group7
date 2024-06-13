@@ -44,7 +44,10 @@ export default class HashStore {
 			let payloadArr: Array<string> = payload.split("\n");
 
 			// controls for an update in the db that ends with \n
-			if (payloadArr[payloadArr.length - 1] == "") {
+			if (
+				payloadArr.length > 0 &&
+				payloadArr[payloadArr.length - 1] == ""
+			) {
 				payloadArr.pop();
 			}
 

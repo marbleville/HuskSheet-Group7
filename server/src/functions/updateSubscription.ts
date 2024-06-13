@@ -26,6 +26,7 @@ async function updateSubscription(
 	const queryString: string = DatabaseQueries.updateSubscription(
 		sheetName,
 		publisher,
+		// We need to sanitize the paylod of '' to prevent SQL errors
 		payload,
 		clientName
 	);

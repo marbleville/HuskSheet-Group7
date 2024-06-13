@@ -54,7 +54,7 @@ async function isUserPublisher(header: string | undefined): Promise<boolean> {
 
 	let result = await database.query<GetUserRow>(queryString);
 
-	return result[0].isPublisher;
+	return result.length == 1 && result[0].isPublisher;
 }
 
 /**
