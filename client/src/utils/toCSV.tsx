@@ -1,7 +1,9 @@
 import { SheetDataMap } from "../types";
 
 /**
- * @description Takes a hashmap of sheet data and converts it to CSV
+ * Takes a hashmap of sheet data and converts it to CSV
+ * 
+ * @param {SheetDataMap} data - the sheet data
  *
  * @author hunterbrodie
  */

@@ -1,5 +1,5 @@
 /**
- * Defines global types and common objects for the client.
+ * This file defines global types and common objects for the client.
  * 
  * @author kris-amerman
  */

@@ -1,19 +1,23 @@
 import { updatePublished } from "../../../server/src/functions/updatePublished";
 import { getUpdatesForSubscription } from "../../../server/src/functions/getUpdatesForSubscription";
 import { assembleTestArgumentObject, setupDB } from "../../utils";
+import { sanitize } from "../../../server/src/utils";
 
 describe("updatePublished", () => {
 	it("checks to see if updatePublished inserts in DB", async () => {
 		await setupDB();
 
-		let data: string = "$A1 helloworld";
+		let data: string = "$A1 'hello'world'";
 		await updatePublished(
 			assembleTestArgumentObject("rishav", "test1", "", data)
 		);
 		let updates = await getUpdatesForSubscription(
 			assembleTestArgumentObject("rishav", "test1", "1", "")
 		);
-		expect(updates.payload.split("\n").includes(data)).toEqual(true);
+
+		expect(
+			updates.payload.includes(sanitize(data).replace("''", "'"))
+		).toEqual(true);
 	});
 
 	it("checks to see if updatePublished inserts in DB", async () => {
