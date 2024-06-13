@@ -2,15 +2,23 @@ import { ExpressionNode, FormulaNode, FunctionCallNode, OperationNode, Reference
 import Parser from "../functions/Parser";
 import { SheetDataMap } from "../types";
 
+/**
+ * Parses a cell's value and recursively looks for any other cell references that are dependencies.
+ * 
+ * @param {SheetDataMap} sheetData 
+ *        The current sheet data
+ * @param {string} cellId 
+ *        The ref of the cell
+ * @returns {string[]} 
+ *        array of all dependencies (cell refs)
+ * 
+ * @author rishavsarma5
+ */
 const findDependencies = (sheetData: SheetDataMap, cellId: string): string[] => {
     const cellValue = sheetData[cellId];
     const dependencies: string[] = [];
   
-    // Example implementation (adapt based on your formula parsing logic)
-    // This is a basic implementation and should be enhanced for actual usage
     const parsedNode: ExpressionNode = Parser.getInstance().parse(cellValue);
-
-    console.log(`parsed node: ${JSON.stringify(parsedNode)}`);
 
     // Function to recursively find dependencies
     const traverseNode = (node: ExpressionNode) => {
@@ -22,7 +30,7 @@ const findDependencies = (sheetData: SheetDataMap, cellId: string): string[] => 
               traverseNode(expr);
             }
         } else if (node instanceof FormulaNode) {
-            // Recursively traverse function call nodes
+            // Recursively traverse formula nodes
             traverseNode(node.expression);
         } else if (node instanceof OperationNode) {
             // Recursively traverse operation nodes
@@ -31,8 +39,7 @@ const findDependencies = (sheetData: SheetDataMap, cellId: string): string[] => 
         }
     };
 
-    traverseNode(parsedNode); // Start traversal
-    console.log(JSON.stringify(dependencies))
+    traverseNode(parsedNode);
     return dependencies;
   };
 

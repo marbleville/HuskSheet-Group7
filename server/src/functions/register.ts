@@ -5,7 +5,6 @@ import DatabaseQueries from "../../../types/queries";
  *  Creates a publisher in the DB with the given username and password.
  *
  *  @param username client username.
- *  @param password client password.
  *  @author marbleville
  *
  * @TODO change to be create new user
