@@ -1,4 +1,4 @@
-import { SheetDataMap } from "../../../types/types";
+import { SheetDataMap } from "../types";
 
 /**
  * @description Takes a hashmap of sheet data and converts it to CSV
