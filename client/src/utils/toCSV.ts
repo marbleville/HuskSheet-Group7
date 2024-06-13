@@ -17,9 +17,9 @@ const toCSV = (data: SheetDataMap) => {
       const rowMatch = key.match(/\d+/g);
       const letrMatch = key.match(/[a-zA-Z]+/g);
 
-      if (rowMatch && letrMatch) {
+      if (key.includes("$") && rowMatch && letrMatch && rowMatch.length === 1 && letrMatch.length === 1) {
         const row: number = +rowMatch[0];
-        let letr: string = letrMatch[0].replace("$", "");
+        let letr: string = letrMatch[0];
         let column = 0;
 
         for (let i = 0; i < letr.length; i++) {

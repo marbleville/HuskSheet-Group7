@@ -1,6 +1,6 @@
 {
 	"scripts": {
-		"test": "jest test --runInBand --coverage"
+		"test": "jest test --runInBand --coverage --watchAll"
 	},
 	"devDependencies": {
 		"@types/express": "^4.17.21",
