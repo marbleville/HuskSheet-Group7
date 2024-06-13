@@ -23,6 +23,8 @@ services:
     express:
         image: node
         container_name: express
+        ports:
+            - 3000:3000
         volumes:
             - "./server:/server"
             - "/server/node_modules"
@@ -36,8 +38,6 @@ services:
     express-test:
         image: node
         container_name: express-test
-        ports:
-            - 3000:3000
         volumes:
             - "./server:/server"
             - "/server/node_modules"

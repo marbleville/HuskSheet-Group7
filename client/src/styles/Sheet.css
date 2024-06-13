@@ -79,7 +79,7 @@
   font-weight: bold;
 }
 
-.publish-request-button {
+.info-section-button {
   background-color: #38a169;
   color: white;
   padding: 12px 20px;
@@ -88,7 +88,7 @@
   cursor: pointer;
 }
 
-.publish-request-button:hover {
+.info-section-button:hover {
   opacity: 75%;
 }
 
@@ -132,4 +132,9 @@
 .update-warning {
   color: red;
   font-size: 14px;
+}
+
+.publish-request-buttons {
+  display: flex;
+  gap: 10px;
 }
