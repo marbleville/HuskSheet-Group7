@@ -68,7 +68,9 @@ function Dashboard() {
     fetchWithAuth(
       "createSheet",
       { method: "POST", body: JSON.stringify(argument) },
-      () => fetchSheets(username) // Refresh sheets after creating a new one
+      () => {
+        navigate(`/${argument.publisher}/${argument.sheet}`, { state: argument });
+      } 
     );
   };
 
