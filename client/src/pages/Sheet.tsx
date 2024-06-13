@@ -12,6 +12,8 @@ import deleteColData from "../utils/deleteColData";
 import deleteRowData from "../utils/deleteRowData";
 import getHeaderLetter from "../utils/getHeaderLetter";
 import generateSheetDataMap from "../utils/generateSheetDataMap";
+import buildPayload from "../utils/buildPayload";
+import getUnreconciledUpdates from "../utils/getUnreconciledUpdates";
 
 import { Argument } from "../../../types/types";
 import { SheetDataMap, SheetRelationship, GetUpdatesEndpoint, SendUpdatesEndpoint, UpdatesWithId } from "../types";
@@ -21,34 +23,32 @@ import "../styles/Sheet.css";
 // Constants
 const INITIALSHEETROWSIZE = 10;
 const INITIALSHEETCOLUMNSIZE = 10;
-
 const BASE_SUBSCRIPTION_UPDATES: UpdatesWithId = {
   id: '',
   updates: {} as SheetDataMap,
 };
-
 const BASE_PUBLISHED_UPDATES: UpdatesWithId = {
   id: '',
   updates: {} as SheetDataMap,
 };
 
 /**
- * A Sheet that manages the data of its child Cells.
+ * A Sheet that manages the data of its child cells and handles communication.
  *
  * @author kris-amerman
  */
 const Sheet: React.FC = () => {
-  // Receive contextual information about sheet from the dashboard page.
+  // Receive contextual information about sheet from the dashboard page. TODO -- maybe use URL
   const location = useLocation();
-  const sheetInfo: Argument = location.state;
+  const sheetInfo = location.state;
 
-  // Initialize the SheetDataMap.
+  // Initialize the SheetDataMap
   const initialSheetData: SheetDataMap = initializeSheet(
     INITIALSHEETROWSIZE,
     INITIALSHEETCOLUMNSIZE
   );
 
-  // Sheet state.
+  // Sheet state
   const [sheetData, setSheetData] = useState<SheetDataMap>(initialSheetData);
   const [refsToPublish, setRefsToPublish] = useState<Set<string>>(new Set());
   const [incomingUpdates, setIncomingUpdates] = useState<SheetDataMap>({});
@@ -142,31 +142,11 @@ const Sheet: React.FC = () => {
   };
 
   /**
-   * Iterate through the given SheetDataMap and build a payload based on the given refs to include. 
-   * 
-   * @param {Set<string>} refs - the refs to use in the payload
-   * @param {SheetDataMap} refs - the sheet data to use in the payload
-   * @returns {string} - payload
-   * 
-   * @author kris-amerman
-   */
-  const buildPayload = (refs: Set<string>, updatedSheetData: SheetDataMap): string => {
-    const payload: string[] = [];
-    for (const [ref, valueAtCell] of Object.entries(updatedSheetData)) {
-      if (refs.has(ref)) {
-        payload.push(`${ref} ${valueAtCell}`);
-      }
-    }
-    return payload.length ? payload.join("\n") + "\n" : "";
-  };
-
-  /**
    * Publish the values in the given SheetDataMap for the given refs.
    * 
    * @param {Set<string>} refs - the refs to publish
    * @param {SheetDataMap} updatedSheetData - the sheet data to use for reference
    * @param {SendUpdatesEndpoint} refs - the endpoint to publish to
-   * @returns {Promise<void>}
    *
    * @author kris-amerman
    */
@@ -201,89 +181,27 @@ const Sheet: React.FC = () => {
   };
 
   /**
-   * Generate a payload string representing the incoming updates that 
-   * have never been dealt with by the owner.
-   * 
-   * @param {SheetDataMap} existingUpdates - updates from getUpdatesForSubscription
-   * @param {SheetDataMap} incomingUpdates - updates from getUpdatesForPublished
-   * @returns {SheetDataMap} - incoming updates that the owner has never reviewed
+   * Request updates based on the client's relationship to the sheet.
    *
    * @author kris-amerman
    */
-  const getUnreconciledUpdates = (
-    existingUpdates: SheetDataMap,
-    incomingUpdates: SheetDataMap
-  ): SheetDataMap => {
-    const unreconciledUpdates: SheetDataMap = {};
-
-    for (const cell in incomingUpdates) {
-      if (!(cell in existingUpdates) || existingUpdates[cell] !== incomingUpdates[cell]) {
-        unreconciledUpdates[cell] = incomingUpdates[cell];
-      }
+  const requestUpdates = async () => {
+    if (sheetRelationship === "OWNER") {
+      await getUpdates("getUpdatesForSubscription", latestSubscriptionUpdateID);
+      await getUpdates("getUpdatesForPublished", latestPublishedUpdateID);
+      resolvePendingUpdates();
+    } else if (sheetRelationship === "SUBSCRIBER") {
+      await getUpdates("getUpdatesForSubscription", latestSubscriptionUpdateID);
+      resolvePendingUpdates();
     }
-
-    return unreconciledUpdates;
-  }
-
-  /**
-   * Stores updates in either sheetData or incomingUpdates based on the provided endpoint.
-   * 
-   * Subscription updates will be automatically applied to the sheetData.
-   * Published updates will be held in incomingUpdates until dealt with.
-   * 
-   * @param {string} id - The identifier associated with the updates.
-   * @param {UpdatesEndpoint} updatesEndpoint - The endpoint specifying the type of updates.
-   * @param {SheetDataMap} updates - The updates to apply to the sheet data or incoming updates.
-   * @returns {void}
-   * 
-   * @author kris-amerman
-   */
-  const handleUpdates = (id: string, updatesEndpoint: GetUpdatesEndpoint, updates: SheetDataMap) => {
-    if (updatesEndpoint === "getUpdatesForSubscription") {
-      pendingSubUpdates.current.updates = updates;
-      pendingSubUpdates.current.id = id;
-    } else if (updatesEndpoint === "getUpdatesForPublished") {
-      pendingPubUpdates.current.updates = updates;
-      pendingPubUpdates.current.id = id;
-    }
-  };
-
-  /**
-   * Handles the result of getUpdates. Modifies the size of the sheet and returns the parsed updates.
-   * 
-   * @param {Result} result - The result object containing the updates argument.
-   * @returns {SheetDataMap} - The parsed updates as a SheetDataMap.
-   * 
-   * @author kris-amerman
-   */
-  const handleGetUpdatesResult = (resultArgument: Argument): SheetDataMap => {
-
-    const {sheetMap, newColSize, newRowSize} = generateSheetDataMap(resultArgument.payload, numCols, numRows);
-
-    // Dynamically add rows if needed
-    if (newRowSize > numRows) {
-      for (let i = 0; i < newRowSize - numRows; i++) {
-        addNewRow();
-      }
-    }
-
-    // Dynamically add columns if needed
-    if (newColSize > numCols) {
-      for (let i = 0; i < newColSize - numCols; i++) {
-        addNewCol();
-      }
-    }
-
-    return sheetMap;
   };
 
   /**
    * Retrieves subscription or published updates. Gets all updates that occurred after the given id.
    * If successful, calls handleGetUpdatesResult to process the returned data and update state.
    * 
-   * @param {UpdatesEndpoint} updatesEndpoint - The endpoint to send the request to.
-   * @param {string} id - The update id. 
-   * @returns {Promise<void>}
+   * @param {UpdatesEndpoint} updatesEndpoint - the endpoint to send the request to
+   * @param {string} id - the update id
    * 
    * @author kris-amerman
    */
@@ -303,43 +221,86 @@ const Sheet: React.FC = () => {
       (data) => {
         if (data.success && data.value && data.value.length > 0) {
           const resultArgument = data.value[0];
-          console.log('RESULT')
-          console.log(resultArgument)
           const updates = handleGetUpdatesResult(resultArgument);
-          handleUpdates(resultArgument.id, updatesEndpoint, updates);
+          setPendingUpdates(resultArgument.id, updatesEndpoint, updates);
         }
       }
     );
   };
 
+  /**
+   * Handles the result of getUpdates. Modifies the size of the sheet and returns the parsed updates.
+   * 
+   * @param {Result} result - the result object containing the updates argument
+   * @returns {SheetDataMap} - the parsed updates as a SheetDataMap
+   * 
+   * @author kris-amerman
+   */
+  const handleGetUpdatesResult = (resultArgument: Argument): SheetDataMap => {
+    // Convert payload to SheetDataMap and adjust sheet bounds
+    const { sheetMap, newColSize, newRowSize } = generateSheetDataMap(resultArgument.payload, numCols, numRows);
+
+    // Dynamically add rows if needed
+    if (newRowSize > numRows) {
+      for (let i = 0; i < newRowSize - numRows; i++) {
+        addNewRow();
+      }
+    }
+
+    // Dynamically add columns if needed
+    if (newColSize > numCols) {
+      for (let i = 0; i < newColSize - numCols; i++) {
+        addNewCol();
+      }
+    }
+
+    return sheetMap;
+  };
+
+  /**
+   * Sets pending updates based on the provided endpoint.
+   * 
+   * Subscription updates will be automatically applied to the sheetData.
+   * Published updates will be held in incomingUpdates until dealt with.
+   * 
+   * @param {string} id - the identifier associated with the updates
+   * @param {UpdatesEndpoint} updatesEndpoint - the endpoint specifying the type of updates
+   * @param {SheetDataMap} updates - the updates to apply to the sheet data or incoming updates
+   * 
+   * @author kris-amerman
+   */
+  const setPendingUpdates = (id: string, updatesEndpoint: GetUpdatesEndpoint, updates: SheetDataMap) => {
+    if (updatesEndpoint === "getUpdatesForSubscription") {
+      pendingSubUpdates.current.updates = updates;
+      pendingSubUpdates.current.id = id;
+    } else if (updatesEndpoint === "getUpdatesForPublished") {
+      pendingPubUpdates.current.updates = updates;
+      pendingPubUpdates.current.id = id;
+    }
+  };
+
+  /**
+   * Add pending subscription updates to sheetData.
+   * Identify updates pending owner review and add to incomingUpdates.
+   * 
+   * @author kris-amerman
+   */
   const resolvePendingUpdates = () => {
     const subscriptionUpdates = pendingSubUpdates.current.updates;
+    const publishedUpdates = pendingPubUpdates.current.updates;
+
     setSheetData(prevSheetData => ({ ...prevSheetData, ...subscriptionUpdates }));
     setLatestSubscriptionUpdateID(pendingSubUpdates.current.id);
 
-    const unreconciledUpdates = getUnreconciledUpdates(pendingSubUpdates.current.updates, pendingPubUpdates.current.updates);
-    setIncomingUpdates(unreconciledUpdates)
-    setLatestPublishedUpdateID(pendingPubUpdates.current.id);
+    if (publishedUpdates && sheetRelationship === "OWNER") {
+      const unreconciledUpdates = getUnreconciledUpdates(subscriptionUpdates, publishedUpdates);
+      setIncomingUpdates(unreconciledUpdates)
+      setLatestPublishedUpdateID(pendingPubUpdates.current.id);
+    }
 
     pendingSubUpdates.current = BASE_SUBSCRIPTION_UPDATES;
     pendingPubUpdates.current = BASE_PUBLISHED_UPDATES;
   }
-
-  /**
-   * Request updates based on the client's relationship to the sheet.
-   *
-   * @author kris-amerman
-   */
-  const handleRequestUpdates = async () => {
-    if (sheetRelationship === "OWNER") {
-      await getUpdates("getUpdatesForSubscription", latestSubscriptionUpdateID);
-      await getUpdates("getUpdatesForPublished", latestPublishedUpdateID);
-      resolvePendingUpdates();
-    } else if (sheetRelationship === "SUBSCRIBER") {
-      await getUpdates("getUpdatesForSubscription", latestSubscriptionUpdateID);
-      resolvePendingUpdates();
-    }
-  };
 
   /**
    * Accept the incoming updates.
@@ -510,8 +471,7 @@ const Sheet: React.FC = () => {
   return (
     <div className="sheet-container">
       <div className="info-section">
-        <button onClick={handleRequestUpdates}>Request Updates</button>
-        <div className="publisher-info">Publisher: {sheetInfo.publisher}</div>
+        <button className="publish-request-button" onClick={requestUpdates}>Request Updates</button>
         <div className="sheet-name">Sheet Name: {sheetInfo.sheet}</div>
         <button
           onClick={() => {
@@ -521,8 +481,7 @@ const Sheet: React.FC = () => {
               sheetRelationship === "OWNER" ? "updatePublished" : "updateSubscription"
             )
           }}
-          className="publish-button"
-          key="publish-button"
+          className="publish-request-button"
         >
           Publish
         </button>
@@ -530,9 +489,12 @@ const Sheet: React.FC = () => {
       <div className="sheet-wrapper">
         {Object.keys(incomingUpdates).length > 0
           ?
-          <div className="update-buttons">
-            <button onClick={handleAccept}>Accept</button>
-            <button onClick={handleDeny}>Deny</button>
+          <div className="accept-deny-container">
+            <div className="update-buttons">
+              <button className="accept-button" onClick={handleAccept}>Accept</button>
+              <button className="deny-button" onClick={handleDeny}>Deny</button>
+            </div>
+            <p className="update-warning">Warning! This will change the sheet for everyone.</p>
           </div>
           :
           <></>

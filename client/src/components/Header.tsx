@@ -13,6 +13,7 @@ function Header() {
 
 	return (
 		<header className="header-container">
+			<p className="current-user">Current user: {sessionStorage.getItem("username")}</p>
 			<button className="logout-button" onClick={handleLogout}>
 				Logout
 			</button>
