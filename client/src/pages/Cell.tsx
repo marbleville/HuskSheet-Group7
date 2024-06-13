@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../styles/Cell.css";
 import Parser from "../functions/Parser";
 import Evaluator from "../functions/Evaluator";
+import { SheetDataMap } from "../types";
 
 interface CellProps {
   cellId: string;
@@ -13,7 +14,7 @@ interface CellProps {
 
 //const ERROR_TIMEOUT = 1500;
 
-const parser = Parser.getInstance()
+const parser = Parser.getInstance();
 const evaluator = Evaluator.getInstance();
 
 // Inside the Cell component
@@ -22,7 +23,7 @@ const Cell: React.FC<CellProps> = ({
   onUpdate,
   cellValue,
   sheetData,
-  isUpdated
+  isUpdated,
 }) => {
   const [value, setValue] = useState(cellValue);
   const [prevValue, setPrevValue] = useState(cellValue);
@@ -39,7 +40,7 @@ const Cell: React.FC<CellProps> = ({
 
   useEffect(() => {
     setValue(cellValue);
-  }, [cellValue])
+  }, [cellValue]);
 
   /*
   useEffect(() => {
@@ -56,7 +57,7 @@ const Cell: React.FC<CellProps> = ({
 
   const handleBlur = () => {
     if (value !== prevValue) {
-      console.log("CHANGE DETECTED")
+      console.log("CHANGE DETECTED");
       evaluateAndUpdate();
     }
   };
@@ -65,6 +66,32 @@ const Cell: React.FC<CellProps> = ({
     if (event.key === "Enter") {
       evaluateAndUpdate();
     }
+  };
+
+  const findDifferences = (
+    a: SheetDataMap,
+    b: SheetDataMap
+  ): { [key: string]: string } => {
+    const differences: { [key: string]: string } = {};
+    let differenceCount = 0;
+
+    for (const key in b) {
+      if (Object.prototype.hasOwnProperty.call(b, key)) {
+        if (
+          !Object.prototype.hasOwnProperty.call(a, key) ||
+          a[key] !== b[key]
+        ) {
+          differences[key] = b[key];
+          differenceCount++;
+
+          if (differenceCount > 1) {
+            throw new Error("More than one difference found");
+          }
+        }
+      }
+    }
+
+    return differences;
   };
 
   const evaluateAndUpdate = () => {
@@ -79,7 +106,7 @@ const Cell: React.FC<CellProps> = ({
     try {
       const parsedNode = parser.parse(value);
       result = evaluator.evaluate(parsedNode);
-      console.log('Evaluation Result:', result);
+      console.log("Evaluation Result:", result);
     } catch (error) {
       isError = true;
     }
@@ -92,6 +119,19 @@ const Cell: React.FC<CellProps> = ({
       //   setError(false);
       // }, ERROR_TIMEOUT);
     }
+
+    if (result === undefined) {
+      const updatedContext = Evaluator.getInstance().getContext();
+      // Compare the context with sheetdata then call onUPdate with cell change and ref
+      console.log(sheetData);
+      console.log(updatedContext);
+      const differences: { [key: string]: string } = findDifferences(
+        sheetData,
+        updatedContext
+      );
+      onUpdate(differences[1], differences[0]);
+    }
+
     onUpdate(result, cellId);
     setPrevValue(result);
   };
@@ -129,7 +169,12 @@ const Cell: React.FC<CellProps> = ({
   */
 
   return (
-    <td key={cellId} className={`cell ${error ? 'error' : ''} ${isUpdated ? 'updated-cell' : ''}`}>
+    <td
+      key={cellId}
+      className={`cell ${error ? "error" : ""} ${
+        isUpdated ? "updated-cell" : ""
+      }`}
+    >
       <input
         type="text"
         value={value ?? ""}
@@ -137,11 +182,10 @@ const Cell: React.FC<CellProps> = ({
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         className="cell-input"
-        style={{ color: isUpdated ? 'blue' : 'inherit' }}
+        style={{ color: isUpdated ? "blue" : "inherit" }}
       />
     </td>
   );
 };
-
 
 export default Cell;

@@ -235,7 +235,11 @@ class Evaluator {
     // Need to have access to the reference string do not convert here
     this.context[newPlace] = val;
 
-    return this.context[newPlace];
+    return "";
+  }
+
+  getContext(): { [key: string]: string } {
+    return this.context;
   }
 }
 export default Evaluator;
