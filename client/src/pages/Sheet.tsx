@@ -16,7 +16,13 @@ import buildPayload from "../utils/buildPayload";
 import getUnreconciledUpdates from "../utils/getUnreconciledUpdates";
 
 import { Argument, Result } from "../../../types/types";
-import { SheetDataMap, SheetRelationship, GetUpdatesEndpoint, SendUpdatesEndpoint, UpdatesWithId } from "../types";
+import {
+  SheetDataMap,
+  SheetRelationship,
+  GetUpdatesEndpoint,
+  SendUpdatesEndpoint,
+  UpdatesWithId,
+} from "../types";
 
 import "../styles/Sheet.css";
 import Parser from "../functions/Parser";
@@ -28,11 +34,11 @@ import toCSV from "../utils/toCSV";
 const INITIALSHEETROWSIZE = 10;
 const INITIALSHEETCOLUMNSIZE = 10;
 const BASE_SUBSCRIPTION_UPDATES: UpdatesWithId = {
-  id: '',
+  id: "",
   updates: {} as SheetDataMap,
 };
 const BASE_PUBLISHED_UPDATES: UpdatesWithId = {
-  id: '',
+  id: "",
   updates: {} as SheetDataMap,
 };
 const parser = Parser.getInstance();
@@ -44,10 +50,8 @@ const evaluator = Evaluator.getInstance();
  * @author kris-amerman
  */
 const Sheet: React.FC = () => {
-
-
   // Receive contextual information about sheet from the dashboard page. TODO -- maybe use URL
-  const sheetInfo = useParams<{ publisher: string; sheet: string; }>();
+  const sheetInfo = useParams<{ publisher: string; sheet: string }>();
   const navigate = useNavigate();
 
   // Initialize the SheetDataMap
@@ -60,9 +64,12 @@ const Sheet: React.FC = () => {
   const [sheetData, setSheetData] = useState<SheetDataMap>(initialSheetData);
   const [refsToPublish, setRefsToPublish] = useState<Set<string>>(new Set());
   const [incomingUpdates, setIncomingUpdates] = useState<SheetDataMap>({});
-  const [sheetRelationship, setSheetRelationship] = useState<SheetRelationship>("SUBSCRIBER");
-  const [latestPublishedUpdateID, setLatestPublishedUpdateID] = useState<string>("0");
-  const [latestSubscriptionUpdateID, setLatestSubscriptionUpdateID] = useState<string>("0");
+  const [sheetRelationship, setSheetRelationship] =
+    useState<SheetRelationship>("SUBSCRIBER");
+  const [latestPublishedUpdateID, setLatestPublishedUpdateID] =
+    useState<string>("0");
+  const [latestSubscriptionUpdateID, setLatestSubscriptionUpdateID] =
+    useState<string>("0");
   const [popupMessage, setPopupMessage] = useState<string | null>(null);
 
   const [numRows, setNumRows] = useState(INITIALSHEETROWSIZE);
@@ -71,11 +78,13 @@ const Sheet: React.FC = () => {
   const pendingSubUpdates = useRef<UpdatesWithId>(BASE_SUBSCRIPTION_UPDATES);
   const pendingPubUpdates = useRef<UpdatesWithId>(BASE_PUBLISHED_UPDATES);
 
-  const [pendingEvaluationCells, setPendingEvaluationCells] = useState<string[]>([]);
+  const [pendingEvaluationCells, setPendingEvaluationCells] = useState<
+    string[]
+  >([]);
 
   /**
    * Actions to perform on first load.
-   * 
+   *
    * @author kris-amerman
    */
   useEffect(() => {
@@ -86,23 +95,28 @@ const Sheet: React.FC = () => {
       if (sheetInfo.publisher && publishers.includes(sheetInfo.publisher)) {
         checkValidSheets();
       } else {
-        navigate('/dashboard');
+        navigate("/dashboard");
       }
     };
 
     const handleSheetsSuccess = (data: Result) => {
       const sheets = data.value.map((item: Argument) => item.sheet);
       if (!sheetInfo.sheet || !sheets.includes(sheetInfo.sheet)) {
-        navigate('/dashboard');
+        navigate("/dashboard");
       }
     };
 
     const checkValidSheets = () => {
       fetchWithAuth(
         "getSheets",
-        { method: "POST", body: JSON.stringify({ publisher: sheetInfo.publisher }) },
+        {
+          method: "POST",
+          body: JSON.stringify({ publisher: sheetInfo.publisher }),
+        },
         handleSheetsSuccess,
-        () => { navigate('/dashboard'); }
+        () => {
+          navigate("/dashboard");
+        }
       );
     };
 
@@ -110,25 +124,26 @@ const Sheet: React.FC = () => {
       "getPublishers",
       { method: "GET" },
       handlePublishersSuccess,
-      () => { navigate('/dashboard'); }
+      () => {
+        navigate("/dashboard");
+      }
     );
 
     // If the publisher for the current sheet is the same as the current user,
     // set the sheetRelationship to OWNER
     if (sheetInfo.publisher === sessionStorage.getItem("username")) {
-      setSheetRelationship("OWNER")
+      setSheetRelationship("OWNER");
     }
-
   }, []);
 
   useEffect(() => {
     // Initial request for updates on page load
     requestUpdates();
-  }, [sheetRelationship])
+  }, [sheetRelationship]);
 
   /**
    * Updates the sheetData with new cell value.
-   * 
+   *
    * @param {string} value - new cell value
    * @param {string} cellId - the cell to update
    *
@@ -142,83 +157,106 @@ const Sheet: React.FC = () => {
       const dependencies = findDependencies(updatedSheetData, cellId);
       dependencies.forEach((dep) => {
         if (!pendingEvaluationCells.includes(dep)) {
-          setPendingEvaluationCells((prevPendingCells) => [...prevPendingCells, dep]);
+          setPendingEvaluationCells((prevPendingCells) => [
+            ...prevPendingCells,
+            dep,
+          ]);
         }
       });
 
       // If the value is different from the previous one, or if the value is empty, mark it as manually updated
       if (value !== prevSheetData[cellId]) {
-        setRefsToPublish((prevManualUpdates) => new Set(prevManualUpdates).add(cellId));
+        setRefsToPublish((prevManualUpdates) =>
+          new Set(prevManualUpdates).add(cellId)
+        );
       }
 
       return updatedSheetData;
     });
   };
 
+  /**
+   * Evaluates updated cells before render.
+   *
+   * @param {SheetDataMap} sheetDataMap - current state of sheetData
+   *
+   * @author rishavsarma5
+   */
   const evaluatePendingCells = async (sheetData: SheetDataMap) => {
     const updatedData: SheetDataMap = { ...sheetData };
-    const pendingCellsSet = new Set(pendingEvaluationCells); // Use a set for faster lookups
+    const pendingCellsSet = new Set(pendingEvaluationCells);
 
+    // determines if the dependencies of a cell are in pendingCellsSet
     const areDependenciesResolved = (dependencies: string[]): boolean => {
-        return dependencies.every(dep => !pendingCellsSet.has(dep));
+      return dependencies.every((dep) => !pendingCellsSet.has(dep));
     };
 
+    // waits until all cells are evaluated by checking their dependencies and waiting for
+    // those to resolve first
     while (pendingCellsSet.size > 0) {
-        const cellsToEvaluate: string[] = [];
+      const cellsToEvaluate: string[] = [];
 
-        // Find cells that can be evaluated in this iteration
-        for (const cellId of pendingCellsSet) {
-            const dependencies = findDependencies(updatedData, cellId);
-            if (areDependenciesResolved(dependencies)) {
-                console.log("all values resolved!");
-                cellsToEvaluate.push(cellId);
-            }
+      // Find cells that can be evaluated in this iteration
+      for (const cellId of pendingCellsSet) {
+        const dependencies = findDependencies(updatedData, cellId);
+        if (areDependenciesResolved(dependencies)) {
+          cellsToEvaluate.push(cellId);
         }
+      }
 
-        if (cellsToEvaluate.length === 0) {
-            console.error("Cyclic dependency detected or unsatisfiable dependencies");
-            break;
+      // checks for cyclic references in cells
+      if (cellsToEvaluate.length === 0) {
+        console.error(
+          "Cyclic dependency detected or unsatisfiable dependencies"
+        );
+        break;
+      }
+
+      // Evaluate cells in parallel
+      const promises = cellsToEvaluate.map(async (cellId) => {
+        const cellValue = updatedData[cellId];
+        try {
+          const parsedNode = parser.parse(cellValue);
+          evaluator.setContext(updatedData);
+          const result = evaluator.evaluate(parsedNode);
+          updatedData[cellId] = result;
+
+          // Remove evaluated cell from pending set only if successful
+          pendingCellsSet.delete(cellId);
+        } catch (error) {
+          console.error(`Error evaluating formula in ${cellId}:`, error);
         }
+      });
 
-        // Evaluate cells in parallel
-        const promises = cellsToEvaluate.map(async cellId => {
-            const cellValue = updatedData[cellId];
-            try {
-                const parsedNode = parser.parse(cellValue);
-                evaluator.setContext(updatedData);
-                const result = evaluator.evaluate(parsedNode);
-                updatedData[cellId] = result;
+      // Wait for all evaluations in this iteration to complete
+      await Promise.all(promises);
 
-                // Remove evaluated cell from pending set only if successful
-                pendingCellsSet.delete(cellId);
-            } catch (error) {
-                console.error(`Error evaluating formula in ${cellId}:`, error);
-                // If an error occurs, keep the cell in the pending set
-            }
-        });
-
-        // Wait for all evaluations in this iteration to complete
-        await Promise.all(promises);
-
-        // If no cells were successfully evaluated and removed from the pending set, break to avoid infinite loop
-        if (cellsToEvaluate.every(cellId => pendingCellsSet.has(cellId))) {
-            console.error("Cyclic dependency detected or unsatisfiable dependencies");
-            break;
-        }
+      // If no cells were successfully evaluated and removed from the pending set, break to avoid infinite loop
+      if (cellsToEvaluate.every((cellId) => pendingCellsSet.has(cellId))) {
+        console.error(
+          "Cyclic dependency detected or unsatisfiable dependencies"
+        );
+        break;
+      }
     }
 
-    setPendingEvaluationCells([]); // Clear pending cells
-    setSheetData(updatedData); // Update sheetData with evaluated values
-};
+    // Clear pending cells
+    setPendingEvaluationCells([]);
+    // Update sheetData with evaluated values
+    setSheetData(updatedData);
+  };
 
-
-  
-
-   // Function to handle incoming updates and add cells to pendingCells
-   const evaluateIncomingUpdates = async (updates: SheetDataMap) => {
-    // Identify cells from incoming updates that need evaluation
+  /**
+   * Determines if incoming updates need to be evaluated beforehand if they are formulas.
+   *
+   * @param {SheetDataMap} sheetDataMap - current state of sheetData
+   *
+   * @author rishavsarma5
+   */
+  const evaluateIncomingUpdates = async (updates: SheetDataMap) => {
+    // Identify cells from incoming updates that need evaluation (checking if they are a formula)
     const cellsToUpdate = Object.keys(updates).filter((cellId) => {
-      return updates[cellId].startsWith("="); // Check if cell value is a formula
+      return updates[cellId].startsWith("=");
     });
 
     // Add cells to pendingCells for evaluation
@@ -228,6 +266,12 @@ const Sheet: React.FC = () => {
     ]);
   };
 
+  /**
+   * If there are pending cells to evaluate before render, this will trigger the function to 
+   * evaluate them.
+   *
+   * @author rishavsarma5
+   */
   useEffect(() => {
     if (pendingEvaluationCells.length > 0) {
       evaluatePendingCells(sheetData);
@@ -251,8 +295,15 @@ const Sheet: React.FC = () => {
    * @author rishavsarma5
    */
   const deleteRow = () => {
-    const updatedSheetData = deleteRowData(sheetData, numRows, numCols, handleCellUpdate);
-    setNumRows((prevNumRows) => (prevNumRows > 1 ? prevNumRows - 1 : prevNumRows));
+    const updatedSheetData = deleteRowData(
+      sheetData,
+      numRows,
+      numCols,
+      handleCellUpdate
+    );
+    setNumRows((prevNumRows) =>
+      prevNumRows > 1 ? prevNumRows - 1 : prevNumRows
+    );
     setSheetData(updatedSheetData);
   };
 
@@ -273,21 +324,32 @@ const Sheet: React.FC = () => {
    * @author rishavsarma5
    */
   const deleteCol = () => {
-    const updatedSheetData = deleteColData(sheetData, numCols, numRows, handleCellUpdate);
-    setNumCols((prevNumCols) => (prevNumCols > 1 ? prevNumCols - 1 : prevNumCols));
+    const updatedSheetData = deleteColData(
+      sheetData,
+      numCols,
+      numRows,
+      handleCellUpdate
+    );
+    setNumCols((prevNumCols) =>
+      prevNumCols > 1 ? prevNumCols - 1 : prevNumCols
+    );
     setSheetData(updatedSheetData);
   };
 
   /**
    * Publish the values in the given SheetDataMap for the given refs.
-   * 
+   *
    * @param {Set<string>} refs - the refs to publish
    * @param {SheetDataMap} updatedSheetData - the sheet data to use for reference
    * @param {SendUpdatesEndpoint} refs - the endpoint to publish to
    *
    * @author kris-amerman
    */
-  const publishRefs = async (refs: Set<string>, updatedSheetData: SheetDataMap, endpoint: SendUpdatesEndpoint) => {
+  const publishRefs = async (
+    refs: Set<string>,
+    updatedSheetData: SheetDataMap,
+    endpoint: SendUpdatesEndpoint
+  ) => {
     const payload = buildPayload(refs, updatedSheetData);
 
     const allUpdates = {
@@ -298,7 +360,8 @@ const Sheet: React.FC = () => {
     };
 
     try {
-      await fetchWithAuth(endpoint,
+      await fetchWithAuth(
+        endpoint,
         {
           method: "POST",
           body: JSON.stringify(allUpdates),
@@ -336,24 +399,28 @@ const Sheet: React.FC = () => {
   /**
    * Retrieves subscription or published updates. Gets all updates that occurred after the given id.
    * If successful, calls handleGetUpdatesResult to process the returned data and update state.
-   * 
+   *
    * @param {UpdatesEndpoint} updatesEndpoint - the endpoint to send the request to
    * @param {string} id - the update id
-   * 
+   *
    * @author kris-amerman
    */
-  const getUpdates = async (updatesEndpoint: GetUpdatesEndpoint, id: string) => {
+  const getUpdates = async (
+    updatesEndpoint: GetUpdatesEndpoint,
+    id: string
+  ) => {
     const argument: Argument = {
       publisher: sheetInfo.publisher!,
       sheet: sheetInfo.sheet!,
       id: id,
-      payload: ""
+      payload: "",
     };
 
-    await fetchWithAuth(updatesEndpoint,
+    await fetchWithAuth(
+      updatesEndpoint,
       {
         method: "POST",
-        body: JSON.stringify(argument)
+        body: JSON.stringify(argument),
       },
       async (data) => {
         if (data.success && data.value && data.value.length > 0) {
@@ -368,15 +435,19 @@ const Sheet: React.FC = () => {
 
   /**
    * Handles the result of getUpdates. Modifies the size of the sheet and returns the parsed updates.
-   * 
+   *
    * @param {Result} result - the result object containing the updates argument
    * @returns {SheetDataMap} - the parsed updates as a SheetDataMap
-   * 
+   *
    * @author kris-amerman
    */
   const handleGetUpdatesResult = (resultArgument: Argument): SheetDataMap => {
     // Convert payload to SheetDataMap and adjust sheet bounds
-    const { sheetMap, newColSize, newRowSize } = generateSheetDataMap(resultArgument.payload, numCols, numRows);
+    const { sheetMap, newColSize, newRowSize } = generateSheetDataMap(
+      resultArgument.payload,
+      numCols,
+      numRows
+    );
 
     // Dynamically add rows if needed
     if (newRowSize > numRows) {
@@ -397,17 +468,21 @@ const Sheet: React.FC = () => {
 
   /**
    * Sets pending updates based on the provided endpoint.
-   * 
+   *
    * Subscription updates will be automatically applied to the sheetData.
    * Published updates will be held in incomingUpdates until dealt with.
-   * 
+   *
    * @param {string} id - the identifier associated with the updates
    * @param {UpdatesEndpoint} updatesEndpoint - the endpoint specifying the type of updates
    * @param {SheetDataMap} updates - the updates to apply to the sheet data or incoming updates
-   * 
+   *
    * @author kris-amerman
    */
-  const setPendingUpdates = (id: string, updatesEndpoint: GetUpdatesEndpoint, updates: SheetDataMap) => {
+  const setPendingUpdates = (
+    id: string,
+    updatesEndpoint: GetUpdatesEndpoint,
+    updates: SheetDataMap
+  ) => {
     if (updatesEndpoint === "getUpdatesForSubscription") {
       pendingSubUpdates.current.updates = updates;
       pendingSubUpdates.current.id = id;
@@ -420,26 +495,32 @@ const Sheet: React.FC = () => {
   /**
    * Add pending subscription updates to sheetData.
    * Identify updates pending owner review and add to incomingUpdates.
-   * 
+   *
    * @author kris-amerman
    */
   const resolvePendingUpdates = () => {
     const subscriptionUpdates = pendingSubUpdates.current.updates;
     const publishedUpdates = pendingPubUpdates.current.updates;
     evaluateIncomingUpdates(subscriptionUpdates);
-    setSheetData(prevSheetData => ({ ...prevSheetData, ...subscriptionUpdates }));
+    setSheetData((prevSheetData) => ({
+      ...prevSheetData,
+      ...subscriptionUpdates,
+    }));
     setLatestSubscriptionUpdateID(pendingSubUpdates.current.id);
 
     if (publishedUpdates && sheetRelationship === "OWNER") {
-      const unreconciledUpdates = getUnreconciledUpdates(subscriptionUpdates, publishedUpdates);
+      const unreconciledUpdates = getUnreconciledUpdates(
+        subscriptionUpdates,
+        publishedUpdates
+      );
       evaluateIncomingUpdates(unreconciledUpdates);
-      setIncomingUpdates(unreconciledUpdates)
+      setIncomingUpdates(unreconciledUpdates);
       setLatestPublishedUpdateID(pendingPubUpdates.current.id);
     }
 
     pendingSubUpdates.current = BASE_SUBSCRIPTION_UPDATES;
     pendingPubUpdates.current = BASE_PUBLISHED_UPDATES;
-  }
+  };
 
   /**
    * Accept the incoming updates.
@@ -448,7 +529,7 @@ const Sheet: React.FC = () => {
    */
   const handleAccept = async () => {
     // Update sheetData with incomingUpdates
-    setSheetData(prevSheetData => {
+    setSheetData((prevSheetData) => {
       const newSheetData = { ...prevSheetData, ...incomingUpdates };
 
       // Include incoming updates in the refs to publish
@@ -469,7 +550,7 @@ const Sheet: React.FC = () => {
 
   /**
    * Deny the incoming updates.
-   * 
+   *
    * Overwrite the incoming updates by re-asserting the existing cell values.
    *
    * @author kris-amerman
@@ -492,18 +573,18 @@ const Sheet: React.FC = () => {
 
   /**
    * Take the sheetData and export to CSV.
-   * 
+   *
    * @author kris-amerman
    */
   const handleExportToCSV = async () => {
     const csv = toCSV(sheetData);
     const element = document.createElement("a");
-    const file = new Blob([csv], { type: 'text/csv' });
+    const file = new Blob([csv], { type: "text/csv" });
     element.href = URL.createObjectURL(file);
     element.download = "data.csv";
     document.body.appendChild(element);
     element.click();
-  }
+  };
 
   /**
    * Renders the headers of the columns with the A ... AA by using mod 26.
@@ -524,29 +605,31 @@ const Sheet: React.FC = () => {
       );
     }
 
-    sheetRelationship === "OWNER" && headers.push(
-      <th key="delete-column-header" className="button-header">
-        <button
-          onClick={deleteCol}
-          className="delete-column-button"
-          key="delete-column-button"
-        >
-          - Column
-        </button>
-      </th>
-    );
+    sheetRelationship === "OWNER" &&
+      headers.push(
+        <th key="delete-column-header" className="button-header">
+          <button
+            onClick={deleteCol}
+            className="delete-column-button"
+            key="delete-column-button"
+          >
+            - Column
+          </button>
+        </th>
+      );
 
-    sheetRelationship === "OWNER" && headers.push(
-      <th key="add-column-header" className="button-header">
-        <button
-          onClick={addNewCol}
-          className="add-column-button"
-          key="add-column-button"
-        >
-          + Column
-        </button>
-      </th>
-    );
+    sheetRelationship === "OWNER" &&
+      headers.push(
+        <th key="add-column-header" className="button-header">
+          <button
+            onClick={addNewCol}
+            className="add-column-button"
+            key="add-column-button"
+          >
+            + Column
+          </button>
+        </th>
+      );
 
     return <tr>{headers}</tr>;
   };
@@ -571,8 +654,16 @@ const Sheet: React.FC = () => {
       for (let col = 0; col < numCols; col++) {
         const columnLetter: string = getHeaderLetter(col);
         const cellId = `$${columnLetter}${row}`;
-        const cellValue = Object.prototype.hasOwnProperty.call(incomingUpdates, cellId) ? incomingUpdates[cellId] : sheetData[cellId];
-        const isUpdated = Object.prototype.hasOwnProperty.call(incomingUpdates, cellId);
+        const cellValue = Object.prototype.hasOwnProperty.call(
+          incomingUpdates,
+          cellId
+        )
+          ? incomingUpdates[cellId]
+          : sheetData[cellId];
+        const isUpdated = Object.prototype.hasOwnProperty.call(
+          incomingUpdates,
+          cellId
+        );
 
         cellsPerRow.push(
           <Cell
@@ -592,33 +683,34 @@ const Sheet: React.FC = () => {
       );
     }
 
-    sheetRelationship === "OWNER" && rows.push(
-      <tr key="row-buttons">
-        <td className="button-header">
-          <button
-            onClick={deleteRow}
-            className="delete-row-button"
-            key="delete-row-button"
-          >
-            - Row
-          </button>
-          <button
-            onClick={addNewRow}
-            className="add-row-button"
-            key="add-row-button"
-          >
-            + Row
-          </button>
-        </td>
-        <td colSpan={numCols}></td>
-      </tr>
-    );
+    sheetRelationship === "OWNER" &&
+      rows.push(
+        <tr key="row-buttons">
+          <td className="button-header">
+            <button
+              onClick={deleteRow}
+              className="delete-row-button"
+              key="delete-row-button"
+            >
+              - Row
+            </button>
+            <button
+              onClick={addNewRow}
+              className="add-row-button"
+              key="add-row-button"
+            >
+              + Row
+            </button>
+          </td>
+          <td colSpan={numCols}></td>
+        </tr>
+      );
 
     return <>{rows}</>;
   };
 
   /**
-   * Render the Sheet. 
+   * Render the Sheet.
    *
    * @author rishavsarma5
    */
@@ -626,14 +718,18 @@ const Sheet: React.FC = () => {
     <div className="sheet-container">
       <div className="info-section">
         <div className="publish-request-buttons">
-          <button className="info-section-button" onClick={requestUpdates}>Request Updates</button>
+          <button className="info-section-button" onClick={requestUpdates}>
+            Request Updates
+          </button>
           <button
             onClick={() => {
               publishRefs(
                 refsToPublish,
                 sheetData,
-                sheetRelationship === "OWNER" ? "updatePublished" : "updateSubscription"
-              )
+                sheetRelationship === "OWNER"
+                  ? "updatePublished"
+                  : "updateSubscription"
+              );
             }}
             className="info-section-button"
           >
@@ -641,28 +737,31 @@ const Sheet: React.FC = () => {
           </button>
         </div>
         <div className="sheet-name">Sheet Name: {sheetInfo.sheet}</div>
-        <button className="info-section-button" onClick={handleExportToCSV}>Export To CSV</button>
+        <button className="info-section-button" onClick={handleExportToCSV}>
+          Export To CSV
+        </button>
       </div>
       <div className="sheet-wrapper">
-        {Object.keys(incomingUpdates).length > 0
-          ?
+        {Object.keys(incomingUpdates).length > 0 ? (
           <div className="accept-deny-container">
             <div className="update-buttons">
-              <button className="accept-button" onClick={handleAccept}>Accept</button>
-              <button className="deny-button" onClick={handleDeny}>Deny</button>
+              <button className="accept-button" onClick={handleAccept}>
+                Accept
+              </button>
+              <button className="deny-button" onClick={handleDeny}>
+                Deny
+              </button>
             </div>
-            <p className="update-warning">Warning! This will change the sheet for everyone.</p>
+            <p className="update-warning">
+              Warning! This will change the sheet for everyone.
+            </p>
           </div>
-          :
+        ) : (
           <></>
-        }
+        )}
         <table className="sheet">
-          <thead>
-            {renderSheetHeader()}
-          </thead>
-          <tbody>
-            {renderSheetRows()}
-          </tbody>
+          <thead>{renderSheetHeader()}</thead>
+          <tbody>{renderSheetRows()}</tbody>
         </table>
       </div>
       {popupMessage && (
