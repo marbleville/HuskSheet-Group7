@@ -2,7 +2,7 @@ import { Argument, Publisher, Sheet, Payload } from "../../../types/types";
 import DatabaseInstance from "../database/databaseInstance";
 import DatabaseQueries from "../../../types/queries";
 import { GetUpdateRow } from "../database/db";
-import { checkPayloadFormat } from "../utils";
+import { checkPayloadFormat, sanitize } from "../utils";
 
 /**
  * Updates the Updates table with the given publisher, sheet, and payload for
@@ -19,7 +19,7 @@ async function updateSubscription(
 ): Promise<void> {
 	let publisher: Publisher = argument.publisher;
 	let sheetName: Sheet = argument.sheet;
-	let payload: Payload = argument.payload;
+	let payload: Payload = sanitize(argument.payload);
 
 	const database: DatabaseInstance = DatabaseInstance.getInstance();
 

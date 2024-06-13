@@ -33,6 +33,42 @@ function checkPayloadFormat(payload: string): boolean {
 }
 
 /**
+ * Sanitizes the payload to prevent SQL injection. Replaces leading adn trailing
+ * "'" with """.
+ *
+ * @param payload the payload to sanitize
+ *
+ * @returns the sanitized payload
+ *
+ * @author marbleville
+ */
+function sanitize(payload: Payload): Payload {
+	let changes = payload.split("\n");
+
+	if (changes[changes.length - 1] === "") {
+		changes.pop();
+	}
+
+	changes = changes.map((change) => {
+		let term: string = change.substring(change.indexOf(" ") + 1);
+
+		if (term.charAt(0) === "'") {
+			term = '"' + term.slice(1);
+		}
+
+		if (term.charAt(term.length - 1) === "'") {
+			term = term.substring(0, term.length - 1) + '"';
+		}
+
+		term = term.replace(/'/g, "''");
+
+		return change.split(" ", 1)[0] + " " + term;
+	});
+
+	return changes.join("\n");
+}
+
+/**
  * Checks if the user is a publisher.
  *
  * @param header the authorization header from the request
@@ -117,8 +153,8 @@ async function getUpdatesHelper(
 	result.forEach((update) => {
 		if (update.changes != "") {
 			payload += update.changes.includes("\n", update.changes.length - 2)
-				? update.changes
-				: update.changes + "\n";
+				? update.changes.replace("''", "'")
+				: update.changes.replace("''", "'") + "\n";
 		}
 	});
 
@@ -318,4 +354,5 @@ export {
 	isUserPublisher,
 	sendError,
 	getArgument,
+	sanitize,
 };

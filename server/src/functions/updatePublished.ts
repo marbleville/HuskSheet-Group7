@@ -3,7 +3,7 @@ import DatabaseInstance from "../database/databaseInstance";
 import DatabaseQueries from "../../../types/queries";
 import HashStore from "../database/HashStore";
 import { GetUpdateRow } from "../database/db";
-import { checkPayloadFormat } from "../utils";
+import { checkPayloadFormat, sanitize } from "../utils";
 
 /**
  * Updates the Updates table with the given publisher, sheet, and payload for
@@ -17,7 +17,7 @@ import { checkPayloadFormat } from "../utils";
 async function updatePublished(argument: Argument): Promise<void> {
 	let publisher: Publisher = argument.publisher;
 	let sheetName: Sheet = argument.sheet;
-	let payload: Payload = argument.payload;
+	let payload: Payload = sanitize(argument.payload);
 
 	if (checkPayloadFormat(payload) === false) {
 		throw new Error("Invalid payload format");
@@ -29,7 +29,6 @@ async function updatePublished(argument: Argument): Promise<void> {
 		const queryString: string = DatabaseQueries.updatePublished(
 			sheetName,
 			publisher,
-			// We need to sanitize the paylod of '' to prevent SQL errors
 			payload
 		);
 
@@ -41,11 +40,19 @@ async function updatePublished(argument: Argument): Promise<void> {
 			DatabaseQueries.getUpdatesForSubscription(publisher, sheetName, 0)
 		);
 
-		let payloadUpdate: GetUpdateRow = updates.reduce((update) =>
-			update.changes.includes(payload)
-				? update
-				: updates[updates.length - 1]
-		);
+		let payloadUpdate: GetUpdateRow | null = null;
+
+		updates.forEach((update) => {
+			if (update.changes.includes(payload.replace("''", "'"))) {
+				payloadUpdate = update;
+			}
+		});
+
+		if (!payloadUpdate) {
+			throw new Error("Payload not found in updates");
+		}
+
+		payloadUpdate = payloadUpdate as GetUpdateRow;
 
 		let payloadID: number = payloadUpdate.updateid;
 

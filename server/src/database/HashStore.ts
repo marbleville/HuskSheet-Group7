@@ -164,7 +164,9 @@ export default class HashStore {
 	): [Ref, Term] {
 		let refEndIndex: number = update.indexOf(" ");
 		let ref: string = update.substring(0, refEndIndex);
-		let value: string = update.substring(refEndIndex + 1);
+		let value: string = update
+			.substring(refEndIndex + 1)
+			.replace("''", "'");
 
 		let refObj: Ref = HashStore.getRefFromString(ref, sheetID);
 
