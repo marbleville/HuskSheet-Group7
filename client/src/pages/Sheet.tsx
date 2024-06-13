@@ -90,7 +90,6 @@ const Sheet: React.FC = () => {
 
     const handleSheetsSuccess = (data: Result) => {
       const sheets = data.value.map((item: Argument) => item.sheet);
-      console.log(sheets);
       if (!sheetInfo.sheet || !sheets.includes(sheetInfo.sheet)) {
         navigate('/dashboard');
       }
@@ -111,7 +110,13 @@ const Sheet: React.FC = () => {
       handlePublishersSuccess,
       () => { navigate('/dashboard'); }
     );
+
   }, []);
+
+  useEffect(() => {
+    // Initial request for updates on page load
+    requestUpdates();
+  }, [sheetRelationship])
 
   /**
    * Updates the sheetData with new cell value.
