@@ -111,6 +111,10 @@ const Sheet: React.FC = () => {
       handlePublishersSuccess,
       () => { navigate('/dashboard'); }
     );
+
+    // Initial request for updates on page load
+    requestUpdates();
+
   }, []);
 
   /**
