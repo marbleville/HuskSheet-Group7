@@ -146,7 +146,7 @@ class Parser {
   }
 
   private isReference(token: string): boolean {
-    return /^\$[A-Z]+\d+$/.test(token);
+    return /^\$[a-zA-Z]+\d+$/.test(token);
   }
 
   private isOperator(token: string): boolean {
