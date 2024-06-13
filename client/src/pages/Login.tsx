@@ -5,14 +5,16 @@ import { Result } from "../../../types/types";
 import "../styles/Login.css";
 
 /**
- * @description The Login page. It handles username and password input. 
+ * The Login page. It handles username and password input. 
  * 
  * If a username does not exist in the DB, a new user will be created and register will automatically retry
  * to register the new user. If a username exists and the password is wrong, a 401 will trigger an invalid login view.
  *
- * @auth krisamerman, rishavsarma5, eduardo-ruiz-garay
+ * @auth kris-amerman
  */
 function Login() {
+
+  // Login state
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -25,9 +27,9 @@ function Login() {
   const navigate = useNavigate();
 
   /**
-   * @description Attempts to fetch register and handles success and failure.
+   * Attempts to fetch register and handles success and failure.
    * 
-   * @auth kris-amerman
+   * @author kris-amerman
    */
   const attemptFetchWithAuth = async () => {
     try {
@@ -43,9 +45,9 @@ function Login() {
   };
 
   /**
-   * @description Sets a value for "auth" in sessionStorage. This is simply used to help with site navigation.
+   * Sets a value for "auth" in sessionStorage. This is simply used to help with site navigation.
    * 
-   * @auth kris-amerman
+   * @author kris-amerman
    */
   const handleRegisterSuccess = () => {
     sessionStorage.setItem("auth", "authenticated");
@@ -53,13 +55,13 @@ function Login() {
   };
 
   /**
-   * @description Triggers a fail state for the Login UI.
+   * Triggers a fail state for the Login UI.
    * 
    * If the failure reason is a registration failure (i.e., user DNE), it retries the registration process once.
    * 
    * @param {Result} data - The response data from the failed fetch.
    * 
-   * @auth kris-amerman
+   * @author kris-amerman
    */
   const handleRegisterFailure = async (data: Result) => {
     // Do not retry if already retried or if the error is unauthorized (401)
@@ -81,9 +83,9 @@ function Login() {
   };
 
   /**
-   * @description Handles login. Sets username and password in sessionStorage (to persist across page loads).
+   * Handles login. Sets username and password in sessionStorage (to persist across page loads).
    * 
-   * @auth kris-amerman, rishavsarma5
+   * @author kris-amerman
    */
   const onLoginButtonClick = async () => {
     setUsernameError("");
@@ -107,9 +109,9 @@ function Login() {
   };
 
   /**
-   * @description Renders the login UI.
+   * Renders the login UI.
    * 
-   * @auth rishavsarma5, kris-amerman
+   * @author rishavsarma5
    */
   return (
     <div className="login-container">
