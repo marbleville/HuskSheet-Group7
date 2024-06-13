@@ -9,7 +9,7 @@
     margin-bottom: 20px;
 }
 
-.logout-button {
+.header-button {
     padding: 0.5rem 1rem;
     height: auto;
     color: white;
@@ -19,10 +19,14 @@
     background-color: #38a169;
 }
 
-.logout-button:hover {
+.header-button:hover {
     opacity: 75%;
 }
 
+.buttons-container {
+    display: flex;
+    gap: 10px;
+}
 
 
 .current-user {

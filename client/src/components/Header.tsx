@@ -14,11 +14,12 @@ function Header() {
 
 	return (
 		<header className="header-container">
-			<p className="current-user">Current user: {sessionStorage.getItem("username")}</p>
+			<div className="buttons-container">
+				<button className="header-button" onClick={() => navigate("/dashboard")}>Home</button>
+				<button className="header-button" onClick={handleLogout}>Logout</button>
+			</div>
 			<p className="current-user">Endpoint version: {clientConfig.BASE_URL}</p>
-			<button className="logout-button" onClick={handleLogout}>
-				Logout
-			</button>
+			<p className="current-user">Current user: {sessionStorage.getItem("username")}</p>
 		</header>
 	);
 }
