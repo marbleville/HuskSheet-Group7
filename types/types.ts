@@ -64,3 +64,8 @@ export type {
 	Fun,
 	Operation,
 };
+
+// Represents data stored in the sheet as a mapping of REF:TERM pairs. 
+export interface SheetDataMap {
+  [ref: string]: string;
+};
