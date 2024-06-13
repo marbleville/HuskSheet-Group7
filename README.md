@@ -16,7 +16,7 @@
     -   Users can create a new account and login as a subscriber or a publisher
 -   Dynamic size of the sheet
     -   The sheet can be expanded by the user
--   Persistant login
+-   Persistent login
     -   Users can stay logged in even after relaoding the page or
         navigating to a different page
 -   Private sheets
@@ -26,3 +26,5 @@
     -   We have optimized the server to reduce network overhead to the minimum
         level required and we have reduced the number of db queries necessary
         in normal operation
+- Export sheet as CSV
+  
