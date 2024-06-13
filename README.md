@@ -4,7 +4,7 @@
 
 -   `make build`
     -   Builds and runs the project and runs all tests in one step
-    -   Note: The tests take a moment to run, so please be patient
+    -   Note: The tests take a moment to run
 
 ## Project status
 
