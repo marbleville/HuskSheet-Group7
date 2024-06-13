@@ -5,15 +5,17 @@ import { GetAllUpdates, GetSheetID } from "../database/db";
 import { Hash } from "crypto";
 
 /**
- * Singleton class that stores a cache of each of the sheets in the database.
- * This is used when retrieving the current state of a sheet to improve performance.
+ * Singleton class that stores a cache of each sheet. This is used when
+ * retrieving the current state of a sheet to improve performance.
  *
  * @author marbleville
  */
 export default class HashStore {
-	// An array of tuples representing the current state of each sheet in the database
-	// The ref key is the cell where [Term, ID] is a tuple of the value of
-	// the cell and the ID of the update that set that value.
+	/**
+	 * An array of map objects representing the current state of each sheet in
+	 * the database. The ref key is the cell where [Term, ID] is a tuple of the
+	 * value of the cell and the ID of the update that set that value.
+	 */
 	private static sheets: Array<Map<Ref, [Term, number]>>;
 
 	/**
@@ -30,7 +32,7 @@ export default class HashStore {
 
 		HashStore.sheets = new Array<Map<Ref, [Term, number]>>();
 
-		// every update in the db that has been accepted by the owner
+		// every update in the db that has been accepted by the owner of the sheet
 		let allOwnerUpdates: GetAllUpdates[] =
 			await DatabaseInstance.getInstance().query<GetAllUpdates>(
 				DatabaseQueries.getAllOwnerUpdates()
@@ -71,8 +73,8 @@ export default class HashStore {
 	}
 
 	/**
-	 * Returns the current accepted state of the sheet with the given name and
-	 * publisher in a newline delimited string.
+	 * Returns the current accepted state of the sheet occuring after the given
+	 * id with the given name and publisher in a newline delimited string.
 	 *
 	 * @param publisher the publisher of the sheet to get the payload for
 	 * @param sheetName the name of the sheet to get the payload for
@@ -104,8 +106,6 @@ export default class HashStore {
 		let maxID: number = 0;
 
 		for (let [key, [value, id]] of sheetMap) {
-			// Would be possible to add support for getting updates during
-			// runtime with IDs here
 			if (id > updateID) {
 				payload += "$" + key.column + key.row + " " + value + "\n";
 				maxID = id > maxID ? id : maxID;
@@ -158,6 +158,14 @@ export default class HashStore {
 		}
 	}
 
+	/**
+	 * Returns a tuple containing the ref object and the value of the update.
+	 *
+	 * @param update the update to get the ref and value from
+	 * @param sheetID the ID of the sheet the update is for
+	 *
+	 * @returns a tuple containing the ref object and the value of the update
+	 */
 	private static getRefObjAndValue(
 		update: string,
 		sheetID: number
@@ -201,7 +209,8 @@ export default class HashStore {
 	}
 
 	/**
-	 * Returns a Ref object representing the reference in the given string.
+	 * Returns a Ref object representing the reference in the given string. If
+	 * the ref exists in the map, it will return the ref from the map.
 	 *
 	 * @param ref a string representing a reference to a cell in the form
 	 * 			  $[col][row]

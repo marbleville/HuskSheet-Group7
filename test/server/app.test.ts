@@ -50,6 +50,25 @@ describe("Tests auth checks in app.ts", () => {
 		expect(user.length).toBe(1);
 	});
 
+	it("register should be able to add over 50 users", async () => {
+		await setupDB();
+
+		for (let i = 0; i < 51; i++) {
+			const response: Response = await request(app)
+				.get("/api/v1/register")
+				.auth("testUser" + i, "123");
+
+			expect(response.statusCode).toBe(200);
+			expect(JSON.parse(response.text).success).toBeFalsy();
+
+			let user = await DatabaseInstance.getInstance().query<GetUserRow>(
+				DatabaseQueries.getUser("testUser" + i)
+			);
+
+			expect(user.length).toBe(1);
+		}
+	});
+
 	// createSheet tests
 
 	it("createSheet should should fail if user is not a publisher", async () => {

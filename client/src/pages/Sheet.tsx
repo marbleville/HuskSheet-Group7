@@ -79,12 +79,6 @@ const Sheet: React.FC = () => {
    * @author kris-amerman
    */
   useEffect(() => {
-    // If the publisher for the current sheet is the same as the current user,
-    // set the sheetRelationship to OWNER
-    if (sheetInfo.publisher === sessionStorage.getItem("username")) {
-      setSheetRelationship("OWNER")
-    }
-
     // The following functions are necessary to check whether the provided URL
     // params are valid. If the provided publisher/sheet DNE, navigate to /dashboard
     const handlePublishersSuccess = (data: Result) => {
@@ -118,6 +112,12 @@ const Sheet: React.FC = () => {
       handlePublishersSuccess,
       () => { navigate('/dashboard'); }
     );
+
+    // If the publisher for the current sheet is the same as the current user,
+    // set the sheetRelationship to OWNER
+    if (sheetInfo.publisher === sessionStorage.getItem("username")) {
+      setSheetRelationship("OWNER")
+    }
 
   }, []);
 
