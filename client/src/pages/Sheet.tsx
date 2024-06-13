@@ -19,6 +19,7 @@ import { Argument, Result } from "../../../types/types";
 import { SheetDataMap, SheetRelationship, GetUpdatesEndpoint, SendUpdatesEndpoint, UpdatesWithId } from "../types";
 
 import "../styles/Sheet.css";
+import toCSV from "../utils/toCSV";
 
 // Constants
 const INITIALSHEETROWSIZE = 10;
@@ -394,6 +395,21 @@ const Sheet: React.FC = () => {
   };
 
   /**
+   * Take the sheetData and export to CSV.
+   * 
+   * @author kris-amerman
+   */
+  const handleExportToCSV = async () => {
+    const csv = toCSV(sheetData);
+    const element = document.createElement("a");
+    const file = new Blob([csv], { type: 'text/csv' });
+    element.href = URL.createObjectURL(file);
+    element.download = "data.csv";
+    document.body.appendChild(element);
+    element.click();
+  }
+
+  /**
    * Renders the headers of the columns with the A ... AA by using mod 26.
    *
    * @author rishavsarma5
@@ -513,20 +529,23 @@ const Sheet: React.FC = () => {
   return (
     <div className="sheet-container">
       <div className="info-section">
-        <button className="publish-request-button" onClick={requestUpdates}>Request Updates</button>
+        <div className="publish-request-buttons">
+          <button className="info-section-button" onClick={requestUpdates}>Request Updates</button>
+          <button
+            onClick={() => {
+              publishRefs(
+                refsToPublish,
+                sheetData,
+                sheetRelationship === "OWNER" ? "updatePublished" : "updateSubscription"
+              )
+            }}
+            className="info-section-button"
+          >
+            Publish
+          </button>
+        </div>
         <div className="sheet-name">Sheet Name: {sheetInfo.sheet}</div>
-        <button
-          onClick={() => {
-            publishRefs(
-              refsToPublish,
-              sheetData,
-              sheetRelationship === "OWNER" ? "updatePublished" : "updateSubscription"
-            )
-          }}
-          className="publish-request-button"
-        >
-          Publish
-        </button>
+        <button className="info-section-button" onClick={handleExportToCSV}>Export To CSV</button>
       </div>
       <div className="sheet-wrapper">
         {Object.keys(incomingUpdates).length > 0
