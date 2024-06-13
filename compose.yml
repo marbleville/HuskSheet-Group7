@@ -23,8 +23,6 @@ services:
     express:
         image: node
         container_name: express
-        ports:
-            - 3000:3000
         volumes:
             - "./server:/server"
             - "/server/node_modules"
@@ -35,6 +33,21 @@ services:
         env_file:
             - "./config/db.dev.env"
 
+    express-test:
+        image: node
+        container_name: express-test
+        ports:
+            - 3000:3000
+        volumes:
+            - "./server:/server"
+            - "/server/node_modules"
+            - "./types:/types"
+        command: bash -c "npm install --prefix /server && npm run dev --prefix /server"
+        links:
+            - "db:db"
+        env_file:
+            - "./config/db.test.env"
+
     testing:
         build: .
         container_name: testing
@@ -43,6 +56,7 @@ services:
         command: bash -c "/app/db-scripts/store-proc.sh"
         links:
             - "db:db"
+            - "express-test:express"
         env_file:
             - "./config/db.test.env"
         depends_on:
