@@ -27,4 +27,8 @@
         level required and we have reduced the number of db queries necessary
         in normal operation
 - Export sheet as CSV
+- Duplicate sheet names
+    -   One user may have multiple sheets with the same name
+    -   Each occurance will have a number automatically appended to the end of the sheet
+
   
