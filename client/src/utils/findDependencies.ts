@@ -10,7 +10,7 @@ const findDependencies = (sheetData: SheetDataMap, cellId: string): string[] => 
     // This is a basic implementation and should be enhanced for actual usage
     const parsedNode: ExpressionNode = Parser.getInstance().parse(cellValue);
 
-    console.log(`parsed node: ${JSON.stringify(parsedNode)}`);
+    //console.log(`parsed node: ${JSON.stringify(parsedNode)}`);
 
     // Function to recursively find dependencies
     const traverseNode = (node: ExpressionNode) => {
@@ -32,7 +32,7 @@ const findDependencies = (sheetData: SheetDataMap, cellId: string): string[] => 
     };
 
     traverseNode(parsedNode); // Start traversal
-    console.log(JSON.stringify(dependencies))
+    //console.log(JSON.stringify(dependencies))
     return dependencies;
   };
 
