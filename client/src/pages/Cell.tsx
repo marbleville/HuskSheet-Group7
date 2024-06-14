@@ -6,8 +6,10 @@ import Evaluator from "../functions/Evaluator";
 interface CellProps {
   cellId: string;
   onUpdate: (value: string, cellId: string) => void;
+  onFormulaUpdate: (value: string, cellId: string) => void;
   cellValue: string;
   sheetData: { [key: string]: string };
+  formulaData: { [key: string]: string };
   isUpdated: boolean;
 }
 
@@ -20,8 +22,10 @@ const evaluator = Evaluator.getInstance();
 const Cell: React.FC<CellProps> = ({
   cellId,
   onUpdate,
+  onFormulaUpdate,
   cellValue,
   sheetData,
+  formulaData,
   isUpdated
 }) => {
   const [value, setValue] = useState(cellValue);
@@ -29,23 +33,9 @@ const Cell: React.FC<CellProps> = ({
   const [error, setError] = useState(false);
   //const [rendered, setRendered] = useState(false);
 
-  // useEffect(() => {
-  //   if (!rendered && !isUpdated && cellValue && cellValue !== "" && cellValue !== "EOF") {
-  //     initialEvaluate(); // Evaluate the loaded cell content
-  //     setRendered(true);
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [sheetData]);
-
   useEffect(() => {
     setValue(cellValue);
   }, [cellValue])
-
-  /*
-  useEffect(() => {
-    setValue(isUpdated ? cellValue : sheetData[cellId]);
-  }, [cellValue, isUpdated, sheetData, cellId]);
-  */
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value;
@@ -57,13 +47,23 @@ const Cell: React.FC<CellProps> = ({
   const handleBlur = () => {
     if (value !== prevValue) {
       console.log("CHANGE DETECTED")
+      onFormulaUpdate(value, cellId);
       evaluateAndUpdate();
+    } else {
+      setValue(cellValue);
+    }
+  };
+
+  const handleFocus = () => {
+    if (formulaData[cellId]) {
+      setPrevValue(formulaData[cellId]);
+      setValue(formulaData[cellId]);
     }
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
-      evaluateAndUpdate();
+      handleBlur();
     }
   };
 
@@ -96,38 +96,6 @@ const Cell: React.FC<CellProps> = ({
     setPrevValue(result);
   };
 
-  /*
-  const initialEvaluate = () => {
-    if (cellValue === "") {
-      setValue("");
-      setPrevValue("");
-      return;
-    }
-    evaluator.setContext(sheetData);
-    let result: string = "";
-    let isError = false;
-
-    try {
-      const parsedNode = parser.parse(cellValue);
-      result = evaluator.evaluate(parsedNode);
-      console.log('Initial Evaluation Result:', result);
-    } catch (error) {
-      isError = true;
-      //console.log(error)
-    }
-
-    if (isError) {
-      result = cellValue;
-      setError(true);
-      // setTimeout(() => {
-      //   setError(false);
-      // }, ERROR_TIMEOUT);
-    }
-    setValue(result);
-    setPrevValue(result);
-  };
-  */
-
   return (
     <td key={cellId} className={`cell ${error ? 'error' : ''} ${isUpdated ? 'updated-cell' : ''}`}>
       <input
@@ -136,6 +104,7 @@ const Cell: React.FC<CellProps> = ({
         onChange={handleChange}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
+        onFocus={handleFocus}
         className="cell-input"
         style={{ color: isUpdated ? 'blue' : 'inherit' }}
       />

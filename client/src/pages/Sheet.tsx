@@ -63,6 +63,7 @@ const Sheet: React.FC = () => {
 
   // Sheet state
   const [sheetData, setSheetData] = useState<SheetDataMap>(initialSheetData);
+  const [formulaData, setFormulaData] = useState<SheetDataMap>({});
   const [refsToPublish, setRefsToPublish] = useState<Set<string>>(new Set());
   const [incomingUpdates, setIncomingUpdates] = useState<SheetDataMap>({});
   const [sheetRelationship, setSheetRelationship] = useState<SheetRelationship>("SUBSCRIBER");
@@ -137,6 +138,26 @@ const Sheet: React.FC = () => {
 
       return updatedSheetData;
     });
+  };
+
+  /**
+   * Updates the formula table with new cell value formula.
+   *
+   * @param {string} value - new cell value formula
+   * @param {string} cellId - the cell to update
+   *
+   * @author rishavsarma5
+   */
+  const handleFormulaUpdate = (value: string, cellId: string) => {
+    setFormulaData((prevFormulaData) => {
+      const functionPattern = /^=(IF|SUM|MIN|AVG|MAX|CONCAT|DEBUG|COPY)/;
+
+      if (value && (functionPattern.test(value) || value.startsWith("="))) {
+          return prevFormulaData = { ...prevFormulaData, [cellId]: value };
+      }
+
+      return prevFormulaData;
+    });  
   };
 
   /**
@@ -228,6 +249,21 @@ const Sheet: React.FC = () => {
       ...prevPendingCells,
       ...cellsToUpdate.filter((cellId) => !prevPendingCells.includes(cellId)),
     ]);
+
+    updateFormulaData(updates);
+  };
+
+  /**
+   * Updates the formula data map based on incoming updates.
+   *
+   * @param {SheetDataMap} updates - current state of sheetData
+   *
+   * @author rishavsarma5
+   */
+  const updateFormulaData = async (updates: SheetDataMap) => {
+    Object.keys(updates).forEach((cellId) => {
+      handleFormulaUpdate(updates[cellId], cellId);
+    });
   };
 
   /**
@@ -302,7 +338,9 @@ const Sheet: React.FC = () => {
     updatedSheetData: SheetDataMap,
     endpoint: SendUpdatesEndpoint
   ) => {
-    const payload = buildPayload(refs, updatedSheetData);
+    const evaluatedPayload = buildPayload(refs, updatedSheetData);
+    const formulaPayload = buildPayload(refs, formulaData);
+    const payload = evaluatedPayload + formulaPayload;
 
     const allUpdates = {
       id: "",
@@ -453,6 +491,7 @@ const Sheet: React.FC = () => {
   const resolvePendingUpdates = () => {
     const subscriptionUpdates = pendingSubUpdates.current.updates;
     const publishedUpdates = pendingPubUpdates.current.updates;
+    updateFormulaData(publishedUpdates);
     evaluateIncomingUpdates(subscriptionUpdates);
     setSheetData((prevSheetData) => ({
       ...prevSheetData,
@@ -622,7 +661,9 @@ const Sheet: React.FC = () => {
             key={cellId}
             cellId={cellId}
             onUpdate={handleCellUpdate}
+            onFormulaUpdate={handleFormulaUpdate}
             sheetData={sheetData}
+            formulaData={formulaData}
             cellValue={cellValue}
             isUpdated={isUpdated}
           />
