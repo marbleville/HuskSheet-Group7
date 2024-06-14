@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import Popup from "../components/Popup";
 import Cell from "./Cell";
@@ -29,6 +29,7 @@ import Parser from "../functions/Parser";
 import Evaluator from "../functions/Evaluator";
 import findDependencies from "../utils/findDependencies";
 import toCSV from "../utils/toCSV";
+import { validateSheet } from "../utils/validateSheet";
 
 // Constants
 const INITIALSHEETROWSIZE = 10;
@@ -50,7 +51,7 @@ const evaluator = Evaluator.getInstance();
  * @author kris-amerman
  */
 const Sheet: React.FC = () => {
-  // Receive contextual information about sheet from the dashboard page. TODO -- maybe use URL
+  // Receive contextual information about sheet.
   const sheetInfo = useParams<{ publisher: string; sheet: string }>();
   const navigate = useNavigate();
 
@@ -64,12 +65,10 @@ const Sheet: React.FC = () => {
   const [sheetData, setSheetData] = useState<SheetDataMap>(initialSheetData);
   const [refsToPublish, setRefsToPublish] = useState<Set<string>>(new Set());
   const [incomingUpdates, setIncomingUpdates] = useState<SheetDataMap>({});
-  const [sheetRelationship, setSheetRelationship] =
-    useState<SheetRelationship>("SUBSCRIBER");
-  const [latestPublishedUpdateID, setLatestPublishedUpdateID] =
-    useState<string>("0");
-  const [latestSubscriptionUpdateID, setLatestSubscriptionUpdateID] =
-    useState<string>("0");
+  const [sheetRelationship, setSheetRelationship] = useState<SheetRelationship>("SUBSCRIBER");
+  const [isRelationshipSet, setIsRelationshipSet] = useState<boolean>(false);
+  const [latestPublishedUpdateID, setLatestPublishedUpdateID] = useState<string>("0");
+  const [latestSubscriptionUpdateID, setLatestSubscriptionUpdateID] = useState<string>("0");
   const [popupMessage, setPopupMessage] = useState<string | null>(null);
 
   const [numRows, setNumRows] = useState(INITIALSHEETROWSIZE);
@@ -78,9 +77,7 @@ const Sheet: React.FC = () => {
   const pendingSubUpdates = useRef<UpdatesWithId>(BASE_SUBSCRIPTION_UPDATES);
   const pendingPubUpdates = useRef<UpdatesWithId>(BASE_PUBLISHED_UPDATES);
 
-  const [pendingEvaluationCells, setPendingEvaluationCells] = useState<
-    string[]
-  >([]);
+  const [pendingEvaluationCells, setPendingEvaluationCells] = useState<string[]>([]);
 
   /**
    * Actions to perform on first load.
@@ -88,58 +85,25 @@ const Sheet: React.FC = () => {
    * @author kris-amerman
    */
   useEffect(() => {
-    // The following functions are necessary to check whether the provided URL
-    // params are valid. If the provided publisher/sheet DNE, navigate to /dashboard
-    const handlePublishersSuccess = (data: Result) => {
-      const publishers = data.value.map((item: Argument) => item.publisher);
-      if (sheetInfo.publisher && publishers.includes(sheetInfo.publisher)) {
-        checkValidSheets();
-      } else {
-        navigate("/dashboard");
+    const onPageLoad = async () => {
+      await validateSheet(sheetInfo, navigate);
+
+      // If the publisher for the current sheet is the same as the current user,
+      // set the sheetRelationship to OWNER
+      if (sheetInfo.publisher === sessionStorage.getItem("username")) {
+        setSheetRelationship("OWNER");
       }
+      setIsRelationshipSet(true);
     };
 
-    const handleSheetsSuccess = (data: Result) => {
-      const sheets = data.value.map((item: Argument) => item.sheet);
-      if (!sheetInfo.sheet || !sheets.includes(sheetInfo.sheet)) {
-        navigate("/dashboard");
-      }
-    };
-
-    const checkValidSheets = () => {
-      fetchWithAuth(
-        "getSheets",
-        {
-          method: "POST",
-          body: JSON.stringify({ publisher: sheetInfo.publisher }),
-        },
-        handleSheetsSuccess,
-        () => {
-          navigate("/dashboard");
-        }
-      );
-    };
-
-    fetchWithAuth(
-      "getPublishers",
-      { method: "GET" },
-      handlePublishersSuccess,
-      () => {
-        navigate("/dashboard");
-      }
-    );
-
-    // If the publisher for the current sheet is the same as the current user,
-    // set the sheetRelationship to OWNER
-    if (sheetInfo.publisher === sessionStorage.getItem("username")) {
-      setSheetRelationship("OWNER");
-    }
+    onPageLoad();
   }, []);
 
   useEffect(() => {
-    // Initial request for updates on page load
-    requestUpdates();
-  }, [sheetRelationship]);
+    if (isRelationshipSet) {
+      requestUpdates();
+    }
+  }, [isRelationshipSet]);
 
   /**
    * Updates the sheetData with new cell value.
@@ -562,10 +526,10 @@ const Sheet: React.FC = () => {
       updatedRefs.add(ref);
     });
 
-    publishRefs(updatedRefs, sheetData, "updatePublished");
+    await publishRefs(updatedRefs, sheetData, "updatePublished");
 
     // "Correct" the subscriber(s)
-    publishRefs(updatedRefs, sheetData, "updateSubscription");
+    await publishRefs(updatedRefs, sheetData, "updateSubscription");
 
     // Clear incomingUpdates
     setIncomingUpdates({});

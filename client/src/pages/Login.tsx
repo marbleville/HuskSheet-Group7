@@ -117,8 +117,9 @@ function Login() {
     <div className="login-container">
       <div className="loginPage">
         <h1>Welcome to HuskSheets!</h1>
-        <br />
-        <h2>Please enter your username and password below.</h2>
+        <h4 style={{"textAlign": "center"}}>
+          If this is your first time logging in, an account will be created for you.
+        </h4>
         <div className="inputContainer">
           <input
             value={username}

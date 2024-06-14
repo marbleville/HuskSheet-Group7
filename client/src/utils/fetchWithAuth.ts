@@ -55,6 +55,8 @@ const fetchWithAuth = async (
   }
 
   try {
+    console.log(`ARGUMENT`)
+    console.log(options.body)
     const response = await fetch(url, options);
 
     // Immediately fail if "Unauthorized"
