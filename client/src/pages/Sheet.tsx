@@ -64,12 +64,18 @@ const Sheet: React.FC = () => {
   // Sheet state
   const [sheetData, setSheetData] = useState<SheetDataMap>(initialSheetData);
   const [evaluatedCellData, setEvaluatedCellData] = useState<SheetDataMap>({});
+  const [dependencyMap, setDependencyMap] = useState<{
+    [key: string]: string[];
+  }>({});
   const [refsToPublish, setRefsToPublish] = useState<Set<string>>(new Set());
   const [incomingUpdates, setIncomingUpdates] = useState<SheetDataMap>({});
-  const [sheetRelationship, setSheetRelationship] = useState<SheetRelationship>("SUBSCRIBER");
+  const [sheetRelationship, setSheetRelationship] =
+    useState<SheetRelationship>("SUBSCRIBER");
   const [isRelationshipSet, setIsRelationshipSet] = useState<boolean>(false);
-  const [latestPublishedUpdateID, setLatestPublishedUpdateID] = useState<string>("0");
-  const [latestSubscriptionUpdateID, setLatestSubscriptionUpdateID] = useState<string>("0");
+  const [latestPublishedUpdateID, setLatestPublishedUpdateID] =
+    useState<string>("0");
+  const [latestSubscriptionUpdateID, setLatestSubscriptionUpdateID] =
+    useState<string>("0");
   const [popupMessage, setPopupMessage] = useState<string | null>(null);
 
   const [numRows, setNumRows] = useState(INITIALSHEETROWSIZE);
@@ -78,7 +84,9 @@ const Sheet: React.FC = () => {
   const pendingSubUpdates = useRef<UpdatesWithId>(BASE_SUBSCRIPTION_UPDATES);
   const pendingPubUpdates = useRef<UpdatesWithId>(BASE_PUBLISHED_UPDATES);
 
-  const [pendingEvaluationCells, setPendingEvaluationCells] = useState<string[]>([]);
+  const [pendingEvaluationCells, setPendingEvaluationCells] = useState<
+    string[]
+  >([]);
 
   /**
    * Actions to perform on first load.
@@ -119,38 +127,46 @@ const Sheet: React.FC = () => {
       console.log(`got to handle cell ${cellId} update with value: ${value}`);
       const updatedSheetData = { ...prevSheetData, [cellId]: value };
 
-      setPendingEvaluationCells((prevPendingCells) => [
-        ...prevPendingCells,
-        cellId,
-      ]);
+      const newPendingEvaluationCells = [...pendingEvaluationCells, cellId];
+      setPendingEvaluationCells(newPendingEvaluationCells);
 
       // Track dependencies for this cellId
       const dependencies = findDependencies(updatedSheetData, cellId);
-      if (dependencies.length !== 0) {
+
+      // Update the dependency map
+      setDependencyMap((prevDependencyMap) => {
+        const newDependencyMap = { ...prevDependencyMap };
         dependencies.forEach((dep) => {
-          if (!pendingEvaluationCells.includes(dep)) {
-            setPendingEvaluationCells((prevPendingCells) => [
-              ...prevPendingCells,
-              dep,
-            ]);
+          if (!newDependencyMap[dep]) {
+            newDependencyMap[dep] = [];
+          }
+          if (!newDependencyMap[dep].includes(cellId)) {
+            newDependencyMap[dep].push(cellId);
           }
         });
-      } 
+        return newDependencyMap;
+      });
 
-      console.log(`cell value: ${value}`);
-      console.log(`prev sheet cell value: ${prevSheetData[cellId]}`);
+      console.log(`dependency graph: ${JSON.stringify(dependencyMap)}`);
 
+      dependencyMap[cellId]?.forEach(dep => {
+        console.log(`dep ${dep} added to eval list`);
+        const newPendingEvaluationCells = [...pendingEvaluationCells, dep];
+        setPendingEvaluationCells(newPendingEvaluationCells);
+      });
+
+      //console.log(`cell value: ${value}`);
+      //console.log(`prev sheet cell value: ${prevSheetData[cellId]}`);
 
       // If the value is different from the previous one, or if the value is empty, mark it as manually updated
       if (value !== prevSheetData[cellId]) {
-        console.log("got here");
         setRefsToPublish((prevManualUpdates) =>
           new Set(prevManualUpdates).add(cellId)
         );
       }
 
-      console.log(`refs: ${JSON.stringify(refsToPublish)}`)
-      console.log(`pending cells: ${JSON.stringify(pendingEvaluationCells)}`)
+      //console.log(`refs: ${JSON.stringify(refsToPublish)}`)
+      //console.log(`pending cells: ${JSON.stringify(pendingEvaluationCells)}`)
 
       return updatedSheetData;
     });
@@ -167,8 +183,6 @@ const Sheet: React.FC = () => {
     const evaluatedData: SheetDataMap = {};
     const pendingCellsSet = new Set(pendingEvaluationCells);
 
-    console.log("got to here next");
-
     // determines if the dependencies of a cell are in pendingCellsSet
     const areDependenciesResolved = (dependencies: string[]): boolean => {
       return dependencies.every((dep) => !pendingCellsSet.has(dep));
@@ -181,8 +195,8 @@ const Sheet: React.FC = () => {
 
       // Find cells that can be evaluated in this iteration
       for (const cellId of pendingCellsSet) {
-        console.log("dependents");
-        console.log(`cell id: ${cellId}`);
+        //console.log("dependents");
+        //console.log(`cell id: ${cellId}`);
 
         const dependencies = findDependencies(sheetData, cellId);
         if (dependencies.length == 0) {
@@ -202,12 +216,12 @@ const Sheet: React.FC = () => {
         break;
       }
 
-      console.log(`cells to eval ${JSON.stringify(cellsToEvaluate)}`);
+      //console.log(`cells to eval ${JSON.stringify(cellsToEvaluate)}`);
 
       // Evaluate cells in parallel
       const promises = cellsToEvaluate.map(async (cellId) => {
         const cellValue = sheetData[cellId];
-        console.log(`cell ${cellId} value: ${cellValue}`);
+        //console.log(`cell ${cellId} value: ${cellValue}`);
         try {
           const parsedNode = parser.parse(cellValue);
           evaluator.setContext(sheetData);
@@ -216,6 +230,12 @@ const Sheet: React.FC = () => {
 
           // Remove evaluated cell from pending set only if successful
           pendingCellsSet.delete(cellId);
+          const dependents = dependencyMap[cellId] || [];
+          dependents.forEach((dep) => {
+            if (!pendingCellsSet.has(dep)) {
+              pendingCellsSet.add(dep);
+            }
+          });
         } catch (error) {
           console.error(`Error evaluating formula in ${cellId}:`, error);
         }
@@ -235,8 +255,6 @@ const Sheet: React.FC = () => {
 
     // Clear pending cells
     setPendingEvaluationCells([]);
-
-    console.log(`evaluated data set: ${JSON.stringify(evaluatedData)}`);
 
     setEvaluatedCellData((prevData) => ({
       ...prevData,
@@ -260,17 +278,20 @@ const Sheet: React.FC = () => {
     // Add cells to pendingCells for evaluation
     setPendingEvaluationCells((prevPendingCells) => [
       ...prevPendingCells,
-      ...Object.keys(updates).filter((cellId) => !prevPendingCells.includes(cellId)),
+      ...Object.keys(updates).filter(
+        (cellId) => !prevPendingCells.includes(cellId)
+      ),
     ]);
   };
 
   /**
-   * If there are pending cells to evaluate before render, this will trigger the function to 
+   * If there are pending cells to evaluate before render, this will trigger the function to
    * evaluate them.
    *
    * @author rishavsarma5
    */
   useEffect(() => {
+    console.log(`length of pending eval cells ${pendingEvaluationCells.length}`)
     if (pendingEvaluationCells.length > 0) {
       evaluatePendingCells();
     }

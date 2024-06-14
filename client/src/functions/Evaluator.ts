@@ -7,6 +7,7 @@ import {
   ReferenceNode,
   StringNode,
 } from "./Nodes";
+import Parser from "./Parser";
 
 /**
  * Creates a evalutor for the parsing of the different node objects
@@ -236,8 +237,9 @@ class Evaluator {
     const newPlace: string = args[1];
     console.log(val);
     console.log(newPlace);
+    const result = Evaluator.getInstance().evaluate(Parser.getInstance().parse(val));
     // Need to have access to the reference string do not convert here
-    this.context[newPlace] = val;
+    this.context[newPlace] = result;
 
     return this.context[newPlace];
   }
