@@ -36,7 +36,7 @@ class Evaluator {
    * Allows the sheet data to populate the context hashmap
    *
    * @param context hash map of the sheet data
-   *  @author eduardo-ruiz-garay
+   * @author eduardo-ruiz-garay
    */
   public setContext(context: { [key: string]: string }) {
     this.context = context;
@@ -47,10 +47,50 @@ class Evaluator {
    *
    * @param reference
    * @returns
-   *  @author eduardo-ruiz-garay
+   * @author eduardo-ruiz-garay
    */
   public getContextValue(reference: string): string {
     return this.context[reference];
+  }
+
+  /**
+   * Returns a boolean for if a range operation exists in the function call node.
+   *
+   * @param expressions the expressions of a function call node
+   * @returns boolean
+   * @author rishavsarma5
+   */
+  public checkForRangeOp(expressions: ExpressionNode[]): boolean {
+    for (const exp of expressions) {
+      if (exp instanceof OperationNode) {
+        if (exp.op === ":") {
+          return true;
+        } else {
+          continue;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns the Expression Node with the range operation in the function call node.
+   *
+   * @param expressions the expressions of a function call node
+   * @returns OperationNode<ExpressionNode> | null
+   * @author rishavsarma5
+   */
+  public getRangeOpEx(expressions: ExpressionNode[]): OperationNode<ExpressionNode> | null {
+    for (const exp of expressions) {
+      if (exp instanceof OperationNode) {
+        if (exp.op === ":") {
+          return exp;
+        } else {
+          continue;
+        }
+      }
+    }
+    return null;
   }
 
   /**
@@ -62,11 +102,17 @@ class Evaluator {
    */
   evaluate(node: ExpressionNode): string {
     if (node instanceof FunctionCallNode) {
-      if (
-        node.func === "SUM" &&
-        node.expressions.at(0) instanceof OperationNode
-      ) {
-        return this.sum(this.rangeOp(node.expressions.at(0))).toString();
+      if (this.checkForRangeOp(node.expressions)) {
+        const rangeExp = this.getRangeOpEx(node.expressions);
+        if (rangeExp) {
+          const args =  this.rangeOp(rangeExp).map((arg: number) =>
+            arg.toString()
+          );
+          const result = this.applyFunc(node.func, args);
+          return typeof result === "number" ? result.toString() : result;
+        } else {
+          throw new Error(`Could not access range op: ${rangeExp}`);
+        }
       } else {
         const args = node.expressions.map((arg: ExpressionNode) =>
           this.evaluate(arg)
@@ -175,7 +221,8 @@ class Evaluator {
         for (let j = parseInt(colStart); j <= parseInt(colEnd); j++) {
           const fcol = this.getHeaderLetter(i);
           const str = "$" + fcol + j.toString();
-          res.push(parseInt(this.context[`${str}`]));
+          const value = this.context[`${str}`];
+          res.push(value ? parseInt(value) : 0);
         }
       }
     }
