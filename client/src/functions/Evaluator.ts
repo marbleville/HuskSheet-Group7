@@ -69,7 +69,11 @@ class Evaluator {
       return node.value;
     } else if (node instanceof ReferenceNode) {
       //console.log(`value of cell ${node.ref}: ${this.context[node.ref]}`);
-      return this.context[node.ref] ?? node.ref;
+      if (this.context[node.ref] === "") {
+        return node.ref;
+      } else {
+        return this.context[node.ref];
+      }
     } else if (node instanceof OperationNode) {
       const left = this.evaluate(node.left);
       const right = this.evaluate(node.right);
