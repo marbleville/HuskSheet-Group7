@@ -48,7 +48,6 @@ describe("Evaluator Test", () => {
   it("Checks that evaluator works for a given parser", () => {
     const func: string = "=SUM($A1, $A3)";
     const res: ExpressionNode = Parser.getInstance().parse(func);
-    console.log("Parsed result:", res); // Debug log
     const expected: ExpressionNode = new FunctionCallNode("SUM", [
       new ReferenceNode("$A1"),
       new ReferenceNode("$A3"),
@@ -63,14 +62,12 @@ describe("Evaluator Test", () => {
 
     const expected1: string = "5"; // Expected result of 2 + 3
     const result: string = evaluator.evaluate(res);
-    console.log("Evaluation result:", result); // Debug log
     expect(result).toEqual(expected1);
   });
 
   it("Checks that evaluator works for a given parser", () => {
     const func: string = "=SUM($A2, $A3)";
     const res: ExpressionNode = Parser.getInstance().parse(func);
-    console.log("Parsed result:", res); // Debug log
     const expected: ExpressionNode = new FunctionCallNode("SUM", [
       new ReferenceNode("$A2"),
       new ReferenceNode("$A3"),
@@ -85,7 +82,6 @@ describe("Evaluator Test", () => {
 
     const expected1: string = "4"; // Expected result of 2 + 3
     const result: string = evaluator.evaluate(res);
-    console.log("Evaluation result:", result); // Debug log
     expect(result).toEqual(expected1);
   });
   // // Have to implement range and copy

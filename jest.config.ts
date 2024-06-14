@@ -11,6 +11,7 @@ const config: Config.InitialOptions = {
 		"!client/**/config/*",
 		"!**/*.d.ts",
 		"!**/types.ts",
+    "!server/src/server.ts"
 	],
 };
 
