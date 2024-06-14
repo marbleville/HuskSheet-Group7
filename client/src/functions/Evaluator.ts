@@ -311,6 +311,8 @@ class Evaluator {
       case "COPY":
         return this.copyFunction(args);
       case "DEBUG":
+        // output value of debug to console (standard output)
+        console.log(args[0]);
         return args[0];
       default:
         throw new Error(`Unknown function: ${func}`);
