@@ -15,7 +15,7 @@ import generateSheetDataMap from "../utils/generateSheetDataMap";
 import buildPayload from "../utils/buildPayload";
 import getUnreconciledUpdates from "../utils/getUnreconciledUpdates";
 
-import { Argument, Result } from "../../../types/types";
+import { Argument } from "../../../types/types";
 import {
   SheetDataMap,
   SheetRelationship,
@@ -259,16 +259,10 @@ const Sheet: React.FC = () => {
    * @author rishavsarma5
    */
   const deleteRow = () => {
-    const updatedSheetData = deleteRowData(
-      sheetData,
-      numRows,
-      numCols,
-      handleCellUpdate
-    );
+    deleteRowData(sheetData, numRows, numCols, handleCellUpdate);
     setNumRows((prevNumRows) =>
       prevNumRows > 1 ? prevNumRows - 1 : prevNumRows
     );
-    setSheetData(updatedSheetData);
   };
 
   /**
@@ -288,16 +282,10 @@ const Sheet: React.FC = () => {
    * @author rishavsarma5
    */
   const deleteCol = () => {
-    const updatedSheetData = deleteColData(
-      sheetData,
-      numCols,
-      numRows,
-      handleCellUpdate
-    );
+    deleteColData(sheetData, numCols, numRows, handleCellUpdate);
     setNumCols((prevNumCols) =>
       prevNumCols > 1 ? prevNumCols - 1 : prevNumCols
     );
-    setSheetData(updatedSheetData);
   };
 
   /**

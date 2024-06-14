@@ -38,8 +38,6 @@ const deleteRowData = (
             handleCellUpdate("", cellID);
         }
     }
-
-    return sheetData;
 };
 
 export default deleteRowData;
