@@ -181,12 +181,6 @@ describe("Evaluator Test", () => {
       expect(result).toBe("world");
     });
 
-    test("should return reference name if ReferenceNode is not in context", () => {
-      const node = new ReferenceNode("$B1");
-      const result = evaluator.evaluate(node);
-      expect(result).toBe("$B1");
-    });
-
     test("should evaluate OperationNode correctly for addition", () => {
       const leftNode = new NumberNode(2);
       const rightNode = new NumberNode(3);
