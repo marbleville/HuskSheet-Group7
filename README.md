@@ -3,8 +3,13 @@
 ## To Run the Project
 
 -   `make build`
+
     -   Builds and runs the project and runs all tests in one step
     -   Note: The tests take a moment to run
+
+-   To change ther base API URL
+    -   Change the `BASE_URL` variable in `client/src/config/clientConfig.ts`
+        to one of the given const values
 
 ## Project status
 
@@ -26,9 +31,7 @@
     -   We have optimized the server to reduce network overhead to the minimum
         level required and we have reduced the number of db queries necessary
         in normal operation
-- Export sheet as CSV
-- Duplicate sheet names
+-   Export sheet as CSV
+-   Duplicate sheet names
     -   One user may have multiple sheets with the same name
     -   Each occurance will have a number automatically appended to the end of the sheet
-
-  
