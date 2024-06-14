@@ -10,6 +10,7 @@ import { checkPayloadFormat, sanitize } from "../utils";
  *
  * @param argument Argument object containing the publisher, sheet, and payload
  *                 for the update
+ * @param clientName The username of the client making the request
  *
  * @author marbleville
  */
@@ -26,19 +27,14 @@ async function updateSubscription(
 	const queryString: string = DatabaseQueries.updateSubscription(
 		sheetName,
 		publisher,
-		// We need to sanitize the paylod of '' to prevent SQL errors
 		payload,
 		clientName
 	);
 
-	try {
-		if (checkPayloadFormat(payload) === false) {
-			throw new Error("Invalid payload format");
-		}
-		await database.query<GetUpdateRow>(queryString);
-	} catch (error) {
-		throw error;
+	if (checkPayloadFormat(payload) === false) {
+		throw new Error("Invalid payload format");
 	}
+	await database.query<GetUpdateRow>(queryString);
 }
 
 export { updateSubscription };

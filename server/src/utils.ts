@@ -185,14 +185,14 @@ async function runEndpointFuntion(
 ): Promise<void> {
 	let result: Result;
 
-	if (!(await authenticate(req.headers.authorization))) {
-		sendError(res, func.name, new Error("Unauthorized"));
-		return;
-	}
-
 	try {
+		if (!(await authenticate(req.headers.authorization))) {
+			throw new Error("Unauthorized");
+		}
+
 		let value: Argument[] | Argument | void;
 
+		// these two functions take an arg, the rest don't
 		if (func.name !== "register" && func.name !== "getPublishers") {
 			let argument: Argument = getArgument(req);
 			value = await func(argument);
@@ -207,6 +207,16 @@ async function runEndpointFuntion(
 	}
 }
 
+/**
+ * Sends an error to the client with the given response object, function name,
+ * and error
+ *
+ * @param res the response object to send to the error to
+ * @param functionName the name of the function that threw the error
+ * @param error the error that was thrown
+ *
+ * @author marbleville
+ */
 function sendError(res: Response, functionName: string, error: any): void {
 	const err: Error = error as Error;
 	let errorMessage: string = `${functionName}: ${err.message}`;
@@ -220,6 +230,7 @@ function sendError(res: Response, functionName: string, error: any): void {
  * @param req the request object from the client
  *
  * @returns the argument object from body of the request
+ *
  * @throws an error if the body is empty
  *
  * @author marbleville
@@ -240,7 +251,9 @@ function getArgument(req: Request): Argument {
  * @param authHeader the Authorization header from the request with the form of
  *   username:password encoded in base64
  *
- * @returns [username, password] string array
+ * @returns [username, password] string tuple
+ *
+ * @throws an error if the Authorization header is not provided
  *
  * @author kris-amerman
  */
@@ -292,6 +305,8 @@ async function doesUserExist(
  * @param authHeader The authorization header from the request
  *
  * @returns True if the user is authenticated, false otherwise
+ *
+ * @throws Error if an error occurs when authenticating the user
  *
  * @author marbleville
  */
