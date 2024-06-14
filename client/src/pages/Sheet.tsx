@@ -522,6 +522,7 @@ const Sheet: React.FC = () => {
     // Update sheetData with incomingUpdates
     setSheetData((prevSheetData) => {
       const newSheetData = { ...prevSheetData, ...incomingUpdates };
+      updateFormulaData(incomingUpdates);
 
       // Include incoming updates in the refs to publish
       const updatedRefs = new Set<string>();
