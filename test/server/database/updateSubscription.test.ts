@@ -44,7 +44,7 @@ describe("updateSubscription", () => {
 		let updates = await getUpdatesForPublished(
 			assembleTestArgumentObject("rishav", "test1", "1", "")
 		);
-		expect(updates.payload.split("\n").includes(data)).toEqual(false);
+		expect(updates.payload.split("\n").includes(data)).toEqual(true);
 
 		updates = await getUpdatesForSubscription(
 			assembleTestArgumentObject("rishav", "test1", "1", "")

@@ -129,7 +129,7 @@ export default class DatabaseQueries {
 		sheetName: string,
 		id: number
 	): string {
-		return DatabaseQueries.getUpdatesHelper(publisher, sheetName, id, "<>");
+		return DatabaseQueries.getUpdatesHelper(publisher, sheetName, id, "FALSE");
 	}
 
 	/**
@@ -147,7 +147,7 @@ export default class DatabaseQueries {
 		sheetName: string,
 		id: number
 	): string {
-		return DatabaseQueries.getUpdatesHelper(publisher, sheetName, id, "=");
+		return DatabaseQueries.getUpdatesHelper(publisher, sheetName, id, "TRUE");
 	}
 
 	/**
@@ -171,7 +171,7 @@ export default class DatabaseQueries {
       INNER JOIN sheets ON updates.sheet=sheets.sheetid 
       INNER JOIN publishers ON sheets.owner=publishers.userid
       WHERE publishers.username='${publisher}' AND sheets.sheetname='${sheetName}'
-      AND updates.owner${operator}sheets.owner AND updates.updateid>${id};`;
+      AND updates.accepted=${operator} AND updates.updateid>${id};`;
 	}
 
 	/**
@@ -231,7 +231,7 @@ export default class DatabaseQueries {
 			sheetName,
 			publisher,
 			payload,
-			"NULL",
+			"FALSE",
 			updatePublisher
 		);
 	}
