@@ -1,19 +1,29 @@
-import buildPayload from "../../../client/src/utils/";
+import buildPayload from "../../../client/src/utils/buildPayload";
 import { SheetDataMap } from "../../../client/src/types";
 
-describe("addColData", () => {
-	it("should add all the rows", () => {
-    let numRows = 5;
-    let numCols = 7;
+describe("addBuildPayload", () => {
     let data: SheetDataMap = {};
-    expect(addColData(data, numCols, numRows)).toEqual({"$H1": "", "$H2": "", "$H3": "", "$H4": "", "$H5": ""} as SheetDataMap);
+    data["$A1"] = "test";
+    data["$A2"] = "test1";
+    data["$AB1"] = "test2";
+    data["$B1"] = "test3";
+    data["$B5"] = "test4";
+    data["$D12"] = "test5";
+    data["$D3"] = "test6";
+
+	it("gets 3 cells", () => {
+    let set = new Set(["$A1", "$AB1", "$D12"]);
+    expect(buildPayload(set, data)).toEqual("$A1 test\n$AB1 test2\n$D12 test5\n");
   });
 
-	it("should add all the rows", () => {
-    let numRows = 7;
-    let numCols = 5;
-    let data: SheetDataMap = {};
-    expect(addColData(data, numCols, numRows)).toEqual({"$F1": "", "$F2": "", "$F3": "", "$F4": "", "$F5": "", "$F6": "", "$F7": ""} as SheetDataMap);
+  it("gets no cells", () => {
+    let set = new Set([]);
+    expect(buildPayload(set, data)).toEqual("");
+  });
+
+  it("all cells", () => {
+    let set = new Set(["$A1", "$A2", "$B1", "$B5", "$D3", "$AB1", "$D12"]);
+    expect(buildPayload(set, data)).toEqual("$A1 test\n$A2 test1\n$AB1 test2\n$B1 test3\n$B5 test4\n$D12 test5\n$D3 test6\n");
   });
 });
 
