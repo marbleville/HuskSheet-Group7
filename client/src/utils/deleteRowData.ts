@@ -12,8 +12,6 @@ import getHeaderLetter from "./getHeaderLetter";
  *        The current number of columns
  * @param {function} handleCellUpdate 
  *        The function to handle cell updates
- * @returns {SheetDataMap} 
- *        The updated sheet data with the last row deleted
  * 
  * @author rishavsarma5
  */
