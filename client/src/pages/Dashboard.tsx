@@ -62,6 +62,7 @@ function Dashboard() {
    * Fetches sheets for a given publisher.
    *
    * @param {string} publisher - The publisher whose sheets are to be fetched.
+   * 
    * @author kris-amerman
    */
   const fetchSheets = (publisher: string) => {
@@ -107,11 +108,31 @@ function Dashboard() {
       publisher: username,
       sheet: sheetName,
     };
+
+    // Get the current list of sheets for the publisher
+    const existingSheets = sheetsByPublisher[username] || [];
+
     fetchWithAuth(
       "createSheet",
       { method: "POST", body: JSON.stringify(argument) },
       () => {
-        navigate(`/${argument.publisher}/${argument.sheet}`, { state: argument });
+        // Fetch the updated list of sheets for the publisher
+        fetchWithAuth(
+          "getSheets",
+          { method: "POST", body: JSON.stringify({ publisher: username }) },
+          (data) => {
+            // Find the new sheet by comparing the old and new list of sheets
+            const newSheet = data.value.find(sheet => !existingSheets.some(
+              existingSheet => existingSheet.sheet === sheet.sheet
+            ));
+
+            if (newSheet) {
+              navigate(`/${newSheet.publisher}/${newSheet.sheet}`, { state: newSheet });
+            } else {
+              console.error("Failed to find the new sheet after creation.");
+            }
+          }
+        );
       }
     );
   };
