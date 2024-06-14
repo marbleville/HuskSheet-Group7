@@ -19,11 +19,11 @@ class Tokenizer {
     ["WHITESPACE", /^\s+/], // Matches whitespace
   ];
 
-  //Loops over the index of a possible number
+  // Loops over the index of a possible number
   protected index: number;
   protected formula: string;
 
-  //Singleton pattern to create an instance and pass it.
+  // Singleton pattern to create an instance and pass it.
   public static getInstance() {
     if (Tokenizer.instance == null) {
       Tokenizer.instance = new Tokenizer();
@@ -51,10 +51,12 @@ class Tokenizer {
     const tokens: string[] = [];
     let openParenthesesCount = 0;
 
+    // parses the string
     while (this.index < this.formula.length) {
       const token = this.nextToken();
       if (token !== null) {
         tokens.push(token);
+        // checks if there are unmatched parentheses
         if (token === "(") {
           openParenthesesCount++;
         } else if (token === ")") {
@@ -89,6 +91,7 @@ class Tokenizer {
       throw new Error("Unexpected EOF");
     }
 
+    // uses regex to match string substrings into tokens
     for (const [type, regex] of Tokenizer.tokenSpec) {
       const match = regex.exec(substr);
       if (match !== null) {
