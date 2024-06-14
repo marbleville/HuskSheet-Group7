@@ -10,8 +10,8 @@ import getHeaderLetter from "./getHeaderLetter";
  *        The current number of rows
  * @param {number} numCols 
  *        The current number of columns
- * @param {React.MutableRefObject<SheetDataMap>} prevCellDataRef 
- *        A reference object to store the previous cell data
+ * @param {function} handleCellUpdate 
+ *        The function to handle cell updates
  * @returns {Object} 
  *        The updated sheet data with the new row added
  * 
@@ -21,6 +21,7 @@ const addRowData = (
     sheetData: SheetDataMap, 
     numRows: number, 
     numCols: number, 
+    handleCellUpdate: (value: string, cellID: string) => void
 ) => {
     const newSheetData = { ...sheetData };
     const newRowNumber = numRows + 1;
@@ -30,6 +31,7 @@ const addRowData = (
         const cellID = `$${colLetter}${newRowNumber}`;
         // If there's an update for this cellID, use the provided value
         newSheetData[cellID] = "";
+        handleCellUpdate("", cellID);
     }
 
     return newSheetData;

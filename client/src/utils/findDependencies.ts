@@ -18,12 +18,15 @@ const findDependencies = (sheetData: SheetDataMap, cellId: string): string[] => 
     const cellValue = sheetData[cellId];
     const dependencies: string[] = [];
   
+    console.log("finding dependencies parsing");
     const parsedNode: ExpressionNode = Parser.getInstance().parse(cellValue);
 
     // Function to recursively find dependencies
     const traverseNode = (node: ExpressionNode) => {
         if (node instanceof ReferenceNode) {
-            dependencies.push(node.ref); // Add reference to dependencies
+            if (node.ref !== cellId) {
+                dependencies.push(node.ref); // Add reference to dependencies
+            }
         } else if (node instanceof FunctionCallNode) {
             // Recursively traverse function call nodes
             for (const expr of node.expressions) {

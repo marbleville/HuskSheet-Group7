@@ -10,6 +10,8 @@ import getHeaderLetter from "./getHeaderLetter";
  *        The current number of columns
  * @param {number} numRows 
  *        The current number of rows
+ * @param {function} handleCellUpdate 
+ *        The function to handle cell updates
  * @returns {SheetDataMap} 
  *        The updated sheet data with the new column added
  * 
@@ -19,6 +21,7 @@ const addColData = (
     sheetData: SheetDataMap, 
     numCols: number, 
     numRows: number, 
+    handleCellUpdate: (value: string, cellID: string) => void
 ) => {
     const newSheetData = { ...sheetData };
     const newColumnLetter = getHeaderLetter(numCols);
@@ -26,6 +29,7 @@ const addColData = (
     for (let row = 1; row <= numRows; row++) {
         const cellID = `$${newColumnLetter}${row}`;
         newSheetData[cellID] = "";
+        handleCellUpdate("", cellID);
     }
 
     return newSheetData;

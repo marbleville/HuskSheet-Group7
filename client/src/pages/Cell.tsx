@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import "../styles/Cell.css";
-import Parser from "../functions/Parser";
-import Evaluator from "../functions/Evaluator";
 
 interface CellProps {
   cellId: string;
@@ -13,8 +11,6 @@ interface CellProps {
 
 //const ERROR_TIMEOUT = 1500;
 
-const parser = Parser.getInstance()
-const evaluator = Evaluator.getInstance();
 
 // Inside the Cell component
 const Cell: React.FC<CellProps> = ({
@@ -27,25 +23,11 @@ const Cell: React.FC<CellProps> = ({
   const [value, setValue] = useState(cellValue);
   const [prevValue, setPrevValue] = useState(cellValue);
   const [error, setError] = useState(false);
-  //const [rendered, setRendered] = useState(false);
-
-  // useEffect(() => {
-  //   if (!rendered && !isUpdated && cellValue && cellValue !== "" && cellValue !== "EOF") {
-  //     initialEvaluate(); // Evaluate the loaded cell content
-  //     setRendered(true);
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [sheetData]);
 
   useEffect(() => {
     setValue(cellValue);
   }, [cellValue])
 
-  /*
-  useEffect(() => {
-    setValue(isUpdated ? cellValue : sheetData[cellId]);
-  }, [cellValue, isUpdated, sheetData, cellId]);
-  */
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value;
@@ -56,77 +38,72 @@ const Cell: React.FC<CellProps> = ({
 
   const handleBlur = () => {
     if (value !== prevValue) {
-      console.log("CHANGE DETECTED")
-      evaluateAndUpdate();
+      console.log(`called onUpdate with value ${value} for cell ${cellId}`);
+      onUpdate(value, cellId);
     }
+  };
+
+  const handleFocus = () => {
+    console.log(`clicked on cell to replace it with ${sheetData[cellId]}`);
+    setValue(sheetData[cellId]);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
-      evaluateAndUpdate();
+      console.log(`called onUpdate with value ${value} for cell ${cellId}`);
+      handleBlur();
     }
   };
 
-  const evaluateAndUpdate = () => {
-    if (value === "") {
-      onUpdate("", cellId);
-      return;
-    }
-    evaluator.setContext(sheetData);
-    let result: string = "";
-    let isError = false;
+  // useEffect(() => {
+  //   evaluator.setContext(sheetData);
+  //   let result: string = "";
+  //   let isError = false;
+  
+  //   try {
+  //     const parsedNode = parser.parse(value);
+  //     result = evaluator.evaluate(parsedNode);
+  //   } catch (error) {
+  //     isError = true;
+  //     result = value; // Keep the original value if evaluation fails
+  //   }
+  
+  //   if (isError) {
+  //     setError(true);
+  //   } else {
+  //     setError(false);
+  //     onUpdate(result, cellId); // Update the sheetData with the evaluated result
+  //   }
+  // }, [sheetData]);
 
-    try {
-      const parsedNode = parser.parse(value);
-      result = evaluator.evaluate(parsedNode);
-      console.log('Evaluation Result:', result);
-    } catch (error) {
-      isError = true;
-    }
+  // const evaluate = () => {
+  //   // if (value === "") {
+  //   //   onUpdate("", cellId);
+  //   //   return;
+  //   // }
+  //   evaluator.setContext(sheetData);
+  //   let result: string = "";
+  //   let isError = false;
 
-    if (isError) {
-      result = "";
-      setValue(result);
-      setError(true);
-      // setTimeout(() => {
-      //   setError(false);
-      // }, ERROR_TIMEOUT);
-    }
-    onUpdate(result, cellId);
-    setPrevValue(result);
-  };
+  //   try {
+  //     const parsedNode = parser.parse(value);
+  //     result = evaluator.evaluate(parsedNode);
+  //     console.log('Evaluation Result:', result);
+  //   } catch (error) {
+  //     isError = true;
+  //   }
 
-  /*
-  const initialEvaluate = () => {
-    if (cellValue === "") {
-      setValue("");
-      setPrevValue("");
-      return;
-    }
-    evaluator.setContext(sheetData);
-    let result: string = "";
-    let isError = false;
-
-    try {
-      const parsedNode = parser.parse(cellValue);
-      result = evaluator.evaluate(parsedNode);
-      console.log('Initial Evaluation Result:', result);
-    } catch (error) {
-      isError = true;
-      //console.log(error)
-    }
-
-    if (isError) {
-      result = cellValue;
-      setError(true);
-      // setTimeout(() => {
-      //   setError(false);
-      // }, ERROR_TIMEOUT);
-    }
-    setValue(result);
-    setPrevValue(result);
-  };
-  */
+  //   if (isError) {
+  //     result = value;
+  //     setError(true);
+  //     // setTimeout(() => {
+  //     //   setError(false);
+  //     // }, ERROR_TIMEOUT);
+  //   }
+  //   //onUpdate(result, cellId);
+  //   setValue(result);
+  //   setPrevValue(result);
+  // };
 
   return (
     <td key={cellId} className={`cell ${error ? 'error' : ''} ${isUpdated ? 'updated-cell' : ''}`}>
@@ -136,6 +113,7 @@ const Cell: React.FC<CellProps> = ({
         onChange={handleChange}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
+        onFocus={handleFocus}
         className="cell-input"
         style={{ color: isUpdated ? 'blue' : 'inherit' }}
       />

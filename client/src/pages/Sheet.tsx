@@ -25,10 +25,9 @@ import {
 } from "../types";
 
 import "../styles/Sheet.css";
-import Parser from "../functions/Parser";
-import Evaluator from "../functions/Evaluator";
-import findDependencies from "../utils/findDependencies";
 import toCSV from "../utils/toCSV";
+import findDependencies from "../utils/findDependencies";
+import evaluateCellInput from "../utils/evaluateCellInput";
 
 // Constants
 const INITIALSHEETROWSIZE = 10;
@@ -41,8 +40,6 @@ const BASE_PUBLISHED_UPDATES: UpdatesWithId = {
   id: "",
   updates: {} as SheetDataMap,
 };
-const parser = Parser.getInstance();
-const evaluator = Evaluator.getInstance();
 
 /**
  * A Sheet that manages the data of its child cells and handles communication.
@@ -62,6 +59,8 @@ const Sheet: React.FC = () => {
 
   // Sheet state
   const [sheetData, setSheetData] = useState<SheetDataMap>(initialSheetData);
+  const [evaluatedCellValues, setEvaluatedCellValues] = useState<SheetDataMap>(initialSheetData);
+  const [dependencyMap, setDependencyMap] = useState<{ [key: string]: Set<string> }>({});
   const [refsToPublish, setRefsToPublish] = useState<Set<string>>(new Set());
   const [incomingUpdates, setIncomingUpdates] = useState<SheetDataMap>({});
   const [sheetRelationship, setSheetRelationship] =
@@ -77,10 +76,6 @@ const Sheet: React.FC = () => {
 
   const pendingSubUpdates = useRef<UpdatesWithId>(BASE_SUBSCRIPTION_UPDATES);
   const pendingPubUpdates = useRef<UpdatesWithId>(BASE_PUBLISHED_UPDATES);
-
-  const [pendingEvaluationCells, setPendingEvaluationCells] = useState<
-    string[]
-  >([]);
 
   /**
    * Actions to perform on first load.
@@ -153,17 +148,6 @@ const Sheet: React.FC = () => {
     setSheetData((prevSheetData) => {
       const updatedSheetData = { ...prevSheetData, [cellId]: value };
 
-      // Track dependencies for this cellId
-      const dependencies = findDependencies(updatedSheetData, cellId);
-      dependencies.forEach((dep) => {
-        if (!pendingEvaluationCells.includes(dep)) {
-          setPendingEvaluationCells((prevPendingCells) => [
-            ...prevPendingCells,
-            dep,
-          ]);
-        }
-      });
-
       // If the value is different from the previous one, or if the value is empty, mark it as manually updated
       if (value !== prevSheetData[cellId]) {
         setRefsToPublish((prevManualUpdates) =>
@@ -175,108 +159,57 @@ const Sheet: React.FC = () => {
     });
   };
 
-  /**
-   * Evaluates updated cells before render.
-   *
-   * @param {SheetDataMap} sheetDataMap - current state of sheetData
-   *
-   * @author rishavsarma5
-   */
-  const evaluatePendingCells = async (sheetData: SheetDataMap) => {
-    const updatedData: SheetDataMap = { ...sheetData };
-    const pendingCellsSet = new Set(pendingEvaluationCells);
+  const updateDependencyMap = (refsToPublish: string[]) => {
+    const updatedDependencyMap: { [key: string]: Set<string> } = {};
+    refsToPublish.forEach((cellId) => {
+      const dependencies = findDependencies(sheetData, cellId);
+      if (dependencies.length !== 0) {
+        updatedDependencyMap[cellId] = new Set(dependencies);
+      }
+    });
+  
+    setDependencyMap(updatedDependencyMap);
+  };
 
-    // determines if the dependencies of a cell are in pendingCellsSet
-    const areDependenciesResolved = (dependencies: string[]): boolean => {
-      return dependencies.every((dep) => !pendingCellsSet.has(dep));
+  useEffect(() => {
+    const changedCellIds = Array.from(refsToPublish);
+
+    const evaluateCells = async (cellId: string) => {
+
+      if (dependencyMap[cellId]) {
+        dependencyMap[cellId].forEach((dep) => {
+          evaluateCells(dep);
+        });
+      }
+
+      // Evaluate the current cell
+      const evaluatedValue = await evaluateCellInput(sheetData, cellId);
+      console.log(`Evaluated value for cellID ${cellId}: ${evaluatedValue}`);
+
+      // Update the evaluated value in local state
+      setEvaluatedCellValues((prevCellValue) => ({
+        ...prevCellValue,
+        [cellId]: evaluatedValue,
+      }));
     };
 
-    // waits until all cells are evaluated by checking their dependencies and waiting for
-    // those to resolve first
-    while (pendingCellsSet.size > 0) {
-      const cellsToEvaluate: string[] = [];
+    updateDependencyMap(changedCellIds);
 
-      // Find cells that can be evaluated in this iteration
-      for (const cellId of pendingCellsSet) {
-        const dependencies = findDependencies(updatedData, cellId);
-        if (areDependenciesResolved(dependencies)) {
-          cellsToEvaluate.push(cellId);
-        }
-      }
-
-      // checks for cyclic references in cells
-      if (cellsToEvaluate.length === 0) {
-        console.error(
-          "Cyclic dependency detected or unsatisfiable dependencies"
-        );
-        break;
-      }
-
-      // Evaluate cells in parallel
-      const promises = cellsToEvaluate.map(async (cellId) => {
-        const cellValue = updatedData[cellId];
-        try {
-          const parsedNode = parser.parse(cellValue);
-          evaluator.setContext(updatedData);
-          const result = evaluator.evaluate(parsedNode);
-          updatedData[cellId] = result;
-
-          // Remove evaluated cell from pending set only if successful
-          pendingCellsSet.delete(cellId);
-        } catch (error) {
-          console.error(`Error evaluating formula in ${cellId}:`, error);
+    // Loop through each cell and evaluate it if it's in changedCellIds
+    changedCellIds.forEach((cellId) => {
+      evaluateCells(cellId);
+  
+      // Loop through every other cellId to check dependencies
+      changedCellIds.forEach((otherCellId) => {
+        if (otherCellId !== cellId && dependencyMap[otherCellId]?.has(cellId)) {
+          evaluateCells(otherCellId);
         }
       });
-
-      // Wait for all evaluations in this iteration to complete
-      await Promise.all(promises);
-
-      // If no cells were successfully evaluated and removed from the pending set, break to avoid infinite loop
-      if (cellsToEvaluate.every((cellId) => pendingCellsSet.has(cellId))) {
-        console.error(
-          "Cyclic dependency detected or unsatisfiable dependencies"
-        );
-        break;
-      }
-    }
-
-    // Clear pending cells
-    setPendingEvaluationCells([]);
-    // Update sheetData with evaluated values
-    setSheetData(updatedData);
-  };
-
-  /**
-   * Determines if incoming updates need to be evaluated beforehand if they are formulas.
-   *
-   * @param {SheetDataMap} sheetDataMap - current state of sheetData
-   *
-   * @author rishavsarma5
-   */
-  const evaluateIncomingUpdates = async (updates: SheetDataMap) => {
-    // Identify cells from incoming updates that need evaluation (checking if they are a formula)
-    const cellsToUpdate = Object.keys(updates).filter((cellId) => {
-      return updates[cellId].startsWith("=");
     });
 
-    // Add cells to pendingCells for evaluation
-    setPendingEvaluationCells((prevPendingCells) => [
-      ...prevPendingCells,
-      ...cellsToUpdate.filter((cellId) => !prevPendingCells.includes(cellId)),
-    ]);
-  };
-
-  /**
-   * If there are pending cells to evaluate before render, this will trigger the function to 
-   * evaluate them.
-   *
-   * @author rishavsarma5
-   */
-  useEffect(() => {
-    if (pendingEvaluationCells.length > 0) {
-      evaluatePendingCells(sheetData);
-    }
-  }, [pendingEvaluationCells]);
+  }, [sheetData]);
+  
+  
 
   /**
    * Add a new empty row.
@@ -285,8 +218,10 @@ const Sheet: React.FC = () => {
    */
   const addNewRow = () => {
     setNumRows((prevNumRows) => prevNumRows + 1);
-    const newSheetData = addRowData(sheetData, numRows, numCols);
+    const newSheetData = addRowData(sheetData, numRows, numCols, handleCellUpdate);
+    //const newEvaluatedCellValues = addRowData(evaluatedCellValues, numRows, numCols);
     setSheetData(newSheetData);
+    //setEvaluatedCellValues(newEvaluatedCellValues);
   };
 
   /**
@@ -314,8 +249,10 @@ const Sheet: React.FC = () => {
    */
   const addNewCol = () => {
     setNumCols((prevNumCols) => prevNumCols + 1);
-    const newSheetData = addColData(sheetData, numCols, numRows);
+    const newSheetData = addColData(sheetData, numCols, numRows, handleCellUpdate);
+    //const newEvaluatedCellValues = addColData(evaluatedCellValues, numCols, numRows);
     setSheetData(newSheetData);
+    //setEvaluatedCellValues(newEvaluatedCellValues);
   };
 
   /**
@@ -426,7 +363,6 @@ const Sheet: React.FC = () => {
         if (data.success && data.value && data.value.length > 0) {
           const resultArgument = data.value[0];
           const updates = handleGetUpdatesResult(resultArgument);
-          await evaluateIncomingUpdates(updates);
           setPendingUpdates(resultArgument.id, updatesEndpoint, updates);
         }
       }
@@ -501,7 +437,6 @@ const Sheet: React.FC = () => {
   const resolvePendingUpdates = () => {
     const subscriptionUpdates = pendingSubUpdates.current.updates;
     const publishedUpdates = pendingPubUpdates.current.updates;
-    evaluateIncomingUpdates(subscriptionUpdates);
     setSheetData((prevSheetData) => ({
       ...prevSheetData,
       ...subscriptionUpdates,
@@ -513,7 +448,6 @@ const Sheet: React.FC = () => {
         subscriptionUpdates,
         publishedUpdates
       );
-      evaluateIncomingUpdates(unreconciledUpdates);
       setIncomingUpdates(unreconciledUpdates);
       setLatestPublishedUpdateID(pendingPubUpdates.current.id);
     }
@@ -659,7 +593,7 @@ const Sheet: React.FC = () => {
           cellId
         )
           ? incomingUpdates[cellId]
-          : sheetData[cellId];
+          : evaluatedCellValues[cellId];
         const isUpdated = Object.prototype.hasOwnProperty.call(
           incomingUpdates,
           cellId
