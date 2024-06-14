@@ -1,11 +1,11 @@
 build: 
-	docker-compose up -d
+	docker-compose up
 
 test: 
-	docker-compose up -d 
+	docker-compose up 
 
 docker: 
-	docker-compose up -d
+	docker-compose up
 
 close: 
 	docker-compose down

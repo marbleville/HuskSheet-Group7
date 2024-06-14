@@ -35,12 +35,22 @@ interface GetUpdateRow extends RowDataPacket {
 	changes: string;
 }
 
+/**
+ * Extends the RowDataPacket from the mysql2 library to have the correct typing for the getUpdates queries.
+ *
+ * @author marbleville
+ */
 interface GetAllUpdates extends RowDataPacket {
 	payload: string;
 	sheet: number;
 	updateid: number;
 }
 
+/**
+ * Extends the RowDataPacket from the mysql2 library to have the correct typing for the getSheedID query.
+ *
+ * @author marbleville
+ */
 interface GetSheetID extends RowDataPacket {
 	sheetid: number;
 }

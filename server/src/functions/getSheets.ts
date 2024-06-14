@@ -10,9 +10,11 @@ import { get } from "http";
  * Returns an array of arguments containing all sheets asscoiated with the
  * publisher in the given argument object
  *
- * @param argument The argument object containing the publisher
+ * @param arg The argument object containing the publisher
+ * @param clientUsername The username of the client making the request
+ *
  * @returns An array of arguments containing all sheets
- *                              associated with the publisher
+ *          associated with the publisher
  *
  * @author hunterbrodie
  */
@@ -35,6 +37,7 @@ async function getSheets(
 			queryStringForPubSheets
 		);
 
+		// Appends private sheets to the result if the client is the publisher
 		if (arg.publisher === clientUsername) {
 			let queryStringForPrivSheets: string = DatabaseQueries.getSheets(
 				publisher,

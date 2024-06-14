@@ -12,6 +12,9 @@ import { checkPayloadFormat, sanitize } from "../utils";
  * @param argument Argument object containing the publisher, sheet, and payload
  *                 for the update
  *
+ * @throws Error if the payload format is invalid or the update could not be
+ * 		   found in the updates table
+ *
  * @author marbleville
  */
 async function updatePublished(argument: Argument): Promise<void> {
@@ -23,51 +26,46 @@ async function updatePublished(argument: Argument): Promise<void> {
 		throw new Error("Invalid payload format");
 	}
 
-	try {
-		const database: DatabaseInstance = DatabaseInstance.getInstance();
+	const database: DatabaseInstance = DatabaseInstance.getInstance();
 
-		const queryString: string = DatabaseQueries.updatePublished(
-			sheetName,
-			publisher,
-			payload
-		);
+	const queryString: string = DatabaseQueries.updatePublished(
+		sheetName,
+		publisher,
+		payload
+	);
 
-		// inserts the update into the database
-		await database.query(queryString);
+	// inserts the update into the database
+	await database.query(queryString);
 
-		// gets the updates for the subscription so we can grab ids
-		let updates: GetUpdateRow[] = await database.query<GetUpdateRow>(
-			DatabaseQueries.getUpdatesForSubscription(publisher, sheetName, 0)
-		);
+	// gets the updates for the subscription so we can grab ids
+	let updates: GetUpdateRow[] = await database.query<GetUpdateRow>(
+		DatabaseQueries.getUpdatesForSubscription(publisher, sheetName, 0)
+	);
 
-		let payloadUpdate: GetUpdateRow | null = null;
+	let payloadUpdate: GetUpdateRow | null = null;
 
-		updates.forEach((update) => {
-			if (update.changes.includes(payload.replace("''", "'"))) {
-				payloadUpdate = update;
-			}
-		});
-
-		if (!payloadUpdate) {
-			throw new Error("Payload not found in updates");
+	// Un sanitizes the update to compare with the payload
+	updates.forEach((update) => {
+		if (update.changes.includes(payload.replace("''", "'"))) {
+			payloadUpdate = update;
 		}
+	});
 
-		payloadUpdate = payloadUpdate as GetUpdateRow;
-
-		let payloadID: number = payloadUpdate.updateid;
-
-		await HashStore.initHash();
-		await HashStore.updateSheetPayload(
-			sheetName,
-			publisher,
-			payload,
-			payloadID
-		);
-
-		// now we need to update the latest accepted version of the sheet
-	} catch (error) {
-		throw error;
+	if (!payloadUpdate) {
+		throw new Error("Payload not found in updates");
 	}
+
+	payloadUpdate = payloadUpdate as GetUpdateRow;
+
+	let payloadID: number = payloadUpdate.updateid;
+
+	await HashStore.initHash();
+	await HashStore.updateSheetPayload(
+		sheetName,
+		publisher,
+		payload,
+		payloadID
+	);
 }
 
 export { updatePublished };

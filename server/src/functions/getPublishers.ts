@@ -11,12 +11,6 @@ import { GetUserRow } from "../database/db";
 async function getPublishers(): Promise<Array<Argument>> {
 	let publishers: Array<Argument> = [];
 
-	/**
-	 * Get all publishers from the Users table
-	 *
-	 * For each, push the publisher name to an argument object and push that to
-	 * the publishers array
-	 */
 	const get_publishers_query: string = DatabaseQueries.getPublishers();
 	const database: DatabaseInstance = DatabaseInstance.getInstance();
 

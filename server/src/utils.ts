@@ -128,7 +128,7 @@ function clientAndPublisherMatch(
  * @returns The argument object containing the last update id and payload
  * containing all changes
  *
- * @author huntebrodie
+ * @author hunterbrodie
  */
 async function getUpdatesHelper(
 	argument: Argument,

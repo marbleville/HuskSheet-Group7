@@ -2,12 +2,13 @@ import DatabaseInstance from "../database/databaseInstance";
 import DatabaseQueries from "../../../types/queries";
 
 /**
- *  Creates a publisher in the DB with the given username and password.
+ * Creates a publisher in the DB with the given username and password.
  *
- *  @param username client username.
- *  @author marbleville
+ * @param username client username.
  *
- * @TODO change to be create new user
+ * @author marbleville
+ *
+ * @throws Error if the user could not be registered.
  */
 async function register(username: string): Promise<void> {
 	const database: DatabaseInstance = DatabaseInstance.getInstance();

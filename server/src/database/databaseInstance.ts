@@ -5,9 +5,6 @@ import { Connection, QueryError, RowDataPacket, FieldPacket } from "mysql2";
  * This class is a singleton class that creates a connection to the mysql
  * database
  *
- * @todo: Currently no good place to call connection.end() to close the
- * connection
- *
  * @author marbleville
  */
 export default class DatabaseInstance {

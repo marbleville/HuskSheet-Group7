@@ -5,7 +5,7 @@ import HashStore from "../database/HashStore";
 
 /**
  * Returns the updates for the given subscription occuring after the given
- * update IDthat have been accepted by the publisher.
+ * update ID that have been accepted by the publisher.
  *
  * @param argument Argument object containing the publisher, sheet, and update
  *                 id to get updates for
@@ -29,20 +29,16 @@ async function getUpdatesForSubscription(
 		payload: "",
 	};
 
-	try {
-		await HashStore.initHash();
-		let [payload, id] = await HashStore.getSheetPayload(
-			publisher,
-			sheetName,
-			argumentID
-		);
-		updates.payload = payload;
-		updates.id = id;
+	await HashStore.initHash();
+	let [payload, id] = await HashStore.getSheetPayload(
+		publisher,
+		sheetName,
+		argumentID
+	);
+	updates.payload = payload;
+	updates.id = id;
 
-		return updates;
-	} catch (error) {
-		throw error;
-	}
+	return updates;
 }
 
 export { getUpdatesForSubscription };

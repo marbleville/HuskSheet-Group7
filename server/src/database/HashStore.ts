@@ -82,6 +82,8 @@ export default class HashStore {
 	 * @returns a newline delimited string represting the value of each cell
 	 * 			in the sheet
 	 *
+	 * @throws an error if the sheet is not found
+	 *
 	 * @author marbleville
 	 */
 	public static async getSheetPayload(
@@ -122,6 +124,8 @@ export default class HashStore {
 	 * @param publisher the publisher of the sheet to updatePerSheet
 	 * @param payload the payload coantinig new changes to add to the cache
 	 * @param payloadID the ID of this payload in the db
+	 *
+	 * @throws an error if the sheet is not found
 	 *
 	 * @author marbleville
 	 */
@@ -165,6 +169,8 @@ export default class HashStore {
 	 * @param sheetID the ID of the sheet the update is for
 	 *
 	 * @returns a tuple containing the ref object and the value of the update
+	 *
+	 * @author marbleville
 	 */
 	private static getRefObjAndValue(
 		update: string,
