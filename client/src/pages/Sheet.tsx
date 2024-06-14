@@ -182,7 +182,7 @@ const Sheet: React.FC = () => {
     while (pendingCellsSet.size > 0) {
       const cellsToEvaluate: string[] = [];
 
-      // Find cells that can be evaluated in this iteration
+      // Find cells that can be evaluated in this iteration (they have no dependencies)
       for (const cellId of pendingCellsSet) {
         const dependencies = findDependencies(updatedData, cellId);
         if (areDependenciesResolved(dependencies)) {
@@ -201,12 +201,17 @@ const Sheet: React.FC = () => {
       // Evaluate cells in parallel
       const promises = cellsToEvaluate.map(async (cellId) => {
         const cellValue = updatedData[cellId];
+        let result: string = "";
         try {
-          const parsedNode = parser.parse(cellValue);
-          evaluator.setContext(updatedData);
-          const result = evaluator.evaluate(parsedNode);
+          // tries to evaluate and set result
+          try {
+            const parsedNode = parser.parse(cellValue);
+            evaluator.setContext(updatedData);
+            result = evaluator.evaluate(parsedNode);
+          } catch (error) {
+            result = "";
+          }
           updatedData[cellId] = result;
-
           // Remove evaluated cell from pending set only if successful
           pendingCellsSet.delete(cellId);
         } catch (error) {
@@ -340,6 +345,7 @@ const Sheet: React.FC = () => {
     endpoint: SendUpdatesEndpoint
   ) => {
     const evaluatedPayload = buildPayload(refs, updatedSheetData);
+    // ensures formulas are also added to payload
     const formulaPayload = buildPayload(refs, formulaData);
     const payload = evaluatedPayload + formulaPayload;
 
@@ -495,6 +501,7 @@ const Sheet: React.FC = () => {
     const subscriptionUpdates = pendingSubUpdates.current.updates;
     const publishedUpdates = pendingPubUpdates.current.updates;
     updateFormulaData(publishedUpdates);
+    // evaluates the incoming updates
     evaluateIncomingUpdates(subscriptionUpdates);
     setSheetData((prevSheetData) => ({
       ...prevSheetData,

@@ -102,6 +102,7 @@ class Evaluator {
    */
   evaluate(node: ExpressionNode): string {
     if (node instanceof FunctionCallNode) {
+      // ensures range op is handled
       if (this.checkForRangeOp(node.expressions)) {
         const rangeExp = this.getRangeOpEx(node.expressions);
         if (rangeExp) {
@@ -288,10 +289,12 @@ class Evaluator {
    * @author eduardo-ruiz-garay
    */
   private applyFunc(func: string, args: string[]): number | string {
+    // func to check that all args can be converted to a number
     const toNumbers = (args: string[]): number[] => {
       return args.map((arg) => this.toNumber(arg));
     };
 
+    // switch to match functions to defined ones
     switch (func) {
       case "IF":
         return this.toNumber(args[0]) !== 0 ? args[1] : args[2];
@@ -306,10 +309,8 @@ class Evaluator {
       case "CONCAT":
         return args.join("");
       case "COPY":
-        // console.log(args);
         return this.copyFunction(args);
       case "DEBUG":
-        // console.log(args[0]);
         return args[0];
       default:
         throw new Error(`Unknown function: ${func}`);
