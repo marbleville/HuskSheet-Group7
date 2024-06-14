@@ -12,8 +12,6 @@ import getHeaderLetter from "./getHeaderLetter";
  *        The current number of rows
  * @param {function} handleCellUpdate 
  *        The function to handle cell updates
- * @returns {SheetDataMap} 
- *        The updated sheet data with the last column deleted
  * 
  * @author rishavsarma5
  */
@@ -37,8 +35,6 @@ const deleteColData = (
             handleCellUpdate("", cellID);
         }
     }
-
-    return sheetData;
 };
 
 export default deleteColData;
