@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import "../styles/Cell.css";
+import {
+  ExpressionNode,
+  FunctionCallNode,
+  FormulaNode,
+} from "../functions/Nodes";
 import Parser from "../functions/Parser";
-import Evaluator from "../functions/Evaluator";
 
 interface CellProps {
   cellId: string;
@@ -13,39 +17,36 @@ interface CellProps {
 
 //const ERROR_TIMEOUT = 1500;
 
-const parser = Parser.getInstance()
-const evaluator = Evaluator.getInstance();
-
 // Inside the Cell component
 const Cell: React.FC<CellProps> = ({
   cellId,
   onUpdate,
   cellValue,
   sheetData,
-  isUpdated
+  isUpdated,
 }) => {
   const [value, setValue] = useState(cellValue);
   const [prevValue, setPrevValue] = useState(cellValue);
   const [error, setError] = useState(false);
-  //const [rendered, setRendered] = useState(false);
-
-  // useEffect(() => {
-  //   if (!rendered && !isUpdated && cellValue && cellValue !== "" && cellValue !== "EOF") {
-  //     initialEvaluate(); // Evaluate the loaded cell content
-  //     setRendered(true);
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [sheetData]);
+  const [formula, setFormula] = useState(cellValue);
 
   useEffect(() => {
     setValue(cellValue);
-  }, [cellValue])
+    setPrevValue(cellValue);
+    //console.log(`retrieved formula: ${sheetData[cellId]}`)
+    if (isAFormula(sheetData[cellId])) {
+      setFormula(sheetData[cellId]);
+    }
+  }, [cellValue]);
 
-  /*
-  useEffect(() => {
-    setValue(isUpdated ? cellValue : sheetData[cellId]);
-  }, [cellValue, isUpdated, sheetData, cellId]);
-  */
+  const isAFormula = (cellValue: string): boolean => {
+    const parsedNode: ExpressionNode = Parser.getInstance().parse(cellValue);
+
+    return (
+      parsedNode instanceof FunctionCallNode ||
+      parsedNode instanceof FormulaNode
+    );
+  };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value;
@@ -54,19 +55,49 @@ const Cell: React.FC<CellProps> = ({
     setError(false);
   };
 
+  const handleFocus = () => {
+    /*
+    console.log(`formula in focus: ${formula}`);
+    console.log(`value in focus: ${value}`);
+    console.log(`prev value in focus: ${prevValue}`);
+    console.log(`cell value in focus: ${cellValue}`);
+    */
+    // if there is a formula, i want to display it
+    // whatever was in the value, then goes to previous value
+    if (formula !== "") {
+      setValue(formula);
+      setPrevValue(value);
+    } else {
+      setValue(cellValue);
+      setPrevValue(cellValue);
+    }
+  };
+
   const handleBlur = () => {
-    if (value !== prevValue) {
-      console.log("CHANGE DETECTED")
-      evaluateAndUpdate();
+    /*
+    console.log(`formula in blur: ${formula}`);
+    console.log(`value in blur: ${value}`);
+    console.log(`prev value in blur: ${prevValue}`);
+    console.log(`cell value in blur: ${cellValue}`);
+    */
+    // if there is a new input that is different from whatever was there and a formula
+    // then this is an update
+    if (value !== prevValue && value !== formula) {
+      console.log("CHANGE DETECTED");
+      onUpdate(value, cellId);
+    } else if (value === formula) {
+      setValue(cellValue);
+      setPrevValue(cellValue);
     }
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
-      evaluateAndUpdate();
+      handleBlur();
     }
   };
 
+  /*
   const evaluateAndUpdate = () => {
     if (value === "") {
       onUpdate("", cellId);
@@ -95,53 +126,27 @@ const Cell: React.FC<CellProps> = ({
     onUpdate(result, cellId);
     setPrevValue(result);
   };
-
-  /*
-  const initialEvaluate = () => {
-    if (cellValue === "") {
-      setValue("");
-      setPrevValue("");
-      return;
-    }
-    evaluator.setContext(sheetData);
-    let result: string = "";
-    let isError = false;
-
-    try {
-      const parsedNode = parser.parse(cellValue);
-      result = evaluator.evaluate(parsedNode);
-      console.log('Initial Evaluation Result:', result);
-    } catch (error) {
-      isError = true;
-      //console.log(error)
-    }
-
-    if (isError) {
-      result = cellValue;
-      setError(true);
-      // setTimeout(() => {
-      //   setError(false);
-      // }, ERROR_TIMEOUT);
-    }
-    setValue(result);
-    setPrevValue(result);
-  };
   */
 
   return (
-    <td key={cellId} className={`cell ${error ? 'error' : ''} ${isUpdated ? 'updated-cell' : ''}`}>
+    <td
+      key={cellId}
+      className={`cell ${error ? "error" : ""} ${
+        isUpdated ? "updated-cell" : ""
+      }`}
+    >
       <input
         type="text"
         value={value ?? ""}
         onChange={handleChange}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
+        onFocus={handleFocus}
         className="cell-input"
-        style={{ color: isUpdated ? 'blue' : 'inherit' }}
+        style={{ color: isUpdated ? "blue" : "inherit" }}
       />
     </td>
   );
 };
-
 
 export default Cell;

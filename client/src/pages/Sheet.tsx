@@ -63,6 +63,7 @@ const Sheet: React.FC = () => {
 
   // Sheet state
   const [sheetData, setSheetData] = useState<SheetDataMap>(initialSheetData);
+  const [evaluatedCellData, setEvaluatedCellData] = useState<SheetDataMap>({});
   const [refsToPublish, setRefsToPublish] = useState<Set<string>>(new Set());
   const [incomingUpdates, setIncomingUpdates] = useState<SheetDataMap>({});
   const [sheetRelationship, setSheetRelationship] = useState<SheetRelationship>("SUBSCRIBER");
@@ -115,25 +116,41 @@ const Sheet: React.FC = () => {
    */
   const handleCellUpdate = (value: string, cellId: string) => {
     setSheetData((prevSheetData) => {
+      console.log(`got to handle cell ${cellId} update with value: ${value}`);
       const updatedSheetData = { ...prevSheetData, [cellId]: value };
+
+      setPendingEvaluationCells((prevPendingCells) => [
+        ...prevPendingCells,
+        cellId,
+      ]);
 
       // Track dependencies for this cellId
       const dependencies = findDependencies(updatedSheetData, cellId);
-      dependencies.forEach((dep) => {
-        if (!pendingEvaluationCells.includes(dep)) {
-          setPendingEvaluationCells((prevPendingCells) => [
-            ...prevPendingCells,
-            dep,
-          ]);
-        }
-      });
+      if (dependencies.length !== 0) {
+        dependencies.forEach((dep) => {
+          if (!pendingEvaluationCells.includes(dep)) {
+            setPendingEvaluationCells((prevPendingCells) => [
+              ...prevPendingCells,
+              dep,
+            ]);
+          }
+        });
+      } 
+
+      console.log(`cell value: ${value}`);
+      console.log(`prev sheet cell value: ${prevSheetData[cellId]}`);
+
 
       // If the value is different from the previous one, or if the value is empty, mark it as manually updated
       if (value !== prevSheetData[cellId]) {
+        console.log("got here");
         setRefsToPublish((prevManualUpdates) =>
           new Set(prevManualUpdates).add(cellId)
         );
       }
+
+      console.log(`refs: ${JSON.stringify(refsToPublish)}`)
+      console.log(`pending cells: ${JSON.stringify(pendingEvaluationCells)}`)
 
       return updatedSheetData;
     });
@@ -146,9 +163,11 @@ const Sheet: React.FC = () => {
    *
    * @author rishavsarma5
    */
-  const evaluatePendingCells = async (sheetData: SheetDataMap) => {
-    const updatedData: SheetDataMap = { ...sheetData };
+  const evaluatePendingCells = async () => {
+    const evaluatedData: SheetDataMap = {};
     const pendingCellsSet = new Set(pendingEvaluationCells);
+
+    console.log("got to here next");
 
     // determines if the dependencies of a cell are in pendingCellsSet
     const areDependenciesResolved = (dependencies: string[]): boolean => {
@@ -162,9 +181,16 @@ const Sheet: React.FC = () => {
 
       // Find cells that can be evaluated in this iteration
       for (const cellId of pendingCellsSet) {
-        const dependencies = findDependencies(updatedData, cellId);
-        if (areDependenciesResolved(dependencies)) {
+        console.log("dependents");
+        console.log(`cell id: ${cellId}`);
+
+        const dependencies = findDependencies(sheetData, cellId);
+        if (dependencies.length == 0) {
           cellsToEvaluate.push(cellId);
+        } else {
+          if (areDependenciesResolved(dependencies)) {
+            cellsToEvaluate.push(cellId);
+          }
         }
       }
 
@@ -176,14 +202,17 @@ const Sheet: React.FC = () => {
         break;
       }
 
+      console.log(`cells to eval ${JSON.stringify(cellsToEvaluate)}`);
+
       // Evaluate cells in parallel
       const promises = cellsToEvaluate.map(async (cellId) => {
-        const cellValue = updatedData[cellId];
+        const cellValue = sheetData[cellId];
+        console.log(`cell ${cellId} value: ${cellValue}`);
         try {
           const parsedNode = parser.parse(cellValue);
-          evaluator.setContext(updatedData);
+          evaluator.setContext(sheetData);
           const result = evaluator.evaluate(parsedNode);
-          updatedData[cellId] = result;
+          evaluatedData[cellId] = result;
 
           // Remove evaluated cell from pending set only if successful
           pendingCellsSet.delete(cellId);
@@ -206,8 +235,13 @@ const Sheet: React.FC = () => {
 
     // Clear pending cells
     setPendingEvaluationCells([]);
-    // Update sheetData with evaluated values
-    setSheetData(updatedData);
+
+    console.log(`evaluated data set: ${JSON.stringify(evaluatedData)}`);
+
+    setEvaluatedCellData((prevData) => ({
+      ...prevData,
+      ...evaluatedData,
+    }));
   };
 
   /**
@@ -219,14 +253,14 @@ const Sheet: React.FC = () => {
    */
   const evaluateIncomingUpdates = async (updates: SheetDataMap) => {
     // Identify cells from incoming updates that need evaluation (checking if they are a formula)
-    const cellsToUpdate = Object.keys(updates).filter((cellId) => {
-      return updates[cellId].startsWith("=");
-    });
+    // const cellsToUpdate = Object.keys(updates).filter((cellId) => {
+    //   return updates[cellId].startsWith("=");
+    // });
 
     // Add cells to pendingCells for evaluation
     setPendingEvaluationCells((prevPendingCells) => [
       ...prevPendingCells,
-      ...cellsToUpdate.filter((cellId) => !prevPendingCells.includes(cellId)),
+      ...Object.keys(updates).filter((cellId) => !prevPendingCells.includes(cellId)),
     ]);
   };
 
@@ -238,7 +272,7 @@ const Sheet: React.FC = () => {
    */
   useEffect(() => {
     if (pendingEvaluationCells.length > 0) {
-      evaluatePendingCells(sheetData);
+      evaluatePendingCells();
     }
   }, [pendingEvaluationCells]);
 
@@ -390,6 +424,7 @@ const Sheet: React.FC = () => {
         if (data.success && data.value && data.value.length > 0) {
           const resultArgument = data.value[0];
           const updates = handleGetUpdatesResult(resultArgument);
+          console.log(`updates retrieved: ${JSON.stringify(updates)}`);
           await evaluateIncomingUpdates(updates);
           setPendingUpdates(resultArgument.id, updatesEndpoint, updates);
         }
@@ -623,7 +658,7 @@ const Sheet: React.FC = () => {
           cellId
         )
           ? incomingUpdates[cellId]
-          : sheetData[cellId];
+          : evaluatedCellData[cellId] ?? "";
         const isUpdated = Object.prototype.hasOwnProperty.call(
           incomingUpdates,
           cellId
