@@ -11,6 +11,7 @@ import Tokenizer from "./Tokenizer";
 
 /**
  * Parses the tokens into different nodes based on priority.
+ * @author eduardo-ruiz-garay
  */
 class Parser {
   private static instance: Parser;
@@ -35,13 +36,12 @@ class Parser {
    * Parses the tockens into distinct ExpressionNodes.
    *
    * @param formula takes in the string from the user
-   * @returns
+   * @returns the parsed formula into expression nodes
+   * @author eduardo-ruiz-garay
    */
   parse(formula: string): ExpressionNode {
     this.index = 0;
     this.tokens = Tokenizer.getInstance().tokenize(formula);
-    for (const token of this.tokens) {
-    }
     const resultNode =
       this.tokens.length > 0 && this.tokens[0] === "="
         ? this.parseFormula()
@@ -49,11 +49,23 @@ class Parser {
     return resultNode;
   }
 
+  /**
+   * Parses the = at the start
+   *
+   * @returns new Expression node
+   *  @author eduardo-ruiz-garay
+   */
   private parseFormula(): ExpressionNode {
     this.consume("=");
     return new FormulaNode(this.parseExpression());
   }
 
+  /**
+   * Increases the index as it finds a value to consume
+   *
+   * @param expected string value for the identifier
+   *  @author eduardo-ruiz-garay
+   */
   private consume(expected: string): void {
     if (this.tokens[this.index] === expected) {
       this.index++;
@@ -64,6 +76,12 @@ class Parser {
     }
   }
 
+  /**
+   * Parses the term of the expression node
+   *
+   * @returns new Expression Node
+   * @author eduardo-ruiz-garay
+   */
   private parseTerm(): ExpressionNode {
     const token = this.tokens[this.index];
     if (this.isFunction(token)) {
@@ -86,6 +104,10 @@ class Parser {
     }
   }
 
+  /**|
+   * Parse the expressionns wiht the term and returns the operation
+   * @author eduardo-ruiz-garay
+   */
   private parseExpression(): ExpressionNode {
     let node = this.parseTerm();
     while (
@@ -100,6 +122,12 @@ class Parser {
     return node;
   }
 
+  /**
+   * Consumes the parentheses.
+   *
+   * @returns new Expression node
+   * @author eduardo-ruiz-garay
+   */
   private parseNestedExpression(): ExpressionNode {
     this.consume("(");
     const nestedNode: ExpressionNode = this.parseExpression();
@@ -107,6 +135,12 @@ class Parser {
     return nestedNode;
   }
 
+  /**
+   * Parses a negative number into a number node.
+   *
+   * @returns number node with the values
+   * @author eduardo-ruiz-garay
+   */
   private parseNegativeNum(): ExpressionNode {
     let numStr = this.tokens[this.index];
     this.consume("-");
@@ -115,6 +149,12 @@ class Parser {
     return new NumberNode(parseFloat(numStr));
   }
 
+  /**
+   * Parses functions into expression node function call.
+   *
+   * @returns function call node
+   * @author eduardo-ruiz-garay
+   */
   private parseFunction(): ExpressionNode {
     const func = this.tokens[this.index].replace(/^=/, "");
     this.index++;
@@ -135,22 +175,57 @@ class Parser {
     return new FunctionCallNode(func, args);
   }
 
+  /**
+   * Takes in the number as string and asks if the number matches the regex.
+   *
+   * @param token string value
+   * @returns t or f for number
+   * @author eduardo-ruiz-garay
+   */
   private isNumber(token: string): boolean {
     return /^-?\d+(\.\d+)?$/.test(token);
   }
 
+  /**
+   * Takes in the string and asks if the number matches the regex.
+   *
+   * @param token string value
+   * @returns t or f for number
+   * @author eduardo-ruiz-garay
+   */
   private isString(token: string): boolean {
     return /^"([^"]*)"|^[^+\-*/=:&|<>\s(),]+/.test(token);
   }
 
+  /**
+   * Takes in the reference and asks if the number matches the regex.
+   *
+   * @param token string value
+   * @returns t or f for number
+   * @author eduardo-ruiz-garay
+   */
   private isReference(token: string): boolean {
     return /^\$[a-zA-Z]+\d+$/.test(token);
   }
 
+  /**
+   * Takes in the operator and asks if the number matches the regex.
+   *
+   * @param token string value
+   * @returns t or f for number
+   * @author eduardo-ruiz-garay
+   */
   private isOperator(token: string): boolean {
     return /^[+\-*/<>=&|:]+$/.test(token);
   }
 
+  /**
+   * Takes in the number as string and asks if the number matches the regex.
+   *
+   * @param token string value
+   * @returns t or f for number
+   * @author eduardo-ruiz-garay
+   */
   private isFunction(token: string): boolean {
     return /^(=)?(IF|SUM|MIN|AVG|MAX|CONCAT|COPY|DEBUG)$/.test(token);
   }

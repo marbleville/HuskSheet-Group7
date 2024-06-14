@@ -10,6 +10,9 @@ import {
 import Tokenizer from "../../../client/src/functions/Tokenizer";
 import Parser from "../../../client/src/functions/Parser";
 
+/**
+ * @author eduardo-ruiz-garay
+ */
 describe("Parser Test", () => {
   describe("Parser Singleton tests", () => {
     it("should return an instance of Parser", () => {

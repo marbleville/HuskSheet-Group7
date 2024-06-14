@@ -11,6 +11,9 @@ import {
 import Tokenizer from "../../../client/src/functions/Tokenizer";
 import Parser from "../../../client/src/functions/Parser";
 
+/**
+ * @author eduardo-ruiz-garay
+ */
 describe("Evaluator Test", () => {
   describe("Evaluator Singleton tests", () => {
     it("should return an instance of Evaluator", () => {

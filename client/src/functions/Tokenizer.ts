@@ -1,5 +1,6 @@
 /**
  * Takes in the cell data and creates tokens for the parser to loop through and set priority.
+ * @author eduardo-ruiz-garay
  */
 class Tokenizer {
   private static instance: Tokenizer;
@@ -42,6 +43,7 @@ class Tokenizer {
    *
    * @param formula string formula from the sheet data
    * @returns the set of tokens formed by regex
+   * @author eduardo-ruiz-garay
    */
   tokenize(formula: string): string[] {
     this.index = 0;
@@ -79,6 +81,7 @@ class Tokenizer {
    * Also removes whitespace based on the match it gets.
    *
    * @returns string if the token is recognized in regex else null
+   * @author eduardo-ruiz-garay
    */
   protected nextToken(): string | null {
     const substr = this.formula.substring(this.index);
