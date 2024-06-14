@@ -64,6 +64,7 @@ const Sheet: React.FC = () => {
   // Sheet state
   const [sheetData, setSheetData] = useState<SheetDataMap>(initialSheetData);
   const [formulaData, setFormulaData] = useState<SheetDataMap>({});
+  const [oldFormulaData, setOldFormulaData] = useState<SheetDataMap>({});
   const [refsToPublish, setRefsToPublish] = useState<Set<string>>(new Set());
   const [incomingUpdates, setIncomingUpdates] = useState<SheetDataMap>({});
   const [sheetRelationship, setSheetRelationship] = useState<SheetRelationship>("SUBSCRIBER");
@@ -378,6 +379,8 @@ const Sheet: React.FC = () => {
   const requestUpdates = async () => {
     if (sheetRelationship === "OWNER") {
       await getUpdates("getUpdatesForSubscription", latestSubscriptionUpdateID);
+
+      setOldFormulaData({ ...formulaData });
       await getUpdates("getUpdatesForPublished", latestPublishedUpdateID);
       resolvePendingUpdates();
     } else if (sheetRelationship === "SUBSCRIBER") {
@@ -561,6 +564,8 @@ const Sheet: React.FC = () => {
 
     // Clear incomingUpdates
     setIncomingUpdates({});
+
+    setFormulaData({ ...oldFormulaData });
   };
 
   /**
