@@ -12,7 +12,7 @@ class Tokenizer {
     ["NUMBER", /^[+-]?\d+(\.\d+)?/], // Updated to match optional leading + or -
     ["LPAREN", /^\(/], // Matches left parenthesis
     ["RPAREN", /^\)/], // Matches right parenthesis
-    ["REFERENCE", /^\$[A-Z]+\d+/], // Matches cell references and ranges
+    ["REFERENCE", /^\$[a-zA-Z]+\d+/], // Matches cell references and ranges
     ["STRING", /^"([^"]*)"|^[^+\-*/=:&|<>\s(),]+/], // Matches strings
     ["COMMA", /^,/], // Matches commas
     ["WHITESPACE", /^\s+/], // Matches whitespace
@@ -38,7 +38,7 @@ class Tokenizer {
 
   /**
    * Finds the next expression and produces the string of tokens with the different expressions and
-   *  handles incorrect parentheses maybe better with a stack but works.
+   *  handles incorrect parentheses.
    *
    * @param formula string formula from the sheet data
    * @returns the set of tokens formed by regex
@@ -91,7 +91,7 @@ class Tokenizer {
       if (match !== null) {
         this.index += match[0].length;
         if (type === "STRING" && match[0].includes("EOF")) {
-            throw new Error("Encountered EOF");
+          throw new Error("Encountered EOF");
         } else if (type !== "WHITESPACE") {
           return match[0];
         } else {

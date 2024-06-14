@@ -4,7 +4,7 @@
 
 -   `make build`
     -   Builds and runs the project and runs all tests in one step
-    -   Note: The tests take a moment to run, so please be patient
+    -   Note: The tests take a moment to run
 
 ## Project status
 
@@ -27,4 +27,8 @@
         level required and we have reduced the number of db queries necessary
         in normal operation
 - Export sheet as CSV
+- Duplicate sheet names
+    -   One user may have multiple sheets with the same name
+    -   Each occurance will have a number automatically appended to the end of the sheet
+
   
