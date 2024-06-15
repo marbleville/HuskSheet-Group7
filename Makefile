@@ -1,11 +1,11 @@
 build: 
-	docker-compose up
+	ENDPOINT=$(endpoint) docker-compose up
 
 test: 
-	docker-compose up 
+	ENDPOINT=$(endpoint) docker-compose up
 
 docker: 
-	docker-compose up
+	ENDPOINT=$(endpoint) docker-compose up
 
 close: 
 	docker-compose down

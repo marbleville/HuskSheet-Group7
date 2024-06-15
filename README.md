@@ -2,14 +2,11 @@
 
 ## To Run the Project
 
--   `make build`
+-   `make build endpoint={API_BASE_URL}`
 
     -   Builds and runs the project and runs all tests in one step
     -   Note: The tests take a moment to run
-
--   To change ther base API URL
-    -   Change the `BASE_URL` variable in `client/src/config/clientConfig.ts`
-        to one of the given const values
+    -   Note: To run the project with our server, use `make build endpoint=http://localhost:3000/api/v1/`
 
 ## Project status
 

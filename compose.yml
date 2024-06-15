@@ -69,11 +69,13 @@ services:
         volumes:
             - "./client:/client"
             - "/client/node_modules"
+            - "./react.sh:/start.sh"
         ports:
             - 5173:5173
         stdin_open: true
         environment:
             - CHOKIDAR_USEPOLLING=true
-        command: bash -c "npm install --prefix /client && npm run dev --prefix /client -- --host"
+            - "ENDPOINT=${ENDPOINT}"
+        command: bash -c "/start.sh"
         links:
             - "express:express"
