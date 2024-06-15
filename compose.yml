@@ -19,6 +19,9 @@ services:
             test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
             timeout: 5s
             retries: 10
+        logging:
+            driver: none
+
 
     express:
         image: node
@@ -34,6 +37,8 @@ services:
             - "db:db"
         env_file:
             - "./config/db.dev.env"
+        logging:
+            driver: none
 
     express-test:
         image: node
@@ -47,6 +52,8 @@ services:
             - "db:db"
         env_file:
             - "./config/db.test.env"
+        logging:
+            driver: none
 
     testing:
         build: .
