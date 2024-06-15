@@ -2,11 +2,12 @@
 
 ## To Run the Project
 
--   `make build endpoint={API_BASE_URL}`
+-   `make build`
 
     -   Builds and runs the project and runs all tests in one step
     -   Note: The tests take a moment to run
-    -   Note: To run the project with our server, use `make build endpoint=http://localhost:3000/api/v1/`
+
+-   To change ther base API URL run `make build endpoint={API_BASE_URL}`
 
 ## Project status
 
