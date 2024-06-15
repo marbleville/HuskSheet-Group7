@@ -7,7 +7,7 @@ const CLASS_SERVER = "https://husksheets.fly.dev/api/v1/";
 
 // Determines which server to talk to
 const clientConfig = {
-  BASE_URL: "https://husksheets.fly.dev/api/v1/",
+  BASE_URL: "http://localhost:3000/api/v1/",
 };
 
 export default clientConfig;

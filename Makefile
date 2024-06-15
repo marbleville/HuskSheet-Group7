@@ -1,3 +1,5 @@
+endpoint ?= http://localhost:3000/api/v1/ 
+
 build: 
 	ENDPOINT=$(endpoint) docker-compose up
 
