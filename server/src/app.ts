@@ -11,6 +11,7 @@ import {
 	isUserPublisher,
 	sendError,
 	getArgument,
+	doesSheetExist,
 } from "./utils";
 import { Result } from "../../types/types";
 import {
@@ -140,7 +141,8 @@ app.post("/api/v1/getSheets", async (req: Request, res: Response) => {
 app.post("/api/v1/deleteSheet", async (req: Request, res: Response) => {
 	if (
 		(await isUserPublisher(req.headers.authorization)) &&
-		clientAndPublisherMatch(req, req.headers.authorization)
+		clientAndPublisherMatch(req, req.headers.authorization) &&
+		(await doesSheetExist(req.body.sheet, req.body.publisher))
 	) {
 		await runEndpointFuntion(req, res, deleteSheet);
 	} else {

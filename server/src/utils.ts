@@ -8,7 +8,7 @@ import {
 } from "../../types/types";
 import DatabaseInstance from "./database/databaseInstance";
 import { Request, Response } from "express";
-import { GetUpdateRow, GetUserRow } from "./database/db";
+import { GetUpdateRow, GetUserRow, GetSheetRow } from "./database/db";
 import DatabaseQueries from "../../types/queries";
 
 /**
@@ -300,6 +300,32 @@ async function doesUserExist(
 }
 
 /**
+ * Checks if the sheet exists in the database.
+ *
+ * @param sheetName the name of the sheet to check for
+ * @param publisher the publisher of the sheet to check for
+ *
+ * @returns a boolean indicating whether the sheet exists
+ */
+async function doesSheetExist(
+	sheetName: string,
+	publisher: string
+): Promise<boolean> {
+	const database: DatabaseInstance = DatabaseInstance.getInstance();
+
+	let queryString: string = DatabaseQueries.getSheetsWithName(
+		sheetName,
+		publisher
+	);
+
+	let result: GetSheetRow[] = await database.query<GetSheetRow>(queryString);
+
+	let sheetExists: boolean = result.length != 0 ? true : false;
+
+	return sheetExists;
+}
+
+/**
  * Checks for a username:password match in the database.
  *
  * @param authHeader The authorization header from the request
@@ -370,4 +396,5 @@ export {
 	sendError,
 	getArgument,
 	sanitize,
+	doesSheetExist,
 };

@@ -123,13 +123,24 @@ describe("Tests auth checks in app.ts", () => {
 		expect(JSON.parse(response.text).success).toBeFalsy();
 	});
 
+	it("deleteSheet should should fail if sheet does not exist", async () => {
+		await setupDB();
+
+		const response: Response = await request(app)
+			.post("/api/v1/deleteSheet")
+			.auth("hunter", "123")
+			.send(assembleTestArgumentObject("hunter", "test13", "", ""));
+
+		expect(JSON.parse(response.text).success).toBeFalsy();
+	});
+
 	it("deleteSheet should should succeed if user is a publisher and matches client", async () => {
 		await setupDB();
 
 		const response: Response = await request(app)
 			.post("/api/v1/deleteSheet")
 			.auth("hunter", "123")
-			.send(assembleTestArgumentObject("hunter", "hunter-test", "", ""));
+			.send(assembleTestArgumentObject("hunter", "test4", "", ""));
 
 		expect(JSON.parse(response.text).success).toBeTruthy();
 	});
