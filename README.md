@@ -1,5 +1,7 @@
 # HuskSheet-Group7 (Team 1)
 
+HuskSheets is a collaborsative spreadsheet program that allows spreadsheets to be created, saved, and worked on by serveral users simultaneously. 
+
 ## To Run the Project
 
 -   `make build`
